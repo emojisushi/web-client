@@ -6,8 +6,6 @@ export const useCartItem = (item: CartItem) => {
   const { data: cart } = useQuery(cartQuery);
   const { data: catalog } = useQuery(catalogQuery);
 
-  console.log("catalog", catalog, cart);
-
   if (!cart || !catalog) {
     return undefined;
   }
