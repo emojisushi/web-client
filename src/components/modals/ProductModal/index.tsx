@@ -22,10 +22,8 @@ import {
 } from "~domains/product/products.query";
 import { cartQuery } from "~domains/cart/cart.query";
 import Skeleton from "react-loading-skeleton";
-import { findInCart } from "~components/ProductCard/utils";
 import { useTranslation } from "react-i18next";
 import { CategorySlug } from "~domains/category/constants";
-import { useDebouncedAddProductToCart } from "~hooks/use-debounced-add-product-to-cart";
 import { useModal as useNiceModal } from "~modal";
 import { media } from "~common/custom-media";
 import {
@@ -33,6 +31,8 @@ import {
   getOldProductPrice,
   getProductMainImage,
 } from "~domains/product/product.utils";
+import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
+import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
 
 export const ProductModal = NiceModal.create(() => {
   const modal = useNiceModal();
@@ -71,15 +71,17 @@ export const ProductModal = NiceModal.create(() => {
   const newPrice =
     product && getNewProductPrice(product, undefined)?.price_formatted;
 
-  const cartProducts = cart?.data || [];
+  const cartItems = cart?.items || [];
 
-  const cartProduct = product && findInCart(cartProducts, product, undefined);
-  const variant = cartProduct?.variant;
+  const cartItem =
+    product && cartItems.find((item) => item.product_id === product.id);
+
   const image = product && getProductMainImage(product);
 
-  const count = cartProduct?.quantity || 0;
+  const count = cartItem?.quantity || 0;
 
-  const { createUpdateHandler } = useDebouncedAddProductToCart();
+  const { mutate: addProductToCart } = useAddProductToCart();
+  const { mutate: removeProductFromCart } = useRemoveProductFromCart();
 
   return (
     <Modal open={modal.visible} onClose={closeModal}>
@@ -117,27 +119,34 @@ export const ProductModal = NiceModal.create(() => {
               {count ? (
                 <MyCounter
                   count={count}
-                  handleIncrement={createUpdateHandler({
-                    delta: 1,
-                    product: product,
-                    variant: variant,
-                    currentCount: count,
-                  })}
-                  handleDecrement={createUpdateHandler({
-                    delta: -1,
-                    product: product,
-                    variant: variant,
-                    currentCount: count,
-                  })}
+                  handleIncrement={() => {
+                    addProductToCart({
+                      quantity: count + 1,
+                      product_id: product.id,
+                    });
+                  }}
+                  handleDecrement={() => {
+                    const nextCount = count - 1;
+                    if (nextCount < 1) {
+                      removeProductFromCart({
+                        product_id: product.id,
+                      });
+                    } else {
+                      addProductToCart({
+                        quantity: count - 1,
+                        product_id: product.id,
+                      });
+                    }
+                  }}
                 />
               ) : (
                 <S.CartButton
-                  onClick={createUpdateHandler({
-                    delta: 1,
-                    product: product,
-                    variant: variant,
-                    currentCount: count,
-                  })}
+                  onClick={() => {
+                    addProductToCart({
+                      quantity: 1,
+                      product_id: product.id,
+                    });
+                  }}
                 >
                   {t("order.modal_order_btn")}
                 </S.CartButton>

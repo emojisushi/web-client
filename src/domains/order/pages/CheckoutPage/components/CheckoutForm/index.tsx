@@ -14,9 +14,6 @@ import * as S from "./styled";
 import {
   ICity,
   IDistrict,
-  IGetCartRes,
-  IGetPaymentMethodsRes,
-  IGetShippingMethodsRes,
   IPaymentMethod,
   IShippingMethod,
   ISpot,
@@ -25,7 +22,7 @@ import {
   ShippingMethodCodeEnum,
 } from "@layerok/emojisushi-js-sdk";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { cartQuery } from "~domains/cart/cart.query";
+import { Cart, cartQuery } from "~domains/cart/cart.query";
 import { AxiosError } from "axios";
 import { observer } from "mobx-react";
 import { ModalIDEnum } from "~common/modal.constants";
@@ -40,11 +37,13 @@ import {
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { useQueryClient } from "@tanstack/react-query";
+import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
+import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
   user?: IUser | undefined;
-  cart?: IGetCartRes | undefined;
+  cart?: Cart | undefined;
   shippingMethods?: IShippingMethod[] | undefined;
   paymentMethods?: IPaymentMethod[] | undefined;
   spots?: ISpot[];
@@ -143,6 +142,8 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const queryClient = useQueryClient();
+    const cartTotals = useCartTotals();
+    const { mutate: clearCart } = useClearCart();
 
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
@@ -302,7 +303,7 @@ export const CheckoutForm = observer(
       );
 
       try {
-        const res = await EmojisushiAgent.placeOrder({
+        const res = await EmojisushiAgent.placeOrderV2({
           phone,
           firstname,
           lastname,
@@ -316,9 +317,16 @@ export const CheckoutForm = observer(
           change,
           sticks: +sticks,
           comment,
+          cart: {
+            items: cart.items.map((item) => ({
+              id: item.product_id + "",
+              variant_id: item.variant_id + "",
+              quantity: item.quantity,
+            })),
+          },
         });
         removeFromLocalStorage(localStorageKeys.draftOrder);
-
+        clearCart();
         // todo: clear cart after you redirected user to thankyou page
         // otherwise user will be redirected to category page
         await queryClient.removeQueries(cartQuery.queryKey);
@@ -714,7 +722,7 @@ export const CheckoutForm = observer(
                 <Trans showSkeleton={loading} i18nKey={"checkout.to_pay"} />
                 &nbsp;
                 <SkeletonWrap loading={loading}>
-                  {cart?.total ? cart.total : "🤪🤪🤪"}
+                  {cartTotals?.total ? cartTotals.total : "🤪🤪🤪"}
                 </SkeletonWrap>
               </S.Total>
             </FlexBox>

@@ -17,9 +17,12 @@ import {
   getProductMainImage,
 } from "~domains/product/product.utils";
 import { ICartProduct } from "@layerok/emojisushi-js-sdk";
+import { CartItem } from "~domains/cart/cart.query";
+import { useCartItem } from "~domains/cart/hooks/use-cart-item";
+import { dummyCartProduct } from "~domains/order/mocks";
 
 type CheckoutCartItemProps = {
-  item: ICartProduct;
+  item: CartItem;
   loading?: boolean;
 };
 
@@ -27,9 +30,13 @@ export const CheckoutCartItem = ({
   item,
   loading = false,
 }: CheckoutCartItemProps) => {
-  const { quantity, product } = item;
+  const cartItem = useCartItem(item);
+  console.log("cartItem", cartItem, item);
+  const { quantity, product, variant } = loading
+    ? dummyCartProduct
+    : cartItem || {};
 
-  const nameWithMods = getCartProductNameWithMods(item.product, item.variant);
+  const nameWithMods = getCartProductNameWithMods(product, variant);
 
   const img = getProductMainImage(product);
 
@@ -92,9 +99,9 @@ export const CheckoutCartItem = ({
     if (loading) {
       return <Skeleton width={50} height={24} />;
     }
-    const { variant } = item;
-    const oldPrice = getOldProductPrice(item.product, variant)?.price_formatted;
-    const newPrice = getNewProductPrice(item.product, variant)?.price_formatted;
+
+    const oldPrice = getOldProductPrice(product, variant)?.price_formatted;
+    const newPrice = getNewProductPrice(product, variant)?.price_formatted;
     return (
       <S.Price>
         <Price newPrice={newPrice} oldPrice={oldPrice} />

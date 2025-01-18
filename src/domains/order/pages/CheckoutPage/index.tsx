@@ -16,6 +16,7 @@ import { citiesQuery } from "~domains/city/cities.query";
 import * as S from "./styled";
 import { useShowBinotel } from "~hooks/use-binotel";
 import { checkoutFormQuery } from "~domains/order/order.query";
+import { catalogQuery } from "~domains/catalog/catalog.query";
 
 const CheckoutPage = () => {
   const { t } = useTranslation();
@@ -27,10 +28,14 @@ const CheckoutPage = () => {
   const { data: cart, isLoading: isCartLoading } = useQuery({
     ...cartQuery,
     onSuccess: (res) => {
-      if (res.data.length < 1) {
+      if (res.items.length < 1) {
         navigate(ROUTES.CATEGORY.path);
       }
     },
+  });
+
+  const { isLoading: isLoadingCatalog } = useQuery({
+    ...catalogQuery,
   });
 
   const { data: checkoutForm, isLoading: isCheckoutFormLoading } =
@@ -41,7 +46,7 @@ const CheckoutPage = () => {
   const city = (cities?.data || []).find((c) => c.slug === citySlug);
 
   useEffect(() => {
-    if (cart?.data && cart.data.length < 1) {
+    if (cart?.items && cart.items.length < 1) {
       navigate(ROUTES.CATEGORY.path);
     }
   }, [cart]);
@@ -50,6 +55,7 @@ const CheckoutPage = () => {
     const loading =
       isCitiesLoading ||
       isCartLoading ||
+      isLoadingCatalog ||
       isUserLoading ||
       isCheckoutFormLoading;
 
@@ -72,7 +78,7 @@ const CheckoutPage = () => {
   };
 
   const renderCheckoutCart = () => {
-    if (isCartLoading) {
+    if (isCartLoading || isLoadingCatalog) {
       return <CheckoutCart loading={true} />;
     }
     return <CheckoutCart cart={cart} />;

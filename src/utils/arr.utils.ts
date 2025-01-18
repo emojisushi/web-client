@@ -1,7 +1,7 @@
-export const arrImmutableReplaceAt = (
-  arr: any[],
+export const arrImmutableReplaceAt = <A>(
+  arr: A[],
   index: number,
-  replacement: any
+  replacement: A
 ) => {
   return [...arr.slice(0, index), replacement, ...arr.slice(index + 1)];
 };

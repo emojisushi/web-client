@@ -69,7 +69,7 @@ export const SearchProductsModal = NiceModal.create(() => {
     return (
       <S.Results>
         {products.map((product) => {
-          const cartItem = cart.data.find(
+          const cartItem = cart.items.find(
             (item) => item.product_id === product.id
           );
 

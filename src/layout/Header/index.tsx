@@ -16,7 +16,7 @@ import {
   DropdownPopover,
 } from "~components";
 
-import { ICity, IGetCartRes, IUser } from "@layerok/emojisushi-js-sdk";
+import { ICity, IUser } from "@layerok/emojisushi-js-sdk";
 import { ModalIDEnum } from "~common/modal.constants";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
@@ -28,14 +28,13 @@ import { citiesQuery } from "~domains/city/cities.query";
 import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
 import { LOCATION_CONFIRMED_SEARCH_PARAM } from "~common/constants";
 import { LocationDropdownTrigger } from "~layout/Header/LocationDropdownTrigger";
+import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
 
 export const Header = ({
   loading = false,
-  cart,
   user,
 }: {
   loading?: boolean;
-  cart?: IGetCartRes;
   user?: IUser;
   cities?: ICity[];
 }) => {
@@ -47,6 +46,8 @@ export const Header = ({
   const location = useLocation();
 
   const { data: cities, isLoading } = useQuery(citiesQuery);
+
+  const cartTotals = useCartTotals();
   const citySlug = useCurrentCitySlug();
 
   const renderLocationDropdown = () => {
@@ -167,19 +168,19 @@ export const Header = ({
                 onClick={() => {
                   showModal(ModalIDEnum.CartModal);
                 }}
-                count={cart?.totalQuantity}
-                total={cart?.total}
+                count={cartTotals.totalQuantity}
+                total={cartTotals.total}
               />
             </SkeletonWrap>
           </S.CartBtn>
 
-          {cart && (
+          {!loading && (
             <S.TinyCartBtn
               onClick={() => {
                 showModal(ModalIDEnum.CartModal);
               }}
             >
-              <TinyCartButton loading={loading} price={cart?.total} />
+              <TinyCartButton loading={loading} price={cartTotals.total} />
             </S.TinyCartBtn>
           )}
 

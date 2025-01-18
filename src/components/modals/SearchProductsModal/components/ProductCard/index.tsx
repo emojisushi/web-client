@@ -1,4 +1,3 @@
-import { useDebouncedAddProductToCart } from "~hooks/use-debounced-add-product-to-cart";
 import * as S from "./styled";
 import { Button } from "~common/ui-components/Button/Button";
 import React from "react";
@@ -7,22 +6,25 @@ import {
   getOldProductPrice,
   getProductMainImage,
 } from "~domains/product/product.utils";
-import { ICartProduct, IProduct } from "@layerok/emojisushi-js-sdk";
+import { IProduct } from "@layerok/emojisushi-js-sdk";
+import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
+import { CartItem } from "~domains/cart/cart.query";
 
 export const ProductCard = ({
   product,
   cartItem,
 }: {
   product: IProduct;
-  cartItem?: ICartProduct;
+  cartItem?: CartItem;
 }) => {
-  const { createUpdateHandler } = useDebouncedAddProductToCart();
-  const addToCart = createUpdateHandler({
-    delta: 1,
-    variant: undefined,
-    product: product,
-    currentCount: cartItem?.quantity || 0,
-  });
+  const { mutate: addProductToCart } = useAddProductToCart();
+  const addToCart = () => {
+    addProductToCart({
+      quantity: 1,
+      variant_id: undefined,
+      product_id: product.id,
+    });
+  };
   const newPrice = getNewProductPrice(product, undefined)?.price_formatted;
   const oldPrice = getOldProductPrice(product, undefined)?.price_formatted;
   return (

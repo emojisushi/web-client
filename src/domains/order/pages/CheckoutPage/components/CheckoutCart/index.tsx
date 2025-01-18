@@ -1,24 +1,26 @@
 import * as S from "./styled";
 import { SkeletonWrap, SvgIcon } from "~components";
 import { UIButton } from "~common/ui-components/UIButton/UIButton";
-import { IGetCartRes } from "@layerok/emojisushi-js-sdk";
 import { CheckoutCartItem } from "./components/CheckoutCartItem";
-import { dummyCartProduct } from "~domains/order/mocks";
 import { ModalIDEnum } from "~common/modal.constants";
 import { PencilSvg } from "~components/svg/PencilSvg";
 import { useTranslation } from "react-i18next";
 import { useShowModal } from "~modal";
+import { Cart } from "~domains/cart/cart.query";
 
 type CheckoutCartProps = {
-  cart?: IGetCartRes;
+  cart?: Cart;
   loading?: boolean;
 };
 
 export const CheckoutCart = ({ cart, loading = false }: CheckoutCartProps) => {
   const { t } = useTranslation();
   const items = loading
-    ? [dummyCartProduct, dummyCartProduct]
-    : cart?.data || [];
+    ? [
+        { quantity: 1, product_id: 128 },
+        { quantity: 1, product_id: 129 },
+      ]
+    : cart?.items || [];
 
   const showModal = useShowModal();
 
@@ -26,10 +28,10 @@ export const CheckoutCart = ({ cart, loading = false }: CheckoutCartProps) => {
     <S.Wrapper>
       <S.Inner>
         <S.Items>
-          {items.map((item, index) => {
+          {items.map((item) => {
             return (
               <CheckoutCartItem
-                key={loading ? index : item.id}
+                key={item.product_id}
                 loading={loading}
                 item={item}
               />

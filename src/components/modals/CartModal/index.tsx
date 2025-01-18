@@ -14,7 +14,10 @@ import {
   // todo: replace SushiSvg because it is fake svg, it is png actually
   SushiSvg,
 } from "~components";
-import { cartQuery } from "~domains/cart/cart.query";
+import {
+  CartItem as CartItemPayload,
+  cartQuery,
+} from "~domains/cart/cart.query";
 
 import { ROUTES } from "~routes";
 import { useModal } from "~modal";
@@ -24,61 +27,65 @@ import { Button } from "~common/ui-components/Button/Button";
 import { useBreakpoint2 } from "~common/hooks";
 
 import { Times } from "~assets/ui-icons";
-import { useDebouncedAddProductToCart } from "~hooks/use-debounced-add-product-to-cart";
 import {
   getCartProductNameWithMods,
   getNewProductPrice,
   getOldProductPrice,
   getProductMainImage,
 } from "~domains/product/product.utils";
-import { ICartProduct } from "@layerok/emojisushi-js-sdk";
+
 import { Counter } from "~components/modals/CartModal/components/Counter";
+import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
+import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
+
+import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
+import { useCartItem } from "~domains/cart/hooks/use-cart-item";
 
 // todo: clear outdated products from the card. You can do it on the frontend or on the backend
-const CartItem = (props: { item: ICartProduct }) => {
+const CartItem = (props: { item: CartItemPayload }) => {
   const { item } = props;
   const theme = useTheme();
+  const cartItem = useCartItem(item);
 
-  const newPrice = getNewProductPrice(
-    item.product,
-    item.variant
-  )?.price_formatted;
-  const oldPrice = getOldProductPrice(
-    item.product,
-    item.variant
-  )?.price_formatted;
-  const nameWithMods = getCartProductNameWithMods(item.product, item.variant);
+  const { product, variant } = cartItem;
 
-  const variant = item.variant;
-  const product = item.product;
+  const newPrice = getNewProductPrice(product, variant)?.price_formatted;
+  const oldPrice = getOldProductPrice(product, variant)?.price_formatted;
+  const nameWithMods = getCartProductNameWithMods(product, variant);
+
   const count = item?.quantity || 0;
 
-  const { createUpdateHandler } = useDebouncedAddProductToCart();
+  const { mutate: addProductToCart } = useAddProductToCart();
+
+  const { mutate: removeProductFromCart } = useRemoveProductFromCart();
 
   const handleDecrement = () => {
-    createUpdateHandler({
-      delta: -1,
-      product: product,
-      variant: variant,
-      currentCount: count,
-    })();
+    const nextCount = count - 1;
+    if (nextCount < 1) {
+      removeProductFromCart({
+        product_id: product.id,
+      });
+    } else {
+      addProductToCart({
+        quantity: count - 1,
+        product_id: product.id,
+      });
+    }
   };
 
-  const handleIncrement = createUpdateHandler({
-    delta: 1,
-    product: product,
-    variant: variant,
-    currentCount: count,
-  });
+  const handleIncrement = () => {
+    addProductToCart({
+      quantity: count + 1,
+      product_id: product.id,
+    });
+  };
+  const handleDelete = () => {
+    removeProductFromCart({
+      product_id: product.id,
+    });
+  };
 
-  const handleDelete = createUpdateHandler({
-    delta: -count,
-    product: product,
-    variant: variant,
-    currentCount: count,
-  });
-
-  const mainImage = getProductMainImage(item.product);
+  const mainImage = getProductMainImage(product);
 
   return (
     <S.Item>
@@ -125,8 +132,9 @@ export const CartModal = NiceModal.create(() => {
   const theme = useTheme();
 
   const { data: cart, isLoading: isCartLoading } = useQuery(cartQuery);
+  const cartTotals = useCartTotals();
 
-  const { data: items } = cart;
+  const { items } = cart;
 
   const { isMobile } = useBreakpoint2();
 
@@ -191,18 +199,6 @@ export const CartModal = NiceModal.create(() => {
           <S.Items style={itemsContainerStyles}>
             {items.map((item, i) => (
               <CartItem
-                // don't use item.id as key,
-                //
-                // When user clicks "Add to cart" button
-                // We lie to the user that the item has been added to cart
-                // In reality we created fake item in the cart on the client side
-                // as though the server did it.
-                // So the user doesn't have to wait until server responds.
-                // In the background we send request to the server to add product to cart for real
-                // Until server responds we render fake cart item with fake id
-                // If we use fake id as key for CartItem component,
-                // then the CartItem component will be fully remounted when server responds, loosing its state.
-                // we want to avoid that, so we use productId + variantId as key
                 key={[item.product_id, item.variant_id]
                   .filter(Boolean)
                   .join(".")}
@@ -216,7 +212,7 @@ export const CartModal = NiceModal.create(() => {
           <S.Footer>
             <FlexBox alignItems={"center"} justifyContent={"space-between"}>
               <S.Sum>{t("cartModal.sum_order")}</S.Sum>
-              <Price newPrice={cart.total} />
+              <Price newPrice={cartTotals.total} />
             </FlexBox>
             <S.Button>
               <Button

@@ -1,15 +1,10 @@
 import * as S from "./styled";
 import { EqualHeightElement } from "react-equal-height";
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { Modificators } from "./components";
-import { findInCart } from "./utils";
 import { Price } from "~components/Price";
 import { Button } from "~common/ui-components/Button/Button";
-import {
-  IGetCartRes,
-  IGetWishlistRes,
-  IProduct,
-} from "@layerok/emojisushi-js-sdk";
+import { IGetWishlistRes, IProduct } from "@layerok/emojisushi-js-sdk";
 import {
   AnimatedTooltip,
   Counter,
@@ -31,7 +26,6 @@ import { useTheme } from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { PRODUCT_ID_SEARCH_QUERY_PARAM } from "~domains/product/products.query";
 
-import { useDebouncedAddProductToCart } from "~hooks/use-debounced-add-product-to-cart";
 import { IngredientsTooltipContent } from "~components/ProductCard/components/IngredientsTooltipContent";
 import {
   getNewProductPrice,
@@ -42,10 +36,14 @@ import {
   isProductInWishlists,
 } from "~domains/product/product.utils";
 
+import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
+import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
+import { Cart } from "~domains/cart/cart.query";
+
 type ProductCardProps = {
   product?: IProduct;
   loading?: boolean;
-  cart?: IGetCartRes;
+  cart?: Cart;
   wishlists?: IGetWishlistRes;
 };
 
@@ -57,7 +55,7 @@ export const ProductCard = (props: ProductCardProps) => {
   const navigate = useNavigate();
 
   const { t } = useTranslation();
-  const cartProducts = cart?.data || [];
+  const cartProducts = cart?.items || [];
 
   const initialModificatorsState =
     product &&
@@ -80,12 +78,14 @@ export const ProductCard = (props: ProductCardProps) => {
   const variant = getVariant(product);
 
   const cartProduct = product
-    ? findInCart(cartProducts, product, variant)
+    ? cartProducts.find((item) => item.product_id === product.id)
     : undefined;
 
   const count = cartProduct?.quantity || 0;
 
-  const { createUpdateHandler } = useDebouncedAddProductToCart();
+  const { mutate: addProductToCart } = useAddProductToCart();
+
+  const { mutate: removeProductFromCart } = useRemoveProductFromCart();
 
   const favorite = product && isProductInWishlists(product, wishlists || []);
 
@@ -186,18 +186,25 @@ export const ProductCard = (props: ProductCardProps) => {
         <Price loading={loading} oldPrice={oldPrice} newPrice={newPrice} />
         {count ? (
           <Counter
-            handleIncrement={createUpdateHandler({
-              delta: 1,
-              product,
-              variant: variant,
-              currentCount: count,
-            })}
-            handleDecrement={createUpdateHandler({
-              delta: -1,
-              product,
-              variant: variant,
-              currentCount: count,
-            })}
+            handleIncrement={() => {
+              addProductToCart({
+                quantity: count + 1,
+                product_id: product.id,
+              });
+            }}
+            handleDecrement={() => {
+              const nextCount = count - 1;
+              if (nextCount < 1) {
+                removeProductFromCart({
+                  product_id: product.id,
+                });
+              } else {
+                addProductToCart({
+                  quantity: nextCount,
+                  product_id: product.id,
+                });
+              }
+            }}
             count={count}
           />
         ) : (
@@ -211,12 +218,12 @@ export const ProductCard = (props: ProductCardProps) => {
               </StartAdornment>
             }
             showSkeleton={loading}
-            onClick={createUpdateHandler({
-              delta: 1,
-              product,
-              variant: variant,
-              currentCount: count,
-            })}
+            onClick={() => {
+              addProductToCart({
+                quantity: 1,
+                product_id: product.id,
+              });
+            }}
           >
             {t("order.order_btn")}
           </Button>

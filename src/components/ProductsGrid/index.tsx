@@ -1,12 +1,7 @@
 import { useBreakpoint, useDebounce } from "~common/hooks";
 import { EqualHeight } from "react-equal-height";
 
-import {
-  IGetCartRes,
-  IGetWishlistRes,
-  IProduct,
-  SortKey,
-} from "@layerok/emojisushi-js-sdk";
+import { IGetWishlistRes, IProduct, SortKey } from "@layerok/emojisushi-js-sdk";
 import { useSearchParams, useSubmit } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { PRODUCTS_LIMIT_STEP } from "~domains/category/constants";
@@ -25,6 +20,7 @@ import {
 } from "~common/constants";
 import Skeleton from "react-loading-skeleton";
 import { UIButton } from "~common/ui-components/UIButton/UIButton";
+import { Cart } from "~domains/cart/cart.query";
 
 export const ProductsGrid = ({
   title = "Меню",
@@ -36,7 +32,7 @@ export const ProductsGrid = ({
   title?: string;
   items?: IProduct[];
   loading?: boolean;
-  cart?: IGetCartRes;
+  cart?: Cart;
   wishlists?: IGetWishlistRes;
 }) => {
   const { t } = useTranslation();
