@@ -27,7 +27,7 @@ import {
   getProductMainImage,
 } from "~domains/product/product.utils";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
-import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
+import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 import { catalogQuery } from "~domains/catalog/catalog.query";
 
 export const ProductModal = NiceModal.create(() => {
@@ -65,14 +65,42 @@ export const ProductModal = NiceModal.create(() => {
   const cartItems = cart?.items || [];
 
   const cartItem =
-    product && cartItems.find((item) => item.product_id === product.id);
+    product && cartItems.find((item) => item.product.id === product.id);
 
   const image = product && getProductMainImage(product);
 
   const count = cartItem?.quantity || 0;
 
   const { mutate: addProductToCart } = useAddProductToCart();
-  const { mutate: removeProductFromCart } = useRemoveProductFromCart();
+  const { mutate: removeProductFromCart } = useRemoveItemFromCart();
+
+  const handleIncrement = () => {
+    addProductToCart({
+      quantity: count + 1,
+      product: product,
+    });
+  };
+
+  const handleDecrement = () => {
+    const nextCount = count - 1;
+    if (nextCount < 1) {
+      removeProductFromCart({
+        id: cartItem.id,
+      });
+    } else {
+      addProductToCart({
+        quantity: count - 1,
+        product: product,
+      });
+    }
+  };
+
+  const handleAddToCart = () => {
+    addProductToCart({
+      quantity: 1,
+      product: product,
+    });
+  };
 
   return (
     <Modal open={modal.visible} onClose={closeModal}>
@@ -110,35 +138,11 @@ export const ProductModal = NiceModal.create(() => {
               {count ? (
                 <MyCounter
                   count={count}
-                  handleIncrement={() => {
-                    addProductToCart({
-                      quantity: count + 1,
-                      product_id: product.id,
-                    });
-                  }}
-                  handleDecrement={() => {
-                    const nextCount = count - 1;
-                    if (nextCount < 1) {
-                      removeProductFromCart({
-                        product_id: product.id,
-                      });
-                    } else {
-                      addProductToCart({
-                        quantity: count - 1,
-                        product_id: product.id,
-                      });
-                    }
-                  }}
+                  handleIncrement={handleIncrement}
+                  handleDecrement={handleDecrement}
                 />
               ) : (
-                <S.CartButton
-                  onClick={() => {
-                    addProductToCart({
-                      quantity: 1,
-                      product_id: product.id,
-                    });
-                  }}
-                >
+                <S.CartButton onClick={handleAddToCart}>
                   {t("order.modal_order_btn")}
                 </S.CartButton>
               )}

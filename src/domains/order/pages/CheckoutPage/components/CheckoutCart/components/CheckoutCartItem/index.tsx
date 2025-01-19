@@ -16,9 +16,7 @@ import {
   getProductIngredients,
   getProductMainImage,
 } from "~domains/product/product.utils";
-import { ICartProduct } from "@layerok/emojisushi-js-sdk";
 import { CartItem } from "~domains/cart/cart.query";
-import { useCartItem } from "~domains/cart/hooks/use-cart-item";
 import { dummyCartProduct } from "~domains/order/mocks";
 
 type CheckoutCartItemProps = {
@@ -30,11 +28,9 @@ export const CheckoutCartItem = ({
   item,
   loading = false,
 }: CheckoutCartItemProps) => {
-  const cartItem = useCartItem(item);
-  console.log("cartItem", cartItem, item);
   const { quantity, product, variant } = loading
     ? dummyCartProduct
-    : cartItem || {};
+    : item || {};
 
   const nameWithMods = getCartProductNameWithMods(product, variant);
 

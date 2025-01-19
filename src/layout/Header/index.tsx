@@ -28,15 +28,17 @@ import { citiesQuery } from "~domains/city/cities.query";
 import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
 import { LOCATION_CONFIRMED_SEARCH_PARAM } from "~common/constants";
 import { LocationDropdownTrigger } from "~layout/Header/LocationDropdownTrigger";
-import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
+import { Cart } from "~domains/cart/cart.query";
 
 export const Header = ({
   loading = false,
   user,
+  cart,
 }: {
   loading?: boolean;
   user?: IUser;
   cities?: ICity[];
+  cart?: Cart;
 }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -47,7 +49,6 @@ export const Header = ({
 
   const { data: cities, isLoading } = useQuery(citiesQuery);
 
-  const cartTotals = useCartTotals();
   const citySlug = useCurrentCitySlug();
 
   const renderLocationDropdown = () => {
@@ -168,19 +169,19 @@ export const Header = ({
                 onClick={() => {
                   showModal(ModalIDEnum.CartModal);
                 }}
-                count={cartTotals.totalQuantity}
-                total={cartTotals.total}
+                count={cart?.totalQuantity}
+                total={cart?.total}
               />
             </SkeletonWrap>
           </S.CartBtn>
 
-          {!loading && (
+          {cart && (
             <S.TinyCartBtn
               onClick={() => {
                 showModal(ModalIDEnum.CartModal);
               }}
             >
-              <TinyCartButton loading={loading} price={cartTotals.total} />
+              <TinyCartButton loading={loading} price={cart.total} />
             </S.TinyCartBtn>
           )}
 

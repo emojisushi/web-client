@@ -36,7 +36,7 @@ import {
   isProductInWishlists,
 } from "~domains/product/product.utils";
 
-import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
+import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { Cart } from "~domains/cart/cart.query";
 
@@ -55,7 +55,7 @@ export const ProductCard = (props: ProductCardProps) => {
   const navigate = useNavigate();
 
   const { t } = useTranslation();
-  const cartProducts = cart?.items || [];
+  const cartItems = cart?.items || [];
 
   const initialModificatorsState =
     product &&
@@ -77,15 +77,15 @@ export const ProductCard = (props: ProductCardProps) => {
 
   const variant = getVariant(product);
 
-  const cartProduct = product
-    ? cartProducts.find((item) => item.product_id === product.id)
+  const cartItem = product
+    ? cartItems.find((item) => item.product.id === product.id)
     : undefined;
 
-  const count = cartProduct?.quantity || 0;
+  const count = cartItem?.quantity || 0;
 
   const { mutate: addProductToCart } = useAddProductToCart();
 
-  const { mutate: removeProductFromCart } = useRemoveProductFromCart();
+  const { mutate: removeProductFromCart } = useRemoveItemFromCart();
 
   const favorite = product && isProductInWishlists(product, wishlists || []);
 
@@ -189,19 +189,19 @@ export const ProductCard = (props: ProductCardProps) => {
             handleIncrement={() => {
               addProductToCart({
                 quantity: count + 1,
-                product_id: product.id,
+                product: product,
               });
             }}
             handleDecrement={() => {
               const nextCount = count - 1;
               if (nextCount < 1) {
                 removeProductFromCart({
-                  product_id: product.id,
+                  id: cartItem.id,
                 });
               } else {
                 addProductToCart({
                   quantity: nextCount,
-                  product_id: product.id,
+                  product: product,
                 });
               }
             }}
@@ -221,7 +221,7 @@ export const ProductCard = (props: ProductCardProps) => {
             onClick={() => {
               addProductToCart({
                 quantity: 1,
-                product_id: product.id,
+                product: product,
               });
             }}
           >

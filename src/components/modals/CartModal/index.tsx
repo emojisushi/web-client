@@ -36,16 +36,12 @@ import {
 
 import { Counter } from "~components/modals/CartModal/components/Counter";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
-import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
-
-import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
-import { useCartItem } from "~domains/cart/hooks/use-cart-item";
+import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 
 // todo: clear outdated products from the card. You can do it on the frontend or on the backend
 const CartItem = (props: { item: CartItemPayload }) => {
-  const { item } = props;
+  const { item: cartItem } = props;
   const theme = useTheme();
-  const cartItem = useCartItem(item);
 
   const { product, variant } = cartItem;
 
@@ -53,22 +49,22 @@ const CartItem = (props: { item: CartItemPayload }) => {
   const oldPrice = getOldProductPrice(product, variant)?.price_formatted;
   const nameWithMods = getCartProductNameWithMods(product, variant);
 
-  const count = item?.quantity || 0;
+  const count = cartItem?.quantity || 0;
 
   const { mutate: addProductToCart } = useAddProductToCart();
 
-  const { mutate: removeProductFromCart } = useRemoveProductFromCart();
+  const { mutate: removeProductFromCart } = useRemoveItemFromCart();
 
   const handleDecrement = () => {
     const nextCount = count - 1;
     if (nextCount < 1) {
       removeProductFromCart({
-        product_id: product.id,
+        id: cartItem.id,
       });
     } else {
       addProductToCart({
         quantity: count - 1,
-        product_id: product.id,
+        product: product,
       });
     }
   };
@@ -76,12 +72,12 @@ const CartItem = (props: { item: CartItemPayload }) => {
   const handleIncrement = () => {
     addProductToCart({
       quantity: count + 1,
-      product_id: product.id,
+      product: product,
     });
   };
   const handleDelete = () => {
     removeProductFromCart({
-      product_id: product.id,
+      id: cartItem.id,
     });
   };
 
@@ -132,7 +128,6 @@ export const CartModal = NiceModal.create(() => {
   const theme = useTheme();
 
   const { data: cart, isLoading: isCartLoading } = useQuery(cartQuery);
-  const cartTotals = useCartTotals();
 
   const { items } = cart;
 
@@ -199,7 +194,7 @@ export const CartModal = NiceModal.create(() => {
           <S.Items style={itemsContainerStyles}>
             {items.map((item, i) => (
               <CartItem
-                key={[item.product_id, item.variant_id]
+                key={[item.product.id, item.variant?.id]
                   .filter(Boolean)
                   .join(".")}
                 item={item}
@@ -212,7 +207,7 @@ export const CartModal = NiceModal.create(() => {
           <S.Footer>
             <FlexBox alignItems={"center"} justifyContent={"space-between"}>
               <S.Sum>{t("cartModal.sum_order")}</S.Sum>
-              <Price newPrice={cartTotals.total} />
+              <Price newPrice={cart.total} />
             </FlexBox>
             <S.Button>
               <Button

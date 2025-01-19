@@ -35,7 +35,6 @@ import { ResetPasswordModal } from "~components/modals/ResetPasswordModal";
 import { ProductModal } from "~components/modals/ProductModal";
 import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
 import { SearchProductsModal } from "~components/modals/SearchProductsModal";
-import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
 
 export const Layout = observer(
   ({ children, ...rest }: { children?: ReactNode }) => {
@@ -44,14 +43,13 @@ export const Layout = observer(
     const appStore = useAppStore();
     const showStickyCart = y > 100;
 
-    const { isLoading: isCartLoading } = useQuery(cartQuery);
+    const { isLoading: isCartLoading, data: cart } = useQuery(cartQuery);
     const { data: user, isLoading: isUserLoading } = useUser();
     const showModal = useShowModal();
 
     const citySlug = useCurrentCitySlug();
     const { data: cities, isLoading: isCitiesLoading } = useQuery(citiesQuery);
     const city = (cities?.data || []).find((c) => c.slug === citySlug);
-    const cartTotals = useCartTotals();
 
     useEffect(() => {
       const routerSubscriber: RouterSubscriber = (state: RouterState) => {
@@ -93,7 +91,7 @@ export const Layout = observer(
         {isCartLoading || isUserLoading || isCitiesLoading ? (
           <Header loading />
         ) : (
-          <Header cities={cities.data} user={user} />
+          <Header cart={cart} cities={cities.data} user={user} />
         )}
         <S.Main>
           <Outlet />
@@ -106,7 +104,7 @@ export const Layout = observer(
                 onClick={() => {
                   showModal(ModalIDEnum.CartModal);
                 }}
-                price={cartTotals.total}
+                price={cart.total}
               />
             </S.TinyCartButtonOverlay>
           </Sticky>

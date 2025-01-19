@@ -1,10 +1,13 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { cartQuery, clearCartMutation } from "~domains/cart/cart.query";
+import {
+  cartQuery,
+  removeManyItemsFromCartMutation,
+} from "~domains/cart/cart.query";
 
-export const useClearCart = () => {
+export const useRemoveManyItemsFromCart = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    ...clearCartMutation,
+    ...removeManyItemsFromCartMutation,
     onSuccess: () => {
       queryClient.invalidateQueries(cartQuery);
     },

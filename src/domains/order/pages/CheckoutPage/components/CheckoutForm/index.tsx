@@ -37,7 +37,6 @@ import {
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { useQueryClient } from "@tanstack/react-query";
-import { useCartTotals } from "~domains/cart/hooks/use-cart-totals";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 
 type TCheckoutFormProps = {
@@ -142,7 +141,7 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const queryClient = useQueryClient();
-    const cartTotals = useCartTotals();
+
     const { mutate: clearCart } = useClearCart();
 
     const TakeAwaySchema = Yup.object().shape({
@@ -319,8 +318,8 @@ export const CheckoutForm = observer(
           comment,
           cart: {
             items: cart.items.map((item) => ({
-              id: item.product_id + "",
-              variant_id: item.variant_id + "",
+              id: item.product.id + "",
+              variant_id: item.variant ? item.variant.id + "" : undefined,
               quantity: item.quantity,
             })),
           },
@@ -722,7 +721,7 @@ export const CheckoutForm = observer(
                 <Trans showSkeleton={loading} i18nKey={"checkout.to_pay"} />
                 &nbsp;
                 <SkeletonWrap loading={loading}>
-                  {cartTotals?.total ? cartTotals.total : "🤪🤪🤪"}
+                  {cart?.total ? cart.total : "🤪🤪🤪"}
                 </SkeletonWrap>
               </S.Total>
             </FlexBox>

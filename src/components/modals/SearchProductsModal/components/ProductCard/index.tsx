@@ -21,8 +21,8 @@ export const ProductCard = ({
   const addToCart = () => {
     addProductToCart({
       quantity: 1,
-      variant_id: undefined,
-      product_id: product.id,
+      variant: undefined,
+      product: product,
     });
   };
   const newPrice = getNewProductPrice(product, undefined)?.price_formatted;
