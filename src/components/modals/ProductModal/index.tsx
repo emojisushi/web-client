@@ -15,15 +15,10 @@ import { Times } from "~assets/ui-icons";
 import MyCounter from "~components/MyCounter";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import {
-  DEFAULT_PRODUCTS_LIMIT,
-  PRODUCT_ID_SEARCH_QUERY_PARAM,
-  productsQuery,
-} from "~domains/product/products.query";
+import { PRODUCT_ID_SEARCH_QUERY_PARAM } from "~domains/product/products.query";
 import { cartQuery } from "~domains/cart/cart.query";
 import Skeleton from "react-loading-skeleton";
 import { useTranslation } from "react-i18next";
-import { CategorySlug } from "~domains/category/constants";
 import { useModal as useNiceModal } from "~modal";
 import { media } from "~common/custom-media";
 import {
@@ -33,6 +28,7 @@ import {
 } from "~domains/product/product.utils";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { useRemoveProductFromCart } from "~domains/cart/hooks/use-remove-product-from-cart";
+import { catalogQuery } from "~domains/catalog/catalog.query";
 
 export const ProductModal = NiceModal.create(() => {
   const modal = useNiceModal();
@@ -40,12 +36,7 @@ export const ProductModal = NiceModal.create(() => {
 
   const [searchParams] = useSearchParams();
 
-  const { data, isLoading } = useQuery(
-    productsQuery({
-      category_slug: CategorySlug.Menu,
-      limit: DEFAULT_PRODUCTS_LIMIT,
-    })
-  );
+  const { data, isLoading } = useQuery(catalogQuery);
 
   const { data: cart } = useQuery(cartQuery);
 
@@ -62,8 +53,8 @@ export const ProductModal = NiceModal.create(() => {
     );
   };
 
-  const product = (data?.data || []).find((products) => {
-    return products.id === +searchParams.get(PRODUCT_ID_SEARCH_QUERY_PARAM);
+  const product = (data?.products || []).find((product) => {
+    return product.id === +searchParams.get(PRODUCT_ID_SEARCH_QUERY_PARAM);
   });
 
   const oldPrice =
