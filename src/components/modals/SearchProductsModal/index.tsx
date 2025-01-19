@@ -10,34 +10,24 @@ import {
 import * as S from "./styled";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
-import {
-  DEFAULT_PRODUCTS_LIMIT,
-  productsQuery,
-} from "~domains/product/products.query";
 import { cartQuery } from "~domains/cart/cart.query";
-import { useTranslation } from "react-i18next";
-import { CategorySlug } from "~domains/category/constants";
 import { useModal as useNiceModal } from "~modal";
 import { media } from "~common/custom-media";
 import { fuzzySearch } from "~utils/fuzzySearch";
 import { ProductCard } from "./components/ProductCard";
+import { catalogQuery } from "~domains/catalog/catalog.query";
 
 export const SearchProductsModal = NiceModal.create(() => {
   const modal = useNiceModal();
-  const { t } = useTranslation();
+
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { data, isLoading } = useQuery(
-    productsQuery({
-      category_slug: CategorySlug.Menu,
-      limit: DEFAULT_PRODUCTS_LIMIT,
-    })
-  );
+  const { data, isLoading } = useQuery(catalogQuery);
 
   const products =
     search.length > 2
-      ? fuzzySearch(data?.data || [], search, (el) => el.name, {
+      ? fuzzySearch(data?.products || [], search, (el) => el.name, {
           maxAllowedModifications: 1,
         })
       : [];
