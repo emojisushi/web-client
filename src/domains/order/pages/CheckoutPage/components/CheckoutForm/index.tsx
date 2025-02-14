@@ -23,7 +23,7 @@ import {
 } from "@layerok/emojisushi-js-sdk";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Cart, cartQuery } from "~domains/cart/cart.query";
-import { AxiosError } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { observer } from "mobx-react";
 import { ModalIDEnum } from "~common/modal.constants";
 import { ROUTES } from "~routes";
@@ -123,6 +123,20 @@ type FormValues = {
   house_type: HouseType;
   spot_id: number | undefined;
   district_id: number | undefined;
+};
+
+type ErrorResponse = {
+  errors?: {
+    firstname: string[];
+    lastname: string[];
+    phone: string[];
+    email: string[];
+    shipping_method_id: string[];
+    payment_method_id: string[];
+    spot_id: string[];
+    address: string[];
+  };
+  message: string;
 };
 
 export const CheckoutForm = observer(
@@ -345,11 +359,25 @@ export const CheckoutForm = observer(
           );
         }
       } catch (e) {
-        if (e instanceof AxiosError) {
-          if (e.response?.data?.errors) {
-            formik.setErrors(e.response.data.errors);
-          }
+        if (!axios.isAxiosError(e)) {
+          // todo: log
+          return;
         }
+        const { data } = (e as AxiosError<ErrorResponse>).response;
+
+        const errors = data?.errors;
+        //const message = data?.message;
+
+        if (!errors) {
+          return;
+        }
+
+        if (errors.firstname) {
+          formik.setFieldError(FormNames.Name, errors.firstname[0]);
+        }
+
+        // todo: handle other server errors
+        // todo: there can be more errors than just firstname
       }
     };
 
@@ -493,9 +521,9 @@ export const CheckoutForm = observer(
             showSkeleton={loading}
             name={FormNames.ShippingMethodCode}
             items={shippingMethodOptions}
-            value={formik.values.shipping_method_code}
+            value={formik.values[FormNames.ShippingMethodCode]}
             onChange={handleShippingMethodChange}
-            ref={setFieldRef("shipping_method_code")}
+            ref={setFieldRef(FormNames.ShippingMethodCode)}
           />
 
           <S.Control>
@@ -506,7 +534,7 @@ export const CheckoutForm = observer(
                 options={spots}
                 width={"350px"}
                 value={formik.values[FormNames.SpotId]}
-                ref={setFieldRef("spot_id")}
+                ref={setFieldRef(FormNames.SpotId)}
                 onChange={(value) => {
                   setFieldValue(FormNames.SpotId, value);
                 }}
@@ -523,7 +551,7 @@ export const CheckoutForm = observer(
                   options={districts}
                   width={"350px"}
                   value={formik.values[FormNames.DistrictId]}
-                  ref={setFieldRef("district_id")}
+                  ref={setFieldRef(FormNames.DistrictId)}
                   onChange={(value) => {
                     setFieldValue(FormNames.DistrictId, value);
                   }}
@@ -545,7 +573,7 @@ export const CheckoutForm = observer(
                   items={houseTypes}
                   value={formik.values[FormNames.HouseType]}
                   onChange={handleHouseTypeChange}
-                  ref={setFieldRef("house_type")}
+                  ref={setFieldRef(FormNames.HouseType)}
                 />
               </S.Control>
               <S.Control>
@@ -561,9 +589,12 @@ export const CheckoutForm = observer(
                     placeholder={t("checkout.form.street.placeholder")}
                     onChange={handleChange}
                     onBlur={formik.handleBlur}
-                    value={formik.values.street}
-                    error={formik.touched["street"] && formik.errors["street"]}
-                    ref={setFieldRef("street")}
+                    value={formik.values[FormNames.Street]}
+                    error={
+                      formik.touched[FormNames.Street] &&
+                      formik.errors[FormNames.Street]
+                    }
+                    ref={setFieldRef(FormNames.Street)}
                   />
                   <Input
                     style={{ width: "30%" }}
@@ -572,9 +603,12 @@ export const CheckoutForm = observer(
                     placeholder={t("checkout.form.house.placeholder")}
                     onChange={handleChange}
                     onBlur={formik.handleBlur}
-                    value={formik.values.house}
-                    error={formik.touched["house"] && formik.errors["house"]}
-                    ref={setFieldRef("house")}
+                    value={formik.values[FormNames.House]}
+                    error={
+                      formik.touched[FormNames.House] &&
+                      formik.errors[FormNames.House]
+                    }
+                    ref={setFieldRef(FormNames.House)}
                   />
                 </FlexBox>
               </S.Control>
@@ -592,12 +626,12 @@ export const CheckoutForm = observer(
                       placeholder={t("checkout.form.apartment.placeholder")}
                       onChange={handleChange}
                       onBlur={formik.handleBlur}
-                      value={formik.values.apartment}
+                      value={formik.values[FormNames.Apartment]}
                       error={
-                        formik.touched["apartment"] &&
-                        formik.errors["apartment"]
+                        formik.touched[FormNames.Apartment] &&
+                        formik.errors[FormNames.Apartment]
                       }
-                      ref={setFieldRef("apartment")}
+                      ref={setFieldRef(FormNames.Apartment)}
                     />
                     <Input
                       loading={loading}
@@ -605,11 +639,12 @@ export const CheckoutForm = observer(
                       placeholder={t("checkout.form.entrance.placeholder")}
                       onChange={handleChange}
                       onBlur={formik.handleBlur}
-                      value={formik.values.entrance}
+                      value={formik.values[FormNames.Entrance]}
                       error={
-                        formik.touched["entrance"] && formik.errors["entrance"]
+                        formik.touched[FormNames.Entrance] &&
+                        formik.errors[FormNames.Entrance]
                       }
-                      ref={setFieldRef("entrance")}
+                      ref={setFieldRef(FormNames.Entrance)}
                     />
                     <Input
                       loading={loading}
@@ -617,9 +652,12 @@ export const CheckoutForm = observer(
                       placeholder={t("checkout.form.floor.placeholder")}
                       onChange={handleChange}
                       onBlur={formik.handleBlur}
-                      value={formik.values.floor}
-                      error={formik.touched["floor"] && formik.errors["floor"]}
-                      ref={setFieldRef("floor")}
+                      value={formik.values[FormNames.Floor]}
+                      error={
+                        formik.touched[FormNames.Floor] &&
+                        formik.errors[FormNames.Floor]
+                      }
+                      ref={setFieldRef(FormNames.Floor)}
                     />
                   </FlexBox>
                 </S.Control>
@@ -634,8 +672,11 @@ export const CheckoutForm = observer(
               placeholder={t("common.first_name")}
               onChange={handleChange}
               onBlur={formik.handleBlur}
-              value={formik.values.name}
-              ref={setFieldRef("name")}
+              value={formik.values[FormNames.Name]}
+              error={
+                formik.touched[FormNames.Name] && formik.errors[FormNames.Name]
+              }
+              ref={setFieldRef(FormNames.Name)}
             />
           </S.Control>
 
@@ -647,9 +688,12 @@ export const CheckoutForm = observer(
               placeholder={t("common.phone")}
               onChange={handleChange}
               onBlur={formik.handleBlur}
-              value={formik.values.phone}
-              error={formik.touched["phone"] && formik.errors["phone"]}
-              ref={setFieldRef("phone")}
+              value={formik.values[FormNames.Phone]}
+              error={
+                formik.touched[FormNames.Phone] &&
+                formik.errors[FormNames.Phone]
+              }
+              ref={setFieldRef(FormNames.Phone)}
             />
           </S.Control>
           <S.Control>
@@ -661,8 +705,8 @@ export const CheckoutForm = observer(
               placeholder={t("checkout.form.persons")}
               onChange={handleChange}
               onBlur={formik.handleBlur}
-              value={formik.values.sticks}
-              ref={setFieldRef("sticks")}
+              value={formik.values[FormNames.Sticks]}
+              ref={setFieldRef(FormNames.Sticks)}
             />
           </S.Control>
           <S.Control>
@@ -672,8 +716,8 @@ export const CheckoutForm = observer(
               placeholder={t("checkout.form.comment")}
               onChange={handleChange}
               onBlur={formik.handleBlur}
-              value={formik.values.comment}
-              ref={setFieldRef("comment")}
+              value={formik.values[FormNames.Comment]}
+              ref={setFieldRef(FormNames.Comment)}
             />
           </S.Control>
           <S.Control>
@@ -682,8 +726,8 @@ export const CheckoutForm = observer(
               name={FormNames.PaymentMethodCode}
               items={paymentMethodOptions}
               onChange={handleChange}
-              value={formik.values.payment_method_code}
-              ref={setFieldRef("payment_method_code")}
+              value={formik.values[FormNames.PaymentMethodCode]}
+              ref={setFieldRef(FormNames.PaymentMethodCode)}
             />
           </S.Control>
           {isCashPaymentMethod && (
@@ -694,8 +738,8 @@ export const CheckoutForm = observer(
                 placeholder={t("checkout.form.change")}
                 onChange={handleChange}
                 onBlur={formik.handleBlur}
-                value={formik.values.change}
-                ref={setFieldRef("change")}
+                value={formik.values[FormNames.Change]}
+                ref={setFieldRef(FormNames.Change)}
               />
             </S.Control>
           )}
