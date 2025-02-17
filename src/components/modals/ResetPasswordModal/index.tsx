@@ -12,6 +12,10 @@ import { Button } from "~common/ui-components/Button/Button";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { useTheme } from "styled-components";
 
+const defaultErrors = {
+  email: [""],
+};
+
 export const ResetPasswordModal = NiceModal.create(
   ({ redirect_to }: { redirect_to?: string }) => {
     const modal = useModal();
@@ -27,16 +31,16 @@ export const ResetPasswordModal = NiceModal.create(
       },
     });
 
-    const [errors, setErrors] = useState<Record<string, string[]>>({
-      email: [""],
-    });
+    const [errors, setErrors] =
+      useState<Record<string, string[]>>(defaultErrors);
     const [isSent, setIsSent] = useState(false);
 
     const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
       e.preventDefault();
       const formData = new FormData(e.currentTarget);
       const email = formData.get("email") + "";
-
+      setErrors(defaultErrors);
+      setIsSent(false);
       resetPassword(email, {
         onSuccess: () => {
           setIsSent(true);
