@@ -1,5 +1,4 @@
 import { createEmojisushiAgent } from "@layerok/emojisushi-js-sdk";
-import axios, { AxiosError } from "axios";
 import { appConfig } from "~config/app";
 import Cookies from "js-cookie";
 import i18n from "~lib/react-i18next";
@@ -14,49 +13,6 @@ type IParams = {
   lang?: string;
   session_id?: string;
 };
-
-EmojisushiAgent.axiosClient.interceptors.response.use(
-  (res) => res,
-  function (e) {
-    if (!axios.isAxiosError(e)) {
-      return Promise.reject(e);
-    }
-    const error = e as AxiosError<{
-      message?: string;
-    }>;
-
-    // 406 - Token is expired
-    // 422 - Validation exception
-    const ignoredStatuses = [406, 422];
-
-    if (ignoredStatuses.includes(error.response?.status)) {
-      return Promise.reject(error);
-    }
-
-    const ignoredResponseDataMessages = [
-      "Пользователь с такими данным не найден.",
-    ];
-
-    if (ignoredResponseDataMessages.includes(error.response?.data?.message)) {
-      return Promise.reject(error);
-    }
-
-    const ignoredErrorMessages = ["Network Error", "canceled"];
-    if (ignoredErrorMessages.includes(error.message)) {
-      return Promise.reject(error);
-    }
-
-    EmojisushiAgent.log(
-      {
-        message: error.message,
-        response: error.response,
-      },
-      appConfig.version
-    );
-
-    return Promise.reject(error);
-  }
-);
 
 EmojisushiAgent.axiosClient.interceptors.request.use((config) => {
   // send session_id from cookies as parameter for each api request
