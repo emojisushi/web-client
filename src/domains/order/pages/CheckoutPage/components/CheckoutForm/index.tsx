@@ -37,6 +37,8 @@ import {
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
+import { unformat, useMask } from "@react-input/mask";
+import { composeRefs } from "~utils/ref";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -139,6 +141,12 @@ type ErrorResponse = {
   message: string;
 };
 
+const phoneMaskOptions = {
+  mask: "+38(___) ___-__-__",
+  replacement: { _: /\d/ },
+  showMask: true,
+};
+
 export const CheckoutForm = observer(
   ({
     cart,
@@ -154,6 +162,7 @@ export const CheckoutForm = observer(
     const location = useLocation();
 
     const showModal = useShowModal();
+    const phoneInputRef = useMask(phoneMaskOptions);
 
     const { mutate: clearCart } = useClearCart();
 
@@ -316,7 +325,7 @@ export const CheckoutForm = observer(
 
       try {
         const res = await EmojisushiAgent.placeOrderV2({
-          phone,
+          phone: unformat(phone, phoneMaskOptions),
           firstname,
           lastname,
           email: user ? user.email : "",
@@ -689,7 +698,7 @@ export const CheckoutForm = observer(
                 formik.touched[FormNames.Phone] &&
                 formik.errors[FormNames.Phone]
               }
-              ref={setFieldRef(FormNames.Phone)}
+              ref={composeRefs(phoneInputRef, setFieldRef(FormNames.Phone))}
             />
           </S.Control>
           <S.Control>

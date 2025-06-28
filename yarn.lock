@@ -2484,6 +2484,18 @@
     schema-utils "^3.0.0"
     source-map "^0.7.3"
 
+"@react-input/core@^2.0.2":
+  version "2.0.2"
+  resolved "https://registry.yarnpkg.com/@react-input/core/-/core-2.0.2.tgz#c7094c5ab955e740d4c34777688aff54785024a1"
+  integrity sha512-xLLBueYFbant9308uv3cIJQz5NYSixeGspjP3Nt6jogRHTcHYMRmlVFUuSzQiP8Z8/5BdnPkudRSsN0/AJ1fbw==
+
+"@react-input/mask@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@react-input/mask/-/mask-2.0.4.tgz#0a8df2694962ac10a76a329469d91f6ed01037b8"
+  integrity sha512-NOielvQSBOlGLVuEcxtkjaGneC0GJFXjC7KOF99ed9H9XSDruWnQirjht5uSbWqLeeiOup0VD2YjM+6FH+aWBg==
+  dependencies:
+    "@react-input/core" "^2.0.2"
+
 "@react-native-community/cli-clean@12.3.0":
   version "12.3.0"
   resolved "https://registry.yarnpkg.com/@react-native-community/cli-clean/-/cli-clean-12.3.0.tgz#667b32daa58b4d11d5b5ab9eb0a2e216d500c90b"

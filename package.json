@@ -11,6 +11,7 @@
     "@huse/debug": "^1.1.1",
     "@layerok/emojisushi-js-sdk": "1.0.16",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
+    "@react-input/mask": "^2.0.4",
     "@svgr/webpack": "^5.5.0",
     "@tanstack/react-query": "^4.29.19",
     "@tanstack/react-query-devtools": "^4.29.19",
