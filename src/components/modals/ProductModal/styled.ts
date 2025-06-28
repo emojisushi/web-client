@@ -10,8 +10,8 @@ const Wrapper = styled.div`
   justify-content: space-between;
   ${media.lessThan("tablet")`
     margin: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
   `};
 `;
 

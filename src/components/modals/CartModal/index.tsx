@@ -149,7 +149,7 @@ export const CartModal = NiceModal.create(() => {
 
   const itemsContainerStyles: CSSProperties = {
     minHeight: isMobile ? "auto" : 362 + "px",
-    maxHeight: isMobile ? "calc(100vh - 250px)" : finalHeight + "px",
+    maxHeight: isMobile ? "calc(100dvh - 250px)" : finalHeight + "px",
     overflowY: "auto",
   };
 

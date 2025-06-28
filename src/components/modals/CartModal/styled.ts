@@ -15,8 +15,8 @@ const Wrapper = styled.div`
 
   ${media.lessThan("tablet")`
     border-radius: 0px;
-    width: 100vw;
-    height: 100vh;
+    width: 100dvw;
+    height: 100dvh;
   `}
 
   ${media.lessThan("tablet")`
