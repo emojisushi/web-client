@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useNavigation } from "react-router-dom";
 
 import { Container, Heading } from "~components";
 import { cartQuery } from "~domains/cart/cart.query";
@@ -27,12 +27,9 @@ const CheckoutPage = () => {
 
   const { data: cart, isLoading: isCartLoading } = useQuery({
     ...cartQuery,
-    onSuccess: (res) => {
-      if (res.items.length < 1) {
-        navigate(ROUTES.CATEGORY.path);
-      }
-    },
   });
+
+  const { state } = useNavigation();
 
   const { isLoading: isLoadingCatalog } = useQuery({
     ...catalogQuery,
@@ -46,10 +43,16 @@ const CheckoutPage = () => {
   const city = (cities?.data || []).find((c) => c.slug === citySlug);
 
   useEffect(() => {
+    if (state !== "idle") {
+      // prevent below navigation from interrupting ongoing navigations
+      // fixes the bug when navigation to 'thank you' page was interrupted by navigation below
+      return;
+    }
+
     if (cart?.items && cart.items.length < 1) {
       navigate(ROUTES.CATEGORY.path);
     }
-  }, [cart]);
+  }, [cart, state]);
 
   const renderCheckoutForm = () => {
     const loading =

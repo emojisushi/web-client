@@ -22,8 +22,8 @@ import {
   ShippingMethodCodeEnum,
 } from "@layerok/emojisushi-js-sdk";
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { Cart, cartQuery } from "~domains/cart/cart.query";
-import axios, { AxiosError, AxiosResponse } from "axios";
+import { Cart } from "~domains/cart/cart.query";
+import axios, { AxiosError } from "axios";
 import { observer } from "mobx-react";
 import { ModalIDEnum } from "~common/modal.constants";
 import { ROUTES } from "~routes";
@@ -36,7 +36,6 @@ import {
   setToLocalStorage,
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
-import { useQueryClient } from "@tanstack/react-query";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 
 type TCheckoutFormProps = {
@@ -47,6 +46,7 @@ type TCheckoutFormProps = {
   paymentMethods?: IPaymentMethod[] | undefined;
   spots?: ISpot[];
   city?: ICity;
+  onRedirectToThankYouPage?: () => void;
 };
 
 // todo: mark optional fields instead of marking required fields
@@ -154,7 +154,6 @@ export const CheckoutForm = observer(
     const location = useLocation();
 
     const showModal = useShowModal();
-    const queryClient = useQueryClient();
 
     const { mutate: clearCart } = useClearCart();
 
@@ -339,16 +338,13 @@ export const CheckoutForm = observer(
           },
         });
         removeFromLocalStorage(localStorageKeys.draftOrder);
-        clearCart();
-        // todo: clear cart after you redirected user to thankyou page
-        // otherwise user will be redirected to category page
-        await queryClient.removeQueries(cartQuery.queryKey);
 
         if (res.data?.form) {
           wayforpayFormContainer.current.innerHTML = res.data.form;
           wayforpayFormContainer.current.querySelector("form").submit();
         } else {
           const order_id = res.data?.poster_order?.incoming_order_id;
+          clearCart();
           navigate(
             ROUTES.THANKYOU.buildPath(
               {},
