@@ -1,12 +1,9 @@
 export * from "./AuthModal";
-export * from "./BaseModal";
-export * from "./CartModal";
-export * from "./CloseModalIcon";
-export * from "./ContactsModal";
-export * from "./FiltersModal";
-export * from "./MobMenuModal";
 export * from "./Modal";
-export * from "./NotifyModal";
+export * from "./CartModal";
+export * from "./ContactsModal";
+export * from "./MobMenuModal";
+
 export * from "./RestaurantClosed";
-export * from "./SpotsModal";
+export * from "./LocationsModal";
 export * from "./TelegramModal";

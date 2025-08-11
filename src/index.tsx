@@ -1,20 +1,8 @@
 import * as ReactDOM from "react-dom/client";
-import "./index.css";
 import { App } from "~App";
 import reportWebVitals from "./reportWebVitals";
-import { I18nextProvider } from "react-i18next";
-import i18n from "./i18n";
-import { sessionService } from "~services/session.service";
 
-sessionService.init();
-
-const root = ReactDOM.createRoot(document.getElementById("root"));
-
-root.render(
-  <I18nextProvider i18n={i18n}>
-    <App />
-  </I18nextProvider>
-);
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 
 // If you want to start measuring performance in your app, pass a function
 // to log results (for example: reportWebVitals(console.log))

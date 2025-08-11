@@ -2,7 +2,6 @@ import * as S from "./styled";
 import { ChangeEvent, ReactNode } from "react";
 import { CheckSvg } from "../svg/CheckSvg";
 import { SvgIcon } from "../SvgIcon";
-import { If } from "~components/If";
 
 export const Checkbox = ({
   children,
@@ -21,16 +20,15 @@ export const Checkbox = ({
     <S.LabelCheck>
       <S.Checkbox type="checkbox" name={name} onChange={onChange} />
       <S.LabelCheckbox>
-        <If condition={checked}>
+        {checked && (
           <SvgIcon width={"17px"} height={"12px"}>
             <CheckSvg />
           </SvgIcon>
-        </If>
+        )}
       </S.LabelCheckbox>
       <S.Text>{children}</S.Text>
-      <If condition={!!error}>
-        <S.Error>{error}</S.Error>
-      </If>
+
+      {!!error && <S.Error>{error}</S.Error>}
     </S.LabelCheck>
   );
 };

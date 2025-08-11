@@ -1,41 +1,87 @@
-import { FlexBox, Input, ButtonDark, ButtonOutline } from "src/components";
-import {
-  ActionFunctionArgs,
-  Form,
-  redirect,
-  useActionData,
-  useLoaderData,
-  useNavigate,
-  useNavigation,
-} from "react-router-dom";
-
+import { FlexBox, Input } from "src/components";
+import { Button } from "~common/ui-components/Button/Button";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User } from "src/models";
-import { requireUser } from "~utils/loader.utils";
-import { authApi } from "~api";
 import { AxiosError } from "axios";
-
-type ActionData =
-  | {
-      errors?: Record<string, string[]>;
-    }
-  | undefined;
+import { useUser } from "~hooks/use-auth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
+import { AUTHENTICATED_USER_QUERY_KEY } from "~common/constants";
+import { IUser } from "@layerok/emojisushi-js-sdk";
+import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 
 export const EditProfilePage = () => {
-  const { user: userJson } = useLoaderData() as Awaited<
-    ReturnType<typeof loader>
-  >;
-  const user = new User(userJson);
+  const queryClient = useQueryClient();
   const { t } = useTranslation();
-  const navigation = useNavigation();
-  const actionData = useActionData() as ActionData;
   const navigate = useNavigate();
+  const { data: user } = useUser();
+  const [errors, setErrors] = useState<{
+    name?: string[];
+    surname?: string[];
+    phone?: string[];
+  }>({});
+
+  const mutation = useMutation({
+    mutationFn: ({
+      name,
+      surname,
+      phone,
+    }: {
+      name: string;
+      surname: string;
+      phone: string;
+    }) => {
+      return EmojisushiAgent.updateUser({
+        name,
+        surname,
+        phone,
+      });
+    },
+    onError: (e) => {
+      if (e instanceof AxiosError) {
+        if (e.response.status === 422) {
+          setErrors(e.response.data.errors);
+        }
+      }
+    },
+    onSuccess: (res) => {
+      queryClient.setQueryData(
+        AUTHENTICATED_USER_QUERY_KEY,
+        (oldUser: IUser) => {
+          return {
+            ...oldUser,
+            ...res.data,
+          };
+        }
+      );
+      navigate("./../");
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(AUTHENTICATED_USER_QUERY_KEY);
+    },
+  });
+
   return (
-    <Form
+    <form
       style={{
         marginTop: 20,
       }}
       method="post"
+      onSubmit={(e) => {
+        e.preventDefault();
+        setErrors({});
+
+        const formData = new FormData(e.currentTarget);
+        const name = formData.get("name");
+        const surname = formData.get("surname");
+        const phone = formData.get("phone");
+
+        mutation.mutate({
+          name: name + "",
+          surname: surname + "",
+          phone: phone + "",
+        });
+      }}
     >
       <FlexBox justifyContent={"space-between"}>
         <Input
@@ -43,14 +89,14 @@ export const EditProfilePage = () => {
           label={t("common.first_name")}
           defaultValue={user.name}
           name="name"
-          error={actionData?.errors?.name?.[0]}
+          error={errors?.name?.[0]}
         />
         <Input
           style={{ width: "calc(50% - 10px)" }}
           label={t("common.last_name")}
           defaultValue={user.surname}
           name="surname"
-          error={actionData?.errors?.surname?.[0]}
+          error={errors?.surname?.[0]}
         />
       </FlexBox>
       <FlexBox
@@ -70,7 +116,7 @@ export const EditProfilePage = () => {
           style={{ width: "calc(50% - 10px)" }}
           label={t("common.phone")}
           defaultValue={user.phone}
-          error={actionData?.errors?.phone?.[0]}
+          error={errors?.phone?.[0]}
           name="phone"
         />
       </FlexBox>
@@ -80,19 +126,26 @@ export const EditProfilePage = () => {
           marginTop: "30px",
         }}
       >
-        <ButtonOutline
-          submitting={navigation.state === "submitting"}
+        <Button
+          loading={mutation.isLoading}
           style={{
-            marginRight: "16px",
+            marginRight: 16,
           }}
         >
           {t("common.save")}
-        </ButtonOutline>
-        <ButtonDark type="button" onClick={() => navigate("./../")}>
+        </Button>
+        <Button
+          skin={"grey"}
+          style={{
+            marginLeft: 20,
+          }}
+          type="button"
+          onClick={() => navigate("./../")}
+        >
           {t("common.cancel")}
-        </ButtonDark>
+        </Button>
       </FlexBox>
-    </Form>
+    </form>
   );
 };
 
@@ -100,38 +153,3 @@ export const Component = EditProfilePage;
 Object.assign(Component, {
   displayName: "LazyEditProfilePage",
 });
-
-export const loader = async () => {
-  const user = await requireUser();
-
-  return {
-    user,
-  };
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const name = formData.get("name");
-  const surname = formData.get("surname");
-  const phone = formData.get("phone");
-  const data = {
-    name: name + "",
-    surname: surname + "",
-    phone: phone + "",
-  };
-
-  try {
-    await authApi.updateUser(data);
-  } catch (e) {
-    if (e instanceof AxiosError) {
-      if (e.response.status === 422) {
-        return {
-          errors: e.response.data.errors,
-        };
-      }
-    }
-    throw e;
-  }
-
-  return redirect("./../");
-};

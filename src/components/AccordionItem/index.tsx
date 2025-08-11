@@ -3,10 +3,10 @@ import { SvgIcon } from "../SvgIcon";
 import { FlexBox } from "../FlexBox";
 import { CaretUpSvg } from "../svg/CaretUpSvg";
 import { Collapsible } from "../Collapsible";
-import { IOrder } from "~api/types";
+import { IOrder } from "@layerok/emojisushi-js-sdk";
 import { LogoSvg } from "~components/svg/LogoSvg";
 import { useTranslation } from "react-i18next";
-import { Product } from "~models/Product";
+import { getProductMainImage } from "~domains/product/product.utils";
 
 export const AccordionItem = ({ order }: { order: IOrder }) => {
   const { t } = useTranslation();
@@ -22,17 +22,17 @@ export const AccordionItem = ({ order }: { order: IOrder }) => {
   const renderHeader = ({ opened }) => {
     return (
       <S.Header>
-        <S.Header.MobileTextContainer>
+        <S.HeaderMobileTextContainer>
           <S.MutedText>№{order.order_number}</S.MutedText>
-          <S.Pan.Props.Prop.Value>{order.updated_at}</S.Pan.Props.Prop.Value>
-        </S.Header.MobileTextContainer>
-        <S.Header.Status
+          <S.PanPropsPropValue>{order.updated_at}</S.PanPropsPropValue>
+        </S.HeaderMobileTextContainer>
+        <S.HeaderStatus
           style={{
             color: order.order_state.color,
           }}
         >
           {order.order_state.name}
-        </S.Header.Status>
+        </S.HeaderStatus>
         <SvgIcon
           width={"20px"}
           style={{
@@ -49,55 +49,55 @@ export const AccordionItem = ({ order }: { order: IOrder }) => {
   const renderPanel = ({ opened }) => {
     return (
       <S.Pan>
-        <S.Pan.Props>
-          <S.Pan.Props.ExceptStatus>
-            <S.Pan.Props.Prop>
-              <S.Pan.Props.Prop.Label>
+        <S.PanProps>
+          <S.PanPropsExceptStatus>
+            <S.PanPropsProp>
+              <S.PanPropsPropLabel>
                 <S.MutedText>{t("common.paymentMethod")}</S.MutedText>
-              </S.Pan.Props.Prop.Label>
-              <S.Pan.Props.Prop.Value>
+              </S.PanPropsPropLabel>
+              <S.PanPropsPropValue>
                 {order.payment.method.name}
-              </S.Pan.Props.Prop.Value>
-            </S.Pan.Props.Prop>
-            <S.Pan.Props.Prop>
-              <S.Pan.Props.Prop.Label>
+              </S.PanPropsPropValue>
+            </S.PanPropsProp>
+            <S.PanPropsProp>
+              <S.PanPropsPropLabel>
                 <S.MutedText>{t("common.shippingMethod")}</S.MutedText>
-              </S.Pan.Props.Prop.Label>
-              <S.Pan.Props.Prop.Value>
+              </S.PanPropsPropLabel>
+              <S.PanPropsPropValue>
                 {order.shipping.method.name}
-              </S.Pan.Props.Prop.Value>
-            </S.Pan.Props.Prop>
-            <S.Pan.Props.Prop>
-              <S.Pan.Props.Prop.Label>
+              </S.PanPropsPropValue>
+            </S.PanPropsProp>
+            <S.PanPropsProp>
+              <S.PanPropsPropLabel>
                 <S.MutedText>{t("common.shippingAddress")}</S.MutedText>
-              </S.Pan.Props.Prop.Label>
-              <S.Pan.Props.Prop.Value>
+              </S.PanPropsPropLabel>
+              <S.PanPropsPropValue>
                 {order.billing_address.lines}
-              </S.Pan.Props.Prop.Value>
-            </S.Pan.Props.Prop>
-          </S.Pan.Props.ExceptStatus>
-          <S.Pan.Status>
-            <S.Pan.Status.Label>
+              </S.PanPropsPropValue>
+            </S.PanPropsProp>
+          </S.PanPropsExceptStatus>
+          <S.PanStatus>
+            <S.PanStatusLabel>
               {t("account.orders.order.status")}
-            </S.Pan.Status.Label>
-            <S.Pan.Status.Value
+            </S.PanStatusLabel>
+            <S.PanStatusValue
               style={{
                 color: order.order_state.color,
               }}
             >
               {order.order_state.name}
-            </S.Pan.Status.Value>
-          </S.Pan.Status>
-        </S.Pan.Props>
+            </S.PanStatusValue>
+          </S.PanStatus>
+        </S.PanProps>
 
         <div>
           {order.products.map((product, index) => {
-            // todo: dont create Product instance when mapping, map Product instances instead of 'raw' products
-            const productInst = new Product(product.product);
+            const mainImage = getProductMainImage(product.product);
+
             return (
-              <S.Pan.Prod key={product.id}>
-                {productInst.mainImage ? (
-                  <S.Pan.Prod.Img src={productInst.mainImage} />
+              <S.PanProd key={product.id}>
+                {mainImage ? (
+                  <S.PanProdImg src={mainImage} />
                 ) : (
                   <SvgIcon
                     color={"white"}
@@ -108,47 +108,47 @@ export const AccordionItem = ({ order }: { order: IOrder }) => {
                   </SvgIcon>
                 )}
 
-                <S.Pan.Prod.Props>
-                  <S.Pan.Prod.Sect1>
-                    <S.Pan.Prod.Name>{product.name}</S.Pan.Prod.Name>
+                <S.PanProdProps>
+                  <S.PanProdSect1>
+                    <S.PanProdName>{product.name}</S.PanProdName>
 
-                    <S.Pan.Prod.Description>
-                      <S.Pan.Prod.Prop>
+                    <S.PanProdDescription>
+                      <S.PanProdProp>
                         {product.quantity} {t("common.pcs")}
-                      </S.Pan.Prod.Prop>
-                      <S.Pan.VerticalStick />
-                      <S.Pan.Prod.Prop>{product.weight} г</S.Pan.Prod.Prop>
-                    </S.Pan.Prod.Description>
-                  </S.Pan.Prod.Sect1>
+                      </S.PanProdProp>
+                      <S.PanVerticalStick />
+                      <S.PanProdProp>{product.weight} г</S.PanProdProp>
+                    </S.PanProdDescription>
+                  </S.PanProdSect1>
 
-                  <S.Pan.Prod.Sect2>
+                  <S.PanProdSect2>
                     <FlexBox flexDirection={"column"}>
-                      <S.Pan.Prod.Price>
+                      <S.PanProdPrice>
                         {product.item.price[order.currency.code]}
-                      </S.Pan.Prod.Price>
-                      <S.Pan.Prod.Amount>
+                      </S.PanProdPrice>
+                      <S.PanProdAmount>
                         {t("common.amount")}: {product.quantity}{" "}
                         {t("common.pcs")}
-                      </S.Pan.Prod.Amount>
+                      </S.PanProdAmount>
                     </FlexBox>
                     <div style={{ marginLeft: "39px" }}>
-                      <S.Pan.Prod.Price>
+                      <S.PanProdPrice>
                         {product.item.price[order.currency.code]}
-                      </S.Pan.Prod.Price>
+                      </S.PanProdPrice>
                     </div>
-                  </S.Pan.Prod.Sect2>
-                </S.Pan.Prod.Props>
-              </S.Pan.Prod>
+                  </S.PanProdSect2>
+                </S.PanProdProps>
+              </S.PanProd>
             );
           })}
         </div>
 
-        <S.Pan.Prod.TotalPrice>
-          <S.Pan.Prod.Price>
+        <S.PanProdTotalPrice>
+          <S.PanProdPrice>
             {t("common.to_pay")}: {order.total_post_taxes / 100}{" "}
             {order.currency.symbol}
-          </S.Pan.Prod.Price>
-        </S.Pan.Prod.TotalPrice>
+          </S.PanProdPrice>
+        </S.PanProdTotalPrice>
       </S.Pan>
     );
   };

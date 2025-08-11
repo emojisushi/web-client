@@ -67,6 +67,7 @@ if (process.env.HOST) {
 // We require that you explicitly set browsers and do not fall back to
 // browserslist defaults.
 const { checkBrowsers } = require("react-dev-utils/browsersHelper");
+const fs_simple = require("fs");
 checkBrowsers(paths.appPath, isInteractive)
   .then(() => {
     // We attempt to use the default port but if it is busy, we offer the user to
@@ -78,6 +79,12 @@ checkBrowsers(paths.appPath, isInteractive)
       // We have not found a port.
       return;
     }
+
+    console.log("Creating version.json file...");
+
+    fs_simple.writeFileSync(`${paths.appPublic}/version.json`, JSON.stringify({
+      version: process.env.REACT_APP_VERSION || '1.0.0'
+    }))
 
     const config = configFactory("development");
     const protocol = process.env.HTTPS === "true" ? "https" : "http";

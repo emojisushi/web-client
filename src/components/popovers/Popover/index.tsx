@@ -1,4 +1,4 @@
-import React, { cloneElement, ReactElement, useEffect, useState } from "react";
+import React, { PropsWithChildren, ReactElement, useEffect } from "react";
 import {
   offset,
   flip,
@@ -11,10 +11,10 @@ import {
   useId,
   useClick,
   FloatingFocusManager,
-  FloatingNode,
-  useFloatingNodeId,
+  FloatingPortal,
   Placement,
-} from "@floating-ui/react-dom-interactions";
+} from "@floating-ui/react";
+import { useTheme } from "styled-components";
 
 export const Popover = ({
   children,
@@ -22,29 +22,22 @@ export const Popover = ({
   placement,
   disable = false,
   offset: passedOffset = 0,
-  open: passedOpen = false,
-}: {
-  children: ReactElement;
+  open = false,
+  onOpenChange = () => {},
+}: PropsWithChildren<{
   disable?: boolean;
-  render: (props: {
-    labelId: string;
-    descriptionId: string;
-    close: () => void;
-  }) => ReactElement;
+  render: (props: { labelId: string; descriptionId: string }) => ReactElement;
   placement?: Placement;
   offset?: number;
   open?: boolean;
-}) => {
-  const [open, setOpen] = useState(passedOpen);
-  const nodeId = useFloatingNodeId();
-
-  const { x, y, reference, floating, strategy, refs, update, context } =
-    useFloating({
-      open: open,
-      onOpenChange: setOpen,
-      middleware: [offset(passedOffset), flip(), shift()],
-      placement,
-    });
+  onOpenChange?: (open: boolean) => void;
+}>) => {
+  const { x, y, strategy, refs, update, context } = useFloating({
+    open,
+    onOpenChange: onOpenChange,
+    middleware: [offset(passedOffset), flip(), shift()],
+    placement,
+  });
 
   const id = useId();
   const labelId = `${id}-label`;
@@ -58,47 +51,46 @@ export const Popover = ({
 
   useEffect(() => {
     if (refs.reference.current && refs.floating.current && open) {
+      // todo: polyfill ResizeObserver
       return autoUpdate(refs.reference.current, refs.floating.current, update);
     }
   }, [open, update, refs.reference, refs.floating]);
 
+  const theme = useTheme();
+
   return (
-    <FloatingNode id={nodeId}>
-      {cloneElement(
-        children,
-        getReferenceProps({ ref: reference, ...children.props })
-      )}
-      {open && !disable && (
-        <FloatingFocusManager
-          context={context}
-          modal={false}
-          order={["reference", "content"]}
-          returnFocus={false}
-        >
-          <div
-            {...getFloatingProps({
-              className: "Popover",
-              ref: floating,
-              style: {
-                position: strategy,
-                top: y ?? "",
-                left: x ?? "",
-                zIndex: 999,
-              },
-              "aria-labelledby": labelId,
-              "aria-describedby": descriptionId,
-            })}
+    <>
+      <div ref={refs.setReference}>{children}</div>
+      <FloatingPortal root={document.querySelector("body")}>
+        {open && !disable && (
+          <FloatingFocusManager
+            context={context}
+            modal={false}
+            order={["reference", "content"]}
+            returnFocus={false}
           >
-            {render({
-              labelId,
-              descriptionId,
-              close: () => {
-                setOpen(false);
-              },
-            })}
-          </div>
-        </FloatingFocusManager>
-      )}
-    </FloatingNode>
+            <div
+              {...getFloatingProps({
+                className: "Popover",
+                ref: refs.setFloating,
+                style: {
+                  position: strategy,
+                  top: y ?? "",
+                  left: x ?? "",
+                  zIndex: theme.zIndices.overModal,
+                },
+                "aria-labelledby": labelId,
+                "aria-describedby": descriptionId,
+              })}
+            >
+              {render({
+                labelId,
+                descriptionId,
+              })}
+            </div>
+          </FloatingFocusManager>
+        )}
+      </FloatingPortal>
+    </>
   );
 };

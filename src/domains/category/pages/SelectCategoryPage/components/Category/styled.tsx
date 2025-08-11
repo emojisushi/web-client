@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { prop, theme } from "styled-tools";
+import { theme } from "styled-tools";
 import media from "~common/custom-media";
 import { Link as LinkBase } from "react-router-dom";
 
@@ -28,7 +28,7 @@ const Image = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(270deg, #1c1c1c 0%, rgba(28, 28, 28, 0) 100%);
+    background: ${({ theme }) => theme.gradients.fade};
     pointer-events: none;
   }
 `;
@@ -44,19 +44,19 @@ const Item = styled.li`
 const Link = styled(LinkBase)`
   padding-left: 20px;
   padding-right: 15px;
-  background: #1c1c1c;
-  border-radius: 10px;
+  background: ${({ theme }) => theme.colors.canvas.inset2};
+  border-radius: ${({ theme }) => theme.borderRadius.smooth};
 
   transition: 0.3s;
 
   display: flex;
   align-items: center;
 
-  border: 1px solid #1c1c1c;
+  border: 1px solid ${({ theme }) => theme.colors.canvas.inset2};
 
   gap: 34px;
 
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
   text-decoration: none;
   position: relative;
 
@@ -72,11 +72,11 @@ const Link = styled(LinkBase)`
   }
 
   &:hover {
-    color: ${theme("link.active")};
+    color: ${theme("colors.brand")};
   }
   &:active {
-    border-color: ${theme("link.active")};
-    color: ${theme("link.active")};
+    border-color: ${theme("colors.brand")};
+    color: ${theme("colors.brand")};
   }
 
   ${media.lessThan("mobile")`

@@ -4,13 +4,16 @@ import * as S from "./styled";
 import { SvgButton } from "~components/SvgButton";
 import { SvgIcon } from "~components/SvgIcon";
 import { InstagramSvg, TelegramSvg } from "~components/svg";
-import { TelegramModal } from "~components/modals";
+import { ModalIDEnum } from "~common/modal.constants";
+import { useShowModal } from "~modal";
+
 type SocialsProps = {
   loading?: boolean;
 };
 
 export const Socials = ({ loading = false }: SocialsProps) => {
   const { t } = useTranslation();
+  const showModal = useShowModal();
   return (
     <>
       <S.Text>
@@ -34,13 +37,15 @@ export const Socials = ({ loading = false }: SocialsProps) => {
         {loading ? (
           <Skeleton width={40} height={40} />
         ) : (
-          <TelegramModal>
-            <SvgButton>
-              <SvgIcon color={"black"}>
-                <TelegramSvg />
-              </SvgIcon>
-            </SvgButton>
-          </TelegramModal>
+          <SvgButton
+            onClick={() => {
+              showModal(ModalIDEnum.TelegramModal);
+            }}
+          >
+            <SvgIcon color={"black"}>
+              <TelegramSvg />
+            </SvgIcon>
+          </SvgButton>
         )}
       </S.SvgContainer>
     </>

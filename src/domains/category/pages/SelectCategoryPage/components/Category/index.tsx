@@ -1,8 +1,8 @@
 import Skeleton from "react-loading-skeleton";
-import { ICategory } from "~api/types";
+import { ICategory } from "@layerok/emojisushi-js-sdk";
 import { SvgIcon, LogoSvg } from "~components";
 import * as S from "./styled";
-import { useParams } from "react-router-dom";
+import { ROUTES } from "~routes";
 
 const Image = ({ category }: { category?: ICategory }) => {
   const imageElement = category?.image?.path ? (
@@ -16,15 +16,23 @@ const Image = ({ category }: { category?: ICategory }) => {
 };
 
 export const Category = ({ category }: { category?: ICategory }) => {
-  const { lang, spotSlug, citySlug } = useParams();
-  const to =
-    "/" + [lang, citySlug, spotSlug, "category", category?.slug].join("/");
-
   return (
     <S.Item>
-      <S.Link to={category ? to : undefined}>
+      <S.Link
+        to={
+          category
+            ? ROUTES.CATEGORY.SHOW.buildPath({
+                categorySlug: category.slug,
+              })
+            : undefined
+        }
+      >
         <S.Image>
-          {category ? <Image category={category} /> : <Skeleton />}
+          {category ? (
+            <Image category={category} />
+          ) : (
+            <Skeleton width={80} height={80} />
+          )}
         </S.Image>
         <span>{category?.name ?? <Skeleton />}</span>
       </S.Link>

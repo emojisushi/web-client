@@ -1,78 +1,86 @@
 import * as S from "./styled";
-import {
-  ButtonOutline,
-  HeartSvg,
-  CloseSvg,
-  Input,
-  SvgIcon,
-  SpinnerSvg,
-} from "~components";
-import { authApi } from "~api";
-import { IAddress, IUser } from "~api/types";
+import { HeartSvg, CloseSvg, Input, SvgIcon } from "~components";
+import { IAddress, IUser } from "@layerok/emojisushi-js-sdk";
 import { useTranslation } from "react-i18next";
-import {
-  ActionFunctionArgs,
-  Form,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-} from "react-router-dom";
-import { User } from "~models";
-import { requireUser } from "~utils/loader.utils";
-import { useRef } from "react";
+import { Form } from "react-router-dom";
+import { useRef, useState } from "react";
 import { AxiosError } from "axios";
+import { useUser } from "~hooks/use-auth";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { AUTHENTICATED_USER_QUERY_KEY } from "~common/constants";
+import { arrImmutableDeleteAt } from "~utils/arr.utils";
+import { useTheme } from "styled-components";
+import { Button } from "~common/ui-components/Button/Button";
+import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 
-type ActionData = {
-  errors: {
-    lines: string[];
-  };
-};
+const Address = ({ address, user }: { address: IAddress; user: IUser }) => {
+  const isDefault = user.customer.default_shipping_address_id === address.id;
+  const queryClient = useQueryClient();
 
-type LoaderData = {
-  user: IUser;
-};
-
-const Address = ({ address }: { address: IAddress }) => {
-  const { user: userJson } = useLoaderData() as LoaderData;
-  const user = new User(userJson);
-  const customer = user.customer;
-  const submit = useSubmit();
-  const navigation = useNavigation();
-
-  const isDefault = customer.isDefaultShippingAddress(address);
-
-  const makeAddressDefault = () => {
-    if (!isDefault) {
-      const formData = new FormData();
-      formData.append("type", "default");
-      formData.append("id", address.id + "");
-
-      submit(formData, {
-        method: "post",
+  const makeAddressDefaultMutation = useMutation({
+    mutationFn: (id: number) => {
+      return EmojisushiAgent.makeAddressDefault({
+        id,
       });
-    }
-  };
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(AUTHENTICATED_USER_QUERY_KEY);
+    },
+    onMutate: () => {
+      queryClient.cancelQueries(AUTHENTICATED_USER_QUERY_KEY);
+      queryClient.setQueryData(
+        AUTHENTICATED_USER_QUERY_KEY,
+        (oldUser: IUser) => {
+          return {
+            ...oldUser,
+            customer: {
+              ...oldUser.customer,
+              default_shipping_address_id: address.id,
+            },
+          };
+        }
+      );
+    },
+  });
 
-  const deleteAddress = () => {
-    const formData = new FormData();
-    formData.append("type", "delete");
-    formData.append("id", address.id + "");
+  const deleteAddressMutation = useMutation({
+    mutationFn: (id: number) => {
+      return EmojisushiAgent.deleteAddress({
+        id,
+      });
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(AUTHENTICATED_USER_QUERY_KEY);
+    },
+    onMutate: () => {
+      queryClient.cancelQueries(AUTHENTICATED_USER_QUERY_KEY);
+      queryClient.setQueryData(
+        AUTHENTICATED_USER_QUERY_KEY,
+        (oldUser: IUser) => {
+          const deleteAddress = oldUser.customer.addresses.find(
+            (a) => a.id === address.id
+          );
+          if (deleteAddress) {
+            const index = oldUser.customer.addresses.indexOf(deleteAddress);
+            const optimisticAddresses = arrImmutableDeleteAt(
+              oldUser.customer.addresses,
+              index
+            );
+            return {
+              ...oldUser,
+              customer: {
+                ...oldUser.customer,
+                addresses: optimisticAddresses,
+              },
+            };
+          }
+          return oldUser;
+        }
+      );
+    },
+  });
 
-    submit(formData, {
-      method: "post",
-    });
-  };
-
-  const deleting =
-    navigation.formData?.get("type") === "delete" &&
-    ["submitting", "loading"].includes(navigation.state) &&
-    +navigation.formData?.get("id") === address.id;
-
-  const makingDefault =
-    navigation.formData?.get("type") === "default" &&
-    ["submitting", "loading"].includes(navigation.state) &&
-    +navigation.formData?.get("id") === address.id;
+  const theme = useTheme();
 
   return (
     <S.AddressWrapper>
@@ -83,90 +91,140 @@ const Address = ({ address }: { address: IAddress }) => {
         width={"350px"}
       />
       <S.IconWrapper>
-        {deleting || makingDefault ? (
-          <SvgIcon
-            style={{ marginLeft: "10px" }}
-            width={"25px"}
-            color={"white"}
-          >
-            <SpinnerSvg />
-          </SvgIcon>
-        ) : (
-          <>
-            <SvgIcon
-              clickable={true}
-              width={"25px"}
-              color={isDefault ? "#FFE600" : "white"}
-              hoverColor={"#FFE600"}
-              style={{ marginLeft: "10px" }}
-              onClick={makeAddressDefault}
-            >
-              <HeartSvg />
-            </SvgIcon>
-            <SvgIcon
-              width={"25px"}
-              clickable={true}
-              hoverColor={"#CD3838;"}
-              style={{ marginLeft: "10px" }}
-              onClick={deleteAddress}
-            >
-              <CloseSvg />
-            </SvgIcon>
-          </>
-        )}
+        <SvgIcon
+          clickable={true}
+          width={"25px"}
+          color={isDefault ? theme.colors.brand : "white"}
+          hoverColor={theme.colors.brand}
+          style={{ marginLeft: "10px" }}
+          onClick={() => {
+            if (!isDefault) {
+              makeAddressDefaultMutation.mutate(address.id);
+            }
+          }}
+        >
+          <HeartSvg />
+        </SvgIcon>
+        <SvgIcon
+          width={"25px"}
+          clickable={true}
+          hoverColor={theme.colors.danger.canvas}
+          style={{ marginLeft: "10px" }}
+          onClick={() => {
+            deleteAddressMutation.mutate(address.id);
+          }}
+        >
+          <CloseSvg />
+        </SvgIcon>
       </S.IconWrapper>
     </S.AddressWrapper>
   );
 };
 
 export const SavedAddressesPage = () => {
-  const { user: userJson } = useLoaderData() as any;
-  const user = new User(userJson);
-  const customer = user.customer;
   const { t } = useTranslation();
-
-  const navigation = useNavigation();
-
-  const isAddingAddress =
-    navigation.formData?.get("type") === "add" &&
-    ["loading", "submitting"].includes(navigation.state);
+  const queryClient = useQueryClient();
 
   const inputRef = useRef(null);
 
-  const actionData = useActionData() as ActionData;
+  const [errors, setErrors] = useState<{
+    name?: string[];
+    lines?: string[];
+    zip?: string[];
+    city?: string[];
+    two_letters_country_code?: string[];
+  }>();
+
+  const { data: user } = useUser();
+
+  const addMutation = useMutation({
+    mutationFn: (data: {
+      name: string;
+      lines: string;
+      zip: string;
+      city: string;
+      two_letters_country_code: string;
+    }) => {
+      return EmojisushiAgent.addAddress(data);
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(AUTHENTICATED_USER_QUERY_KEY);
+    },
+    onSuccess: (res) => {
+      queryClient.setQueryData(
+        AUTHENTICATED_USER_QUERY_KEY,
+        (oldUser: IUser) => {
+          return {
+            ...oldUser,
+            customer: {
+              ...oldUser.customer,
+              addresses: [...oldUser.customer.addresses, res.data],
+            },
+          };
+        }
+      );
+    },
+    onError: (e) => {
+      if (e instanceof AxiosError && e.response.status === 422) {
+        setErrors(e.response.data?.errors || {});
+      }
+    },
+  });
 
   return (
     <>
-      {customer.addresses.map((address) => {
-        return <Address key={address.id} address={address} />;
+      {user.customer.addresses.map((address) => {
+        return <Address user={user} key={address.id} address={address} />;
       })}
 
       <Form
-        onSubmit={() => {
-          setTimeout(() => {
-            inputRef.current.value = "";
+        onSubmit={(e) => {
+          e.preventDefault();
+          const formData = new FormData(e.currentTarget);
+          const name = formData.get("name") + "";
+          const lines = formData.get("lines") + "";
+          const zip = formData.get("zip") + "";
+          const city = formData.get("city") + "";
+          const two_letters_country_code =
+            formData.get("two_letters_country_code") + "";
+
+          const data = {
+            name,
+            lines,
+            zip,
+            city,
+            two_letters_country_code,
+          };
+
+          addMutation.mutate(data, {
+            onSuccess: () => {
+              inputRef.current.value = "";
+            },
           });
         }}
         method="post"
       >
-        <input name="name" value={user.fullName} type="hidden" />
+        <input
+          name="name"
+          value={user.name + " " + user.surname}
+          type="hidden"
+        />
         <input name="zip" value="65125" type="hidden" />
         <input name="city" value="Одеса" type="hidden" />
         <input name="two_letters_country_code" value="UA" type="hidden" />
-        <input name="type" value="add" type="hidden" />
         <S.AddressWrapper>
           <Input
             ref={inputRef}
             placeholder={t("account.addresses.typeAddress")}
-            error={actionData?.errors?.lines[0]}
+            error={errors?.lines[0]}
             width={"350px"}
             name="lines"
           />
         </S.AddressWrapper>
         <S.ButtonWrapper>
-          <ButtonOutline submitting={isAddingAddress} type="submit" width={""}>
+          <Button loading={addMutation.isLoading} type="submit">
             {t("account.addresses.addAddress")}
-          </ButtonOutline>
+          </Button>
         </S.ButtonWrapper>
       </Form>
     </>
@@ -174,56 +232,7 @@ export const SavedAddressesPage = () => {
 };
 
 export const Component = SavedAddressesPage;
+
 Object.assign(Component, {
   displayName: "LazySavedAddressesPage",
 });
-
-export const loader = async () => {
-  // todo: user is fetched multiple type, fix this
-  const user = await requireUser();
-
-  return {
-    user,
-  };
-};
-
-export const action = async ({ request }: ActionFunctionArgs) => {
-  const formData = await request.formData();
-  const type = formData.get("type");
-
-  try {
-    if (type === "add") {
-      const name = formData.get("name") + "";
-      const lines = formData.get("lines") + "";
-      const zip = formData.get("zip") + "";
-      const city = formData.get("city") + "";
-      const two_letters_country_code =
-        formData.get("two_letters_country_code") + "";
-
-      const data = {
-        name,
-        lines,
-        zip,
-        city,
-        two_letters_country_code,
-      };
-
-      await authApi.addAddress(data);
-    } else if (type === "default") {
-      const id = +formData.get("id");
-      await authApi.makeAddressDefault(id);
-    } else if (type === "delete") {
-      const id = +formData.get("id");
-      await authApi.deleteAddress(id);
-    }
-  } catch (e) {
-    if (e instanceof AxiosError && e.response.status === 422) {
-      return {
-        errors: e.response.data?.errors || {},
-      };
-    }
-    throw e;
-  }
-
-  return null;
-};

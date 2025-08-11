@@ -28,14 +28,14 @@ const MapWrapper = styled.div`
   `}
 `;
 
-Locations.Container = styled.div`
+const LocationsContainer = styled.div`
   margin: 0 auto;
   max-width: calc(598px + 24px);
   width: 100%;
   padding: 0 12px;
 `;
 
-Locations.Head = styled.div`
+const LocationsHead = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -49,7 +49,7 @@ Locations.Head = styled.div`
   `}
 `;
 
-Locations.Label = styled.div`
+const LocationsLabel = styled.div`
   display: flex;
   align-items: center;
   gap: 10px;
@@ -57,7 +57,7 @@ Locations.Label = styled.div`
   font-size: 18px;
   line-height: 22px;
   text-transform: uppercase;
-  color: #fff;
+  color: ${({ theme }) => theme.colors.fg.default};
 
   ${media.lessThan("mobile")`
     font-size: 1rem;
@@ -65,10 +65,18 @@ Locations.Label = styled.div`
   `}
 `;
 
-Locations.Body = styled.div`
+const LocationsBody = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
 `;
 
-export { Locations, LogoWrapper, MapWrapper };
+export {
+  Locations,
+  LocationsBody,
+  LocationsHead,
+  LocationsLabel,
+  LocationsContainer,
+  LogoWrapper,
+  MapWrapper,
+};

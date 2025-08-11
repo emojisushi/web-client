@@ -1,289 +1,149 @@
 import * as S from "./styled";
-import { cloneElement, useState } from "react";
+import { FormEventHandler, useState } from "react";
 import {
   PasswordInput,
-  Checkbox,
-  Button,
   Input,
   FlexBox,
-  If,
   Modal,
+  ModalContent,
+  ModalCloseButton,
 } from "~components";
-import { useBreakpoint2 } from "~common/hooks";
-import { observer } from "mobx-react";
-import { useFetcher, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useLogin } from "~hooks/use-auth";
+import axios, { AxiosError } from "axios";
+import { cartQuery } from "~domains/cart/cart.query";
 
-export const AuthModal = ({ children, redirect_to }) => {
-  // todo: don't use it
-  const { isMobile } = useBreakpoint2();
+import NiceModal from "@ebay/nice-modal-react";
+import { ROUTES } from "~routes";
+import { useModal } from "~modal";
+import { ModalIDEnum } from "~common/modal.constants";
+import { TextButton } from "~common/ui-components/TextButton";
+import { Button } from "~common/ui-components/Button/Button";
+import { useQueryClient } from "@tanstack/react-query";
+import { catalogQuery } from "~domains/catalog/catalog.query";
 
-  const [showPasswordRecovery, setShowPasswordRecovery] = useState();
-  const [showSignUp, setShowSignUp] = useState(false);
-  const showLoginForm = isMobile
-    ? !showPasswordRecovery && !showSignUp
-    : !showPasswordRecovery;
-  const showSignUpForm = !isMobile || showSignUp;
+export const AuthModal = NiceModal.create(
+  ({ redirect_to }: { redirect_to?: string }) => {
+    const modal = useModal();
+    const { t } = useTranslation();
+    const queryClient = useQueryClient();
 
-  return (
-    <Modal
-      width={"auto"}
-      render={({ close }) => (
-        <S.Wrapper>
-          <If condition={showLoginForm}>
-            <LoginForm
-              redirect_to={redirect_to}
-              close={close}
-              setShowSignUp={setShowSignUp}
-              setShowPasswordRecovery={setShowPasswordRecovery}
-            />
-          </If>
-          <If condition={showPasswordRecovery}>
-            <PasswordRecoveryForm
-              setShowPasswordRecovery={setShowPasswordRecovery}
-            />
-          </If>
+    const login = useLogin();
+    const navigate = useNavigate();
+    const [errors, setErrors] = useState<{
+      email?: string[];
+      password?: string[];
+    }>({});
 
-          <S.VerticalBar />
+    const closeModal = () => {
+      modal.remove();
+    };
 
-          <If condition={showSignUpForm}>
-            <SignUpForm setShowSignUp={setShowSignUp} />
-          </If>
-        </S.Wrapper>
-      )}
-    >
-      {cloneElement(children)}
-    </Modal>
-  );
-};
+    const handleSubmit: FormEventHandler<HTMLFormElement> = (e) => {
+      e.preventDefault();
+      // TODO: use formik
+      const formData = new FormData(e.currentTarget);
+      const email = formData.get("email") as string | null;
+      const password = formData.get("password") as string | null;
+      setErrors({});
+      login.mutate(
+        {
+          email,
+          password,
+        },
+        {
+          onSuccess: () => {
+            queryClient.invalidateQueries(catalogQuery.queryKey);
+            queryClient.invalidateQueries(cartQuery.queryKey);
+            navigate(redirect_to || ROUTES.ACCOUNT.PROFILE.path);
+            closeModal();
+          },
+          onError: (err) => {
+            if (!axios.isAxiosError(err)) {
+              return;
+            }
+            const error = err as AxiosError<{
+              message: string;
+              errors?: Record<string, string[]>;
+            }>;
+            const errors = error.response?.data?.errors;
+            const message = error.response?.data?.message;
+            if (errors) {
+              setErrors(errors);
+            } else if (message) {
+              setErrors({
+                email: [error.response.data.message],
+              });
+            }
+          },
+        }
+      );
+    };
 
-const SignUpForm = ({ setShowSignUp }) => {
-  const { t } = useTranslation();
-  const { lang, spotSlug, citySlug } = useParams();
-  const fetcher = useFetcher<
-    | {
-        errors: Record<string, string[]>;
-      }
-    | undefined
-  >();
+    const openSignupModal = (e) => {
+      e.preventDefault();
+      NiceModal.show(ModalIDEnum.RegisterModal);
+      NiceModal.hide(ModalIDEnum.AuthModal);
+    };
 
-  const [checked, setChecked] = useState(false);
+    const openResetPasswordModal = (e) => {
+      e.preventDefault();
+      NiceModal.hide(ModalIDEnum.AuthModal);
+      NiceModal.show(ModalIDEnum.ResetPasswordModal);
+    };
 
-  const actionData = fetcher.data;
+    return (
+      <Modal open={modal.visible} onClose={closeModal}>
+        <ModalContent>
+          <ModalCloseButton />
+          <S.Wrapper>
+            <S.Form onSubmit={handleSubmit}>
+              <S.Title>{t("authModal.login.title")}</S.Title>
+              <Input
+                label={t("common.email")}
+                name={"email"}
+                error={errors?.email?.[0]}
+                light={true}
+              />
 
-  return (
-    <S.SignUpForm
-      onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        formData.append("type", "register");
+              <PasswordInput
+                style={{
+                  marginTop: 20,
+                }}
+                label={t("common.password")}
+                name={"password"}
+                error={errors?.password?.[0]}
+                light={true}
+              />
 
-        fetcher.submit(formData, {
-          method: "post",
-          action: "/" + [lang, citySlug, spotSlug].join("/"),
-        });
-      }}
-    >
-      <S.Title>{t("authModal.registration.title")}</S.Title>
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.first_name")}</S.InputLabel>
-        <Input name="name" error={actionData?.errors?.name?.[0]} light={true} />
-      </S.InputWrapper>
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.last_name")}</S.InputLabel>
-        <Input
-          name="surname"
-          error={actionData?.errors?.surname?.[0]}
-          light={true}
-        />
-      </S.InputWrapper>
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.email")}</S.InputLabel>
-        <Input
-          name="email"
-          error={actionData?.errors?.email?.[0]}
-          light={true}
-        />
-      </S.InputWrapper>
+              <FlexBox justifyContent={"flex-end"}>
+                <TextButton
+                  style={{ paddingTop: "10px" }}
+                  onClick={openResetPasswordModal}
+                >
+                  {t("common.forgotPassword")}
+                </TextButton>
+              </FlexBox>
 
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.password")}</S.InputLabel>
-        <PasswordInput
-          name="password"
-          error={actionData?.errors?.password?.[0]}
-          light={true}
-        />
-      </S.InputWrapper>
-      <S.CheckboxWrapper>
-        <Checkbox
-          checked={checked}
-          error={actionData?.errors?.agree?.[0]}
-          onChange={(e) => {
-            setChecked(e.target.checked);
-          }}
-          name="agree"
-        >
-          {t("common.privacyPolicyAgreed")}
-        </Checkbox>
-      </S.CheckboxWrapper>
+              <Button
+                loading={login.isLoading}
+                type="submit"
+                style={{ marginTop: "20px", display: "flex" }}
+              >
+                {t("common.login")}
+              </Button>
 
-      <FlexBox>
-        <FlexBox flexDirection={"column"} alignItems={"center"}>
-          <Button submitting={fetcher.state === "submitting"}>
-            {t("common.registration")}
-          </Button>
-
-          <S.AuthButton
-            style={{ paddingTop: "10px" }}
-            onClick={(e) => {
-              e.preventDefault();
-              setShowSignUp(false);
-            }}
-          >
-            {t("common.enter")}
-          </S.AuthButton>
-        </FlexBox>
-      </FlexBox>
-    </S.SignUpForm>
-  );
-};
-
-const PasswordRecoveryForm = observer(({ setShowPasswordRecovery }) => {
-  const { t } = useTranslation();
-
-  const { lang, citySlug, spotSlug } = useParams();
-  const fetcher = useFetcher<
-    | {
-        errors?: Record<string, string[]>;
-        isSent?: boolean;
-      }
-    | undefined
-  >();
-  return (
-    <S.LoginForm
-      onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        formData.append("type", "reset-password");
-        fetcher.submit(formData, {
-          method: "post",
-          action: "/" + [lang, citySlug, spotSlug].join("/"),
-        });
-      }}
-    >
-      <S.Title>{t("authModal.forgetPassword.title")}</S.Title>
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.email")}</S.InputLabel>
-        <Input
-          name={"email"}
-          error={fetcher.data?.errors?.email?.[0]}
-          light={true}
-        />
-      </S.InputWrapper>
-      <If condition={fetcher.data?.isSent}>
-        <S.ForgotPassText
-          style={{
-            color: "green",
-          }}
-        >
-          {t("authModal.forgetPassword.mailSent")}
-        </S.ForgotPassText>
-      </If>
-      <If condition={!fetcher.data?.isSent}>
-        <S.ForgotPassText>
-          {t("authModal.forgetPassword.typeEmail")}
-        </S.ForgotPassText>
-      </If>
-      <S.BtnGroup>
-        <S.ResetPasswordButton
-          onClick={(e) => {
-            setShowPasswordRecovery(false);
-          }}
-        >
-          {t("common.back")}
-        </S.ResetPasswordButton>
-        <Button submitting={fetcher.state === "submitting"} type="submit">
-          {t("common.recover")}
-        </Button>
-      </S.BtnGroup>
-    </S.LoginForm>
-  );
-});
-
-const LoginForm = ({
-  setShowSignUp,
-  setShowPasswordRecovery,
-  close,
-  redirect_to,
-}) => {
-  const { t } = useTranslation();
-
-  const { lang, spotSlug, citySlug } = useParams();
-  const fetcher = useFetcher<
-    | {
-        errors: Record<string, string[]>;
-      }
-    | undefined
-  >();
-
-  return (
-    <S.LoginForm
-      onSubmit={(e) => {
-        e.preventDefault();
-        const formData = new FormData(e.currentTarget);
-        formData.append("type", "login");
-        formData.append("redirect_to", redirect_to);
-        fetcher.submit(formData, {
-          method: "post",
-          action: "/" + [lang, citySlug, spotSlug].join("/"),
-        });
-      }}
-    >
-      <S.Title>{t("authModal.login.title")}</S.Title>
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.email")}</S.InputLabel>
-        <Input
-          name={"email"}
-          error={fetcher?.data?.errors?.email?.[0]}
-          light={true}
-        />
-      </S.InputWrapper>
-      <S.InputWrapper>
-        <S.InputLabel>{t("common.password")}</S.InputLabel>
-        <PasswordInput
-          name={"password"}
-          error={fetcher?.data?.errors?.password?.[0]}
-          light={true}
-        />
-      </S.InputWrapper>
-      <FlexBox justifyContent={"flex-end"}>
-        <S.ResetPasswordButton
-          style={{ paddingTop: "10px" }}
-          onClick={(e) => {
-            setShowPasswordRecovery(true);
-          }}
-        >
-          {t("common.forgotPassword")}
-        </S.ResetPasswordButton>
-      </FlexBox>
-
-      <Button
-        submitting={fetcher.state === "submitting"}
-        type="submit"
-        style={{ marginTop: "20px", display: "flex" }}
-      >
-        {t("common.login")}
-      </Button>
-
-      <S.AuthButton
-        style={{ paddingTop: "10px" }}
-        onClick={(e) => {
-          e.preventDefault();
-          setShowSignUp(true);
-        }}
-      >
-        {t("common.registration")}
-      </S.AuthButton>
-    </S.LoginForm>
-  );
-};
+              <TextButton
+                style={{ paddingTop: "10px" }}
+                onClick={openSignupModal}
+              >
+                {t("common.registration")}
+              </TextButton>
+            </S.Form>
+          </S.Wrapper>
+        </ModalContent>
+      </Modal>
+    );
+  }
+);

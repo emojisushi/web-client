@@ -1,22 +1,32 @@
 import styled from "styled-components";
 import { prop } from "styled-tools";
-import media from "../../../common/custom-media";
+import media from "~common/custom-media";
 
 const Wrapper = styled.div`
-  position: relative;
   width: 420px;
-  background: #1c1c1c;
-  box-shadow: 0 4px 15px rgba(28, 28, 28, 0.3);
-  border-radius: 15px 0 0 15px;
+  position: relative;
+  background: ${({ theme }) => theme.colors.canvas.inset2};
+  box-shadow: ${({ theme }) => theme.shadows.canvasInset2Shadow};
+  border-bottom-left-radius: ${({ theme }) => theme.borderRadius.default};
 
-  ${media.lessThan("tablet")`
-    border-radius: 15px 15px 0 0;
-    width: 375px;
+  ${media.greaterThan("tablet")`
+    min-height: 500px;
   `}
 
-  padding: 40px 20px 31px 20px;
+  ${media.lessThan("tablet")`
+    border-radius: 0px;
+    width: 100dvw;
+    height: 100dvh;
+  `}
+
+  ${media.lessThan("tablet")`
+    padding: 72px 20px 31px 20px;
+  `}
+
+  padding: 31px 20px 31px 20px;
   flex-direction: column;
   justify-content: space-between;
+  display: flex;
 `;
 
 const Title = styled.div`
@@ -29,17 +39,18 @@ const Title = styled.div`
 const CloseIcon = styled.div`
   position: absolute;
   left: -45px;
-  top: 33px;
+  top: 31px;
   cursor: pointer;
 
   ${media.lessThan("tablet")`
+    top: 20px;
     right: 20px;
     left: auto;
+    
   `}
 `;
 
 const Items = styled.div`
-  margin-top: 28px;
   display: flex;
   flex-direction: column;
 `;
@@ -49,18 +60,20 @@ const Item = styled.div`
   display: flex;
   padding-bottom: 20px;
   margin-top: 20px;
-  border-bottom: 1px solid #4a4a4a;
+  border-bottom: 1px solid ${({ theme }) => theme.colors.grey[450]};
 
   &:first-child {
     margin-top: 0;
   }
 `;
 
-Item.Img = styled.div`
+const ItemImg = styled.div<{
+  src: string;
+}>`
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100px;
+  width: 64px;
   height: 64px;
   background-image: url("${prop("src")}");
   background-size: contain;
@@ -69,13 +82,12 @@ Item.Img = styled.div`
   flex-shrink: 0;
 `;
 
-Item.Info = styled.div`
+const ItemInfo = styled.div`
   margin-left: 10px;
   width: 100%;
-  padding-right: 20px;
 `;
 
-Item.Name = styled.div`
+const ItemName = styled.div`
   font-size: 15px;
   line-height: 18px;
   overflow: hidden;
@@ -88,20 +100,19 @@ Item.Name = styled.div`
   `}
 `;
 
-Item.Counter = styled.div`
+const ItemCounter = styled.div`
   margin-left: 20px;
   margin-top: 21px;
 `;
 
-Item.RemoveIcon = styled.div`
+const ItemRemoveIcon = styled.div`
   position: absolute;
-  right: 20px;
+  right: 0;
   top: 0;
 `;
 
 const Footer = styled.div`
   margin-top: 30px;
-  padding-right: 20px;
 `;
 
 const Sum = styled.div`
@@ -115,11 +126,14 @@ const Button = styled.div`
 `;
 
 const EmptyCartImgContainer = styled.div`
+  position: absolute;
+  inset: 0;
+  top: 50%;
+  transform-origin: center;
+  transform: translateY(-50%);
   display: flex;
-  align-items: center;
   flex-direction: column;
-  position: relative;
-  top: 200px;
+  align-items: center;
 `;
 
 export {
@@ -128,6 +142,11 @@ export {
   CloseIcon,
   Items,
   Item,
+  ItemImg,
+  ItemName,
+  ItemRemoveIcon,
+  ItemInfo,
+  ItemCounter,
   Footer,
   Sum,
   Button,

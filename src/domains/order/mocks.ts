@@ -1,19 +1,20 @@
-export const dummyCartProduct = {
+import { ICartProduct, IProduct } from "@layerok/emojisushi-js-sdk";
+
+export const dummyCartProduct: ICartProduct = {
   id: 821,
-  cart_id: 229,
   product_id: 128,
   variant_id: null,
   quantity: 1,
-  weight: 555,
   price: {
     UAH: 15900,
   },
-  created_at: "2023-05-06T11:21:35.000000Z",
-  updated_at: "2023-05-06T11:21:35.000000Z",
   price_formatted: null,
-  hashid: "9jWLOEpB",
   variant: null,
   product: {
+    is_favorite_: false,
+    categories: [],
+    hide_products_in_spot: [],
+    variants: [],
     id: 128,
     brand_id: null,
     user_defined_id: "260",
@@ -40,7 +41,7 @@ export const dummyCartProduct = {
     allow_out_of_stock_purchases: true,
     stackable: true,
     shippable: true,
-    price_includes_tax: true,
+    price_includes: true,
     group_by_property_id: null,
     published: true,
     sales_count: 0,

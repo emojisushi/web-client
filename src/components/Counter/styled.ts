@@ -1,7 +1,9 @@
 import styled from "styled-components";
 import { prop } from "styled-tools";
 
-const Count = styled.div`
+const Count = styled.div<{
+  delimiterColor: string;
+}>`
   font-size: 20px;
   line-height: 24px;
   width: 38px;

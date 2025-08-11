@@ -1,52 +1,54 @@
 import * as S from "./styled";
-import { ButtonDark } from "src/components";
-import { useLoaderData, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { User } from "src/models";
-import { requireUser } from "~utils/loader.utils";
+import { useUser } from "~hooks/use-auth";
+import { ROUTES } from "~routes";
+import { Button } from "~common/ui-components/Button/Button";
 
 export const ProfilePage = () => {
-  const { user: userJson } = useLoaderData() as Awaited<
-    ReturnType<typeof loader>
-  >;
-  const user = new User(userJson);
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  const { data: user } = useUser();
 
   return (
     <S.Properties>
       <S.Property>
-        <S.Property.Label>{t("common.first_name")}</S.Property.Label>
-        <S.Property.Value>{user.fullName}</S.Property.Value>
+        <S.PropertyLabel>{t("common.first_name")}</S.PropertyLabel>
+        <S.PropertyValue>
+          {user.name} {user.surname}
+        </S.PropertyValue>
       </S.Property>
 
       <S.Property>
-        <S.Property.Label>{t("common.email")}</S.Property.Label>
-        <S.Property.Value>{user.email}</S.Property.Value>
+        <S.PropertyLabel>{t("common.email")}</S.PropertyLabel>
+        <S.PropertyValue>{user.email}</S.PropertyValue>
       </S.Property>
       <S.Property>
-        <S.Property.Label>{t("common.phone")}</S.Property.Label>
-        <S.Property.Value>{user.phone}</S.Property.Value>
+        <S.PropertyLabel>{t("common.phone")}</S.PropertyLabel>
+        <S.PropertyValue>{user.phone}</S.PropertyValue>
       </S.Property>
 
       <S.BtnGroup>
-        <ButtonDark
+        <Button
+          skin={"grey"}
           onClick={() => {
-            navigate("edit");
+            navigate(ROUTES.ACCOUNT.PROFILE.EDIT.path);
           }}
-          minWidth={"309px"}
+          style={{ minWidth: "309px" }}
         >
           {t("account.profile.editProfile")}
-        </ButtonDark>
+        </Button>
         <S.BtnWrapper>
-          <ButtonDark
+          <Button
+            skin={"grey"}
             onClick={() => {
-              navigate("../recover-password");
+              navigate(ROUTES.ACCOUNT.PASSWORD_RECOVERY.path);
             }}
-            minWidth={"202px"}
+            style={{ minWidth: "202px" }}
           >
             {t("account.profile.changePassword")}
-          </ButtonDark>
+          </Button>
         </S.BtnWrapper>
       </S.BtnGroup>
     </S.Properties>
@@ -57,11 +59,3 @@ export const Component = ProfilePage;
 Object.assign(Component, {
   displayName: "LazyProfilePage",
 });
-
-export const loader = async () => {
-  const user = await requireUser();
-
-  return {
-    user,
-  };
-};

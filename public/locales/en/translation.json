@@ -1,0 +1,254 @@
+{
+  "common": {
+    "filters": "Filters",
+    "show_more": "Show more...",
+    "menu": "Menu",
+    "not_found": "Dishes not found",
+    "address": "Address",
+    "shippingAddress": "Delivery address",
+    "favorite": "Favorites",
+    "login": "Log in",
+    "logout": "Log out",
+    "email": "E-mail",
+    "first_name": "First name",
+    "last_name": "Last name",
+    "phone": "Phone",
+    "password": "Password",
+    "forgotPassword": "Forgot password?",
+    "enter_account": "Sign in",
+    "registration": "Registration",
+    "enter": "Login",
+    "privacyPolicyAgreed": "I agree to the terms of use and processing of my personal data",
+    "recover": "Restore",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "newPassword": "New password",
+    "oldPassword": "Old password",
+    "confirmPassword": "Confirm the password",
+    "reset": "Reset",
+    "code": "Code",
+    "swipe": "Swipe",
+    "to_pay": "Total",
+    "paymentMethod": "Payment method",
+    "shippingMethod": "Delivery method",
+    "amount": "Amount",
+    "pcs": "pc"
+  },
+  "sort": {
+    "default": "Default",
+    "bestseller": "Bestseller",
+    "ratings": "Rating",
+    "latest": "Latest first",
+    "price_low": "Cheap first",
+    "price_high": "Expensive first",
+    "oldest": "Oldest first",
+    "random": "Randomly",
+    "name": "Alphabetically"
+  },
+  "search": {
+    "input_search": "Search",
+    "title": "We are looking for dishes '{{word}}' in category {{category}}",
+    "everywhere": "Looking for dishes"
+  },
+  "underVerticalMenu": {
+    "in_touch": "Stay in touch"
+  },
+  "map": {
+    "on_map": "View on </br> map"
+  },
+  "footerPhones": {
+    "phones": "Phone numbers"
+  },
+  "order": {
+    "order_btn": "Add",
+    "modal_order_btn": "Add to cart"
+  },
+  "editBtn": {
+    "edit_order": "Edit order"
+  },
+  "cartModal": {
+
+    "empty": "Your cart is empty",
+    "cart": "Cart",
+    "sum_order": "Order price",
+    "checkout": "Checkout",
+    "confirmProductDeletionView": {
+      "title": "Are you sure you want to remove this item from your cart?",
+      "confirm": "Remove",
+      "cancel": "Cancel"
+    }
+  },
+  "contactsModal": {
+    "contacts": "Contacts"
+  },
+  "filtersModal": {
+    "search_filters": "Search filters"
+  },
+  "locationsModal": {
+    "title": "Select a city"
+  },
+  "mobMenuModal": {
+    "contacts": "Contacts",
+    "delivery": "Delivery and payment"
+  },
+  "restaurantClosed": {
+    "closed": "The restaurant is closed!",
+    "time": "We're open from {{from}} to {{to}}"
+  },
+  "telegramModal": {
+    "appeared": "We have a telegram bot",
+    "stock": "Click on the button to be the first to know about new promotions.",
+    "go_to": "Go to telegram"
+  },
+  "confirmAction": {
+    "yes": "Yes",
+    "no": "No"
+  },
+  "ingredients": {
+    "ingredients": "Ingredients"
+  },
+  "menu-title": {
+    "leave-review": "Leave a review"
+  },
+  "header": {
+    "contacts": "Contacts",
+    "delivery": "Delivery and payment"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "form": {
+      "address": "Delivery address",
+      "comment": "Comments on the order",
+      "persons": "Number of persons",
+      "change": "Prepare change from",
+      "privateHouse": "Private house",
+      "highRiseBuilding": "Apartments",
+      "street": {
+        "placeholder": "Street"
+      },
+      "house": {
+        "placeholder": "House"
+      },
+      "entrance": {
+        "placeholder": "Entrance"
+      },
+      "floor": {
+        "placeholder": "Floor"
+      },
+      "apartment": {
+        "placeholder": "Apartment"
+      },
+      "district": {
+        "placeholder": "Select your nearest area"
+      },
+      "spot": {
+        "placeholder": "Select the restaurant address"
+      },
+      "validation": {
+        "phone": {
+          "uk_format": "The phone number must be in the format +380xxxxxxxxx"
+        }
+      }
+    },
+    "temporarilyUnavailable": "Temporarily unavailable",
+    "inputAnotherAddress": "Add another address",
+    "selectSavedAddress": "Select saved address",
+    "alreadyHaveAccount": "Already have an account?",
+    "order": "Checkout",
+    "to_pay": "To pay:"
+  },
+  "shippingMethods": {
+    "courier": "Courier",
+    "pickup": "Takeaway",
+    "takeaway": "Takeaway"
+  },
+  "paymentMethods": {
+    "card": "Card",
+    "cash": "Cash"
+  },
+  "thankYou": {
+    "title": "Thank you for your order!",
+    "subtitle": "Your order #{{id}} has been successfully accepted and sent to work!",
+    "subtitleWithoutId": "Your order has been successfully accepted and sent to work!",
+    "text": "A manager will call you back shortly to confirm your order. Then the order will be prepared and sent to the address you specified."
+  },
+  "menu": {
+    "weightComment": "Actual weight may vary by 5% from stated weight"
+  },
+  "products": {
+    "loading": "Loading dishes..."
+  },
+  "authModal": {
+    "login": {
+      "title": "Log in"
+    },
+    "registration": {
+      "title": "Register"
+    },
+    "forgetPassword": {
+      "title": "Password recovery",
+      "mailSent": "Please check your email. We've sent you an email containing a link to reset your password",
+      "typeEmail": "Enter your E-mail address for which you need to reset your password"
+    }
+  },
+  "account": {
+    "cabinet": "My account",
+    "edit-profile": {
+      "title": "Edit profile"
+    },
+    "profile": {
+      "title": "Personal data",
+      "editProfile": "Edit personal data",
+      "changePassword": "Change password"
+    },
+    "orders": {
+      "title": "My orders",
+      "order": {
+        "status": "Order status"
+      },
+      "noOrders": "No orders"
+    },
+    "changePassword": {
+      "title": "Change password",
+      "btnText": "Change password",
+      "successMessage": "Password is successfully changed"
+    },
+    "addresses": {
+      "title": "Saved addresses",
+      "typeAddress": "Enter address",
+      "addAddress": "Add address"
+    }
+  },
+  "passwordReset": {
+    "title": "Password reset",
+    "successMessage": "Password is successfully reset!"
+  },
+  "categoryIndex": {
+    "title": "Select a category"
+  },
+  "delivery-and-payment": {
+    "title": "Delivery and payment"
+  },
+  "error-boundary": {
+    "title": "Sorry, an unexpected error occurred",
+    "subtitle": "We will fix it as quickly as possible"
+  },
+  "payment": {
+    "refund-rules": "Refund rules"
+  },
+  "appUpdate": {
+    "title": "Application update released",
+    "subtitle": "Please refresh the page to download the new version",
+    "action": "Reload"
+  },
+  "internetConnectionLost": {
+    "title": "Looks like your internet connection has been lost",
+    "subtitle": "Check your internet connection and try refreshing the page"
+  },
+  "validation": {
+    "required": "Fill out this field"
+  },
+  "public_offer": "Public offer",
+  "app_version": "App version"
+}

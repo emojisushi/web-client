@@ -1,4 +1,4 @@
-import TelegramSrc from "../../../assets/ui/icons/telegram.svg";
+import TelegramSrc from "../../../assets/ui-icons/icons/telegram.svg";
 
 export const TelegramIcon = () => {
   return (

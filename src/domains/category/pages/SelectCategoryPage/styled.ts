@@ -13,14 +13,14 @@ const Category = styled.div`
   `}
 `;
 
-Category.Container = styled.div`
+const CategoryContainer = styled.div`
   margin: 0 auto;
   max-width: 700px;
   width: 100%;
   padding: 0 12px;
 `;
 
-Category.Label = styled.div`
+const CategoryLabel = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
@@ -30,7 +30,7 @@ Category.Label = styled.div`
   font-size: 18px;
   line-height: 22px;
   text-transform: uppercase;
-  color: #fff;
+  color: ${({ theme }) => theme.colors.fg.default};
 
   ${media.lessThan("mobile")`
     font-size: 16px;
@@ -38,40 +38,13 @@ Category.Label = styled.div`
   `}
 `;
 
-Category.Image = styled.div`
-  flex-shrink: 0;
-  width: 100px;
-  height: 100px;
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  &:before {
-    position: absolute;
-    content: "";
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(270deg, #1c1c1c 0%, rgba(28, 28, 28, 0) 100%);
-    pointer-events: none;
-  }
-`;
-
-Category.Items = styled.div`
+const CategoryItems = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
 `;
 
-Category.List = styled.ul`
+const CategoryList = styled.ul`
   display: flex;
   flex-wrap: wrap;
   gap: 30px;
@@ -89,4 +62,11 @@ width: 20px;
 `}
 `;
 
-export { Category, IconWrapper };
+export {
+  Category,
+  CategoryList,
+  CategoryItems,
+  CategoryLabel,
+  CategoryContainer,
+  IconWrapper,
+};

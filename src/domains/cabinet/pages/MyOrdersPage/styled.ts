@@ -5,7 +5,7 @@ const Heading = styled.p`
   font-size: 25px;
   line-height: 30px;
 
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
 export { Heading };

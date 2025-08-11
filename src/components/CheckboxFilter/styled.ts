@@ -12,7 +12,7 @@ const Label = styled.label`
   cursor: pointer;
   user-select: none;
   border: 1px solid #393939;
-  border-radius: 10px;
+  border-radius: ${({ theme }) => theme.borderRadius.smooth};
   padding: 11px 33px;
   font-size: 15px;
   line-height: 18px;
@@ -23,7 +23,7 @@ const Label = styled.label`
 `;
 
 const CheckBoxWrapper = styled.div`
-  background: #1c1c1c;
+  background: ${({ theme }) => theme.colors.canvas.inset2};
   overflow: hidden;
   margin-top: 10px;
   margin-right: 10px;

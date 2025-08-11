@@ -1,92 +1,77 @@
 import * as S from "./styled";
 import { Popover } from "../Popover";
-import { cloneElement, ReactElement, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
+import { useTheme } from "styled-components";
 
-export function DropdownPopover<Option>({
-  onSelect,
-  options = [],
-  asFlatArray = false,
-  offset = 0,
-  open: initialOpen = false,
-  disable = false,
-  nameAccessor = "name",
-  idAccessor = "id",
-  selectedIndex,
-  children,
-  backgroundColor = "#171717",
-  resolveOptionName: resolveOptionNamePassed,
-  width = "100%",
-}: {
+type Option = {
+  id: string;
+  name: string;
+};
+
+export type DropdownPopoverOption = Option;
+
+type Props = {
   options?: Option[];
-  asFlatArray?: boolean;
   offset?: number;
   open?: boolean;
   disable?: boolean;
-  nameAccessor?: string;
-  idAccessor?: string;
   selectedIndex: number;
-  children:
-    | ReactElement
-    | { (props: { selectedOption: Option }): ReactElement };
+  children: ReactNode | { (props: { selectedOption?: Option }): ReactNode };
   backgroundColor?: string;
-  resolveOptionName?: (props: { option: Option }) => string;
   width?: string;
-  onSelect?: (props: {
-    close: () => void;
-    option: Option;
-    index: number;
-  }) => void;
-}) {
+  onSelect?: (props: { option: Option; index: number }) => void;
+};
+
+export function DropdownPopover(props: Props) {
+  const theme = useTheme();
+  const {
+    onSelect = () => {},
+    options = [],
+    offset = 0,
+    open: initialOpen = false,
+    disable = false,
+    selectedIndex,
+    children,
+    backgroundColor = theme.colors.canvas.inset,
+    width = "100%",
+  } = props;
+  const [open, setOpen] = useState(initialOpen);
   const [selectedOption, setSelectedOption] = useState(options[selectedIndex]);
 
   useEffect(() => {
     setSelectedOption(options[selectedIndex]);
   }, [selectedIndex, options]);
 
-  const handleSelect = ({ close, option, index }) => {
-    onSelect && onSelect({ close, option, index });
-  };
-
-  const renderChildren = () => {
-    if (typeof children === "function") {
-      return children({ selectedOption });
-    } else {
-      return cloneElement(children);
-    }
-  };
-
-  const resolveOptionName = ({ option }) => {
-    if (resolveOptionNamePassed) {
-      return resolveOptionNamePassed({ option });
-    }
-    return asFlatArray ? option : option[nameAccessor];
-  };
-
-  const resolveOptionId = ({ option }) => {
-    return asFlatArray ? option : option[idAccessor];
+  const handleSelect = ({ option, index }) => {
+    onSelect({ option, index });
+    setOpen(false);
   };
 
   return (
     <>
       <Popover
         offset={offset}
-        open={initialOpen}
+        open={open}
+        onOpenChange={setOpen}
         disable={disable}
-        render={({ close }) => (
+        render={() => (
           <S.Options width={width} backgroundColor={backgroundColor}>
             {options.map((option, index) => (
               <S.Option
-                onClick={() => handleSelect({ close, option, index })}
-                key={resolveOptionId({ option })}
+                onClick={() => handleSelect({ option, index })}
+                key={option.id}
               >
-                {resolveOptionName({ option })}
+                {option.name}
               </S.Option>
             ))}
           </S.Options>
         )}
       >
-        <div style={{ cursor: "pointer" }}>
-          {options.length > 0 && selectedOption && renderChildren()}
+        <div onClick={() => setOpen(true)} style={{ cursor: "pointer", width }}>
+          {/* @ts-ignore */}
+          {typeof children === "function"
+            ? children({ selectedOption })
+            : children}
         </div>
       </Popover>
     </>

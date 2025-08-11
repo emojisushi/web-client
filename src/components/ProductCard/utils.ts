@@ -1,18 +1,16 @@
-import { Variant } from "~models/Variant";
-import { CartProduct } from "~models/CartProduct";
-import { Product } from "~models/Product";
+import { ICartProduct, IProduct, IVariant } from "@layerok/emojisushi-js-sdk";
 
 export const findInCart = (
-  items: CartProduct[],
-  product: Product,
-  variant?: Variant
+  items: ICartProduct[],
+  product: IProduct,
+  variant?: IVariant
 ) => {
-  if (product.inventoryManagementMethod === "variant") {
+  if (product.inventory_management_method === "variant") {
     return items.find(
       (cartProduct) =>
-        cartProduct.productId === product.id &&
-        cartProduct.variantId === variant?.id
+        cartProduct.product_id === product.id &&
+        cartProduct.variant_id === variant?.id
     );
   }
-  return items.find((cartProduct) => cartProduct.productId === product.id);
+  return items.find((cartProduct) => cartProduct.product_id === product.id);
 };

@@ -5,7 +5,7 @@ const DeliveryText = styled.p`
   font-size: 15px;
   font-weight: 400;
   line-height: 18px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
   margin-top: 10px;
   width: 100%;
   ${media.lessThan("pc")`
@@ -19,7 +19,7 @@ const AdresText = styled.p`
   font-size: 15px;
   font-weight: 400;
   line-height: 18px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
   margin-top: 10px;
   width: 100%;
 

@@ -1,56 +1,59 @@
-import { Container, Heading, If } from "~components";
+import { Container, Heading } from "~components";
 import * as S from "./styled";
 import { useTranslation } from "react-i18next";
-import { useRouteLoaderData } from "react-router-dom";
-import { ICity, ISpot } from "~api/types";
-import { City, Spot } from "~models";
+import { observer } from "mobx-react";
+import { DefaultErrorBoundary } from "~components/DefaultErrorBoundary";
+import { Page } from "~components/Page";
+import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
+import { useQuery } from "@tanstack/react-query";
+import { citiesQuery } from "~domains/city/cities.query";
+import { useShowBinotel } from "~hooks/use-binotel";
 
-type DeliverPageLoaderData = {
-  spot: ISpot;
-  city: ICity;
-};
-
-export const DeliveryPage = () => {
+export const DeliveryPage = observer(() => {
   const { t } = useTranslation();
-  const { spot: spotJson, city: cityJson } = useRouteLoaderData(
-    "layout"
-  ) as DeliverPageLoaderData;
+  useShowBinotel();
 
-  const city = new City(cityJson);
-  const spot = new Spot(spotJson, city);
+  const citySlug = useCurrentCitySlug();
+  const { data: cities, isLoading: isCitiesLoading } = useQuery(citiesQuery);
+  const city = (cities?.data || []).find((c) => c.slug === citySlug);
 
   return (
-    <Container>
-      <S.FlexContainer>
-        <S.Left>
-          <S.HeadingWrapper>
-            <Heading
-              style={{
-                fontWeight: "600",
-              }}
-            >
-              {t("delivery-and-payment.title")}
-            </Heading>
-          </S.HeadingWrapper>
+    <Page>
+      <Container>
+        <S.FlexContainer>
+          <S.Left>
+            <S.HeadingWrapper>
+              <Heading
+                style={{
+                  fontWeight: "600",
+                }}
+              >
+                {t("delivery-and-payment.title")}
+              </Heading>
+            </S.HeadingWrapper>
 
-          <S.AdresText>
-            <b>{t("common.address")}</b>: {spot.address}
-          </S.AdresText>
+            {/*<S.AdresText>*/}
+            {/*  <b>{t("common.address")}</b>: {city.address}*/}
+            {/*</S.AdresText>*/}
 
-          <S.DeliveryText dangerouslySetInnerHTML={{ __html: spot.content }} />
-        </S.Left>
-
-        <If condition={!!spot.googleMapUrl}>
-          <S.Right>
-            <iframe src={spot.googleMapUrl} width="100%" height="480" />
-          </S.Right>
-        </If>
-      </S.FlexContainer>
-    </Container>
+            <S.DeliveryText
+              dangerouslySetInnerHTML={{ __html: city?.html_content }}
+            />
+          </S.Left>
+          {!!city?.google_map_url && (
+            <S.Right>
+              <iframe src={city.google_map_url} width="100%" height="480" />
+            </S.Right>
+          )}
+        </S.FlexContainer>
+      </Container>
+    </Page>
   );
-};
+});
 
 export const Component = DeliveryPage;
+
+export const ErrorBoundary = DefaultErrorBoundary;
 
 Object.assign({
   displayName: "LazyDeliveryPage",

@@ -1,14 +1,19 @@
-import { useMatch, useResolvedPath } from "react-router-dom";
-
 import * as S from "./styled";
+import { NavLink as BaseNavLink } from "react-router-dom";
 
 export function NavLink({ children, to, ...props }) {
-  let resolved = useResolvedPath(to);
-  let match = useMatch({ path: resolved.pathname, end: true });
-
   return (
-    <S.Link className={!!match ? "active" : undefined} to={to} {...props}>
-      {children}
-    </S.Link>
+    <BaseNavLink
+      style={{
+        textDecoration: "none",
+      }}
+      to={to}
+    >
+      {({ isActive }) => (
+        <S.Link isActive={isActive} end={true} {...props}>
+          {children}
+        </S.Link>
+      )}
+    </BaseNavLink>
   );
 }

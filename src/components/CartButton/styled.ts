@@ -12,17 +12,17 @@ const Price = styled.div`
 `;
 
 const Delimiter = styled.div`
-  height: 30px;
+  height: 20px;
   width: 1px;
-  background-color: #000;
-  margin-right: 15px;
+  background-color: ${({ theme }) => theme.colors.fg.brandContrast};
   flex-shrink: 0;
 `;
 
 const Count = styled.div`
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
+  margin-left: 15px;
 `;
 
 export { Price, Delimiter, Count, Icon };

@@ -2,12 +2,12 @@ import styled from "styled-components";
 import media from "src/common/custom-media";
 
 const Sidebar = styled.div`
-  width: 100%;
-  margin-bottom: 30px;
-  flex-shrink: 0;
-
-  ${media.greaterThan("pc")`
-    display: none;
+  display: none;
+  ${media.lessThan("pc")`
+     width: 100%;
+     margin-bottom: 30px;
+     flex-shrink: 0;
+     display: block;
   `}
 `;
 

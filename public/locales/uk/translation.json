@@ -10,7 +10,7 @@
     "login": "Увійти",
     "logout": "Вийти",
     "first_name": "Ім'я",
-    "last_name": "Фамілія",
+    "last_name": "Прізвище",
     "email": "E-mail",
     "phone": "Телефон",
     "password": "Пароль",
@@ -48,8 +48,8 @@
   },
   "search": {
     "input_search": "Пошук",
-    "in_category": "Шукаемо товары '{{word}}' в категорії {{category}}",
-    "everywhere": "Шукаемо товары"
+    "in_category": "Шукаемо страви '{{word}}' в категорії {{category}}",
+    "everywhere": "Шукаемо страви"
   },
   "underVerticalMenu": {
     "in_touch": "Залишайтеся на зв'язку"
@@ -61,17 +61,23 @@
     "phones": "Номери"
   },
   "order": {
-    "order_btn": "Замовити"
+    "order_btn": "Замовити",
+    "modal_order_btn": "До кошика"
   },
   "editBtn": {
     "edit_order": "Відредагувати замовлення"
   },
   "cartModal": {
-    "remove": "Ви впевнені що хочете видалити цей товар з кошика?",
+
     "empty": "Ваш кошик порожній",
     "cart": "Кошик",
     "sum_order": "Сума замовлення",
-    "checkout": "Оформити замовлення"
+    "checkout": "Оформити замовлення",
+    "confirmProductDeletionView": {
+      "title": "Ви впевнені що хочете видалити цей товар з кошика?",
+      "confirm": "Видалити",
+      "cancel": "Відмінити"
+    }
   },
   "contactsModal": {
     "contacts": "Контакти"
@@ -79,8 +85,8 @@
   "filtersModal": {
     "search_filters": "Фільтри пошуку"
   },
-  "spotsModal": {
-    "title": "Оберіть заклад"
+  "locationsModal": {
+    "title": "Оберіть місто"
   },
   "mobMenuModal": {
     "contacts": "Контакти",
@@ -88,7 +94,7 @@
   },
   "restaurantClosed": {
     "closed": "Ресторан закритий!",
-    "time": "Час роботи"
+    "time": "Працюєм з {{from}} до {{to}}"
   },
   "telegramModal": {
     "appeared": "У нас з'явився Telegram!",
@@ -102,6 +108,9 @@
   "ingredients": {
     "ingredients": "Інгредієнти"
   },
+  "menu-title": {
+    "leave-review": "Залишити відгук"
+  },
   "header": {
     "contacts": "Контакти",
     "delivery": "Доставка і оплата"
@@ -111,12 +120,40 @@
     "form": {
       "address": "Адреса доставки",
       "comment": "Коментар до замовлення",
-      "sticks": "Палички на скільки людин?",
+      "persons": "Кількість персон",
       "change": "Приготувати решту з",
-      "errors": {
-        "ua_phone": "Некоректний формат українського номера"
+      "privateHouse": "Приватний будинок",
+      "highRiseBuilding": "Апартаменти",
+      "district": {
+        "placeholder": "Оберіть найближчий район"
+      },
+      "spot": {
+        "placeholder": "Оберіть найближчий заклад"
+      },
+      "street": {
+        "placeholder": "Вулиця"
+      },
+      "house": {
+        "placeholder": "Будинок"
+      },
+      "entrance": {
+        "placeholder": "Під'їзд"
+      },
+      "floor": {
+        "placeholder": "Поверх"
+      },
+      "apartment": {
+        "placeholder": "Квартира"
+      },
+      "validation": {
+
+        "phone": {
+          "uk_format":  "Телефон повинен бути у форматі +380xxxxxxxxx"
+        }
+
       }
     },
+    "temporarilyUnavailable": "Тимчасово недоступно",
     "inputAnotherAddress": "Додати іншу адресу",
     "selectSavedAddress": "Оберіть збережу адресу",
     "alreadyHaveAccount": "Вже маєте акаунт?",
@@ -131,12 +168,10 @@
     "card": "Карткою",
     "cash": "Готівкою"
   },
-  "validation": {
-    "required": "Поле '{{field}}' обов'язкове"
-  },
   "thankYou": {
     "title": "Дякуємо Вам за замовлення!",
-    "subtitle": "Ваше замовлення успішно прийнято та відправлено в роботу!",
+    "subtitle": "Ваше замовлення #{{id}} успішно прийнято та відправлено в роботу!",
+    "subtitleWithoutId": "Ваше замовлення успішно прийнято та відправлено в роботу!",
     "text": "Найближчим часом Вам зателефонує менеджер для підтвердження замовлення. Потім замовлення буде підготовлено та надіслано на вказану Вами адресу."
   },
   "menu": {
@@ -195,5 +230,26 @@
   },
   "delivery-and-payment": {
     "title": "Доставка і оплата"
-  }
+  },
+  "error-boundary": {
+    "title": "Вибачте, сталася неочікувана помилка",
+    "subtitle": "Ми усунемо її якомога швидше"
+  },
+  "payment": {
+    "refund-rules": "Правила повернення коштів"
+  },
+  "appUpdate": {
+    "title": "Вийшло оновлення застосунку",
+    "subtitle": "Будь ласка, оновіть сторінку для завантаження нової версії",
+    "action": "Оновити"
+  },
+  "internetConnectionLost": {
+    "title": "Здається, інтернет зв'язок втрачено",
+    "subtitle": "Перевірте інтернет з'єднання та спробуйте перезаватажити сторінку"
+  },
+  "validation": {
+    "required": "Заповніть це поле"
+  },
+  "public_offer": "Публічна оферта",
+  "app_version": "Версія застосунку"
 }

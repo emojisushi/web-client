@@ -1,0 +1,3 @@
+export const STICKY_SIDEBAR_CONTAINER_OFFSET = 30;
+
+export const SEARCH_QUERY_SEARCH_PARAM = "q";

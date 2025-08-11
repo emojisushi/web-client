@@ -1,4 +1,4 @@
-# Front of [emojisushi.com.ua](https://emojisushi.com.ua)
+# Emojisushi Web client
 
 ## Getting started
 

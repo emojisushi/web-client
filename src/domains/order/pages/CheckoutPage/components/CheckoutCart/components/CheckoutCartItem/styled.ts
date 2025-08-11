@@ -3,9 +3,9 @@ import { prop } from "styled-tools";
 import media from "~common/custom-media";
 
 const Item = styled.div`
-  background: #1c1c1c;
-  box-shadow: 0 4px 15px rgba(28, 28, 28, 0.3);
-  border-radius: 15px;
+  background: ${({ theme }) => theme.colors.canvas.inset2};
+  box-shadow: ${({ theme }) => theme.shadows.canvasInset2Shadow};
+  border-radius: ${({ theme }) => theme.borderRadius.default};
   padding: 22px 61px 22px 33px;
   display: flex;
   margin-top: 30px;
@@ -18,7 +18,9 @@ const Item = styled.div`
   `}
 `;
 
-const Image = styled.div`
+const Image = styled.div<{
+  src: string;
+}>`
   width: 190px;
   height: 122px;
   background-image: url("${prop("src")}");
@@ -67,7 +69,7 @@ const Delimiter = styled.div`
   top: 2px;
   height: 13px;
   width: 1px;
-  background-color: white;
+  background-color: ${({ theme }) => theme.colors.fg.default};
   margin: 0 10px;
 `;
 

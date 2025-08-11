@@ -1,9 +1,9 @@
 import styled from "styled-components";
 
 const Box = styled.div`
-  background-color: #ffe600;
-  box-shadow: 0 0 15px rgba(255, 230, 0, 0.5);
-  border-radius: 5px;
+  background-color: ${({ theme }) => theme.colors.brand};
+  box-shadow: ${({ theme }) => theme.shadows.brand};
+  border-radius: ${({ theme }) => theme.borderRadius.lessSmooth};
   width: 40px;
   height: 40px;
   display: flex;

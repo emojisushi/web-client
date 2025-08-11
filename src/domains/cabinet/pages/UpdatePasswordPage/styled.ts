@@ -5,7 +5,7 @@ const Heading = styled.p`
   font-weight: 600;
   font-size: 25px;
   line-height: 30px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
 const Container = styled.div`
@@ -20,7 +20,7 @@ const Text = styled.p`
   font-weight: 400;
   font-size: 15px;
   line-height: 18px;
-  color: #616161;
+  color: ${({ theme }) => theme.colors.fg.muted};
   margin-top: 20px;
   margin-bottom: 5px;
   :first-child {

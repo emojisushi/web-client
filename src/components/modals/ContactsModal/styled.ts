@@ -9,8 +9,9 @@ const Title = styled.div`
 
 const Wrapper = styled.div`
   padding: 10px;
-  ${media.lessThan("pc")`
-  width: 375px;
+  width: 540px;
+  ${media.lessThan("tablet")`
+    width: 360px;
   `}
 `;
 

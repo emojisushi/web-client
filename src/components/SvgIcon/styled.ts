@@ -1,28 +1,21 @@
-import styled, { css } from "styled-components";
-import { ifProp, prop } from "styled-tools";
+import styled from "styled-components";
+import { CSSProperties } from "react";
 
-const Parent = styled.span`
+const Parent = styled.span<{
+  $color?: CSSProperties["color"];
+  hoverColor?: CSSProperties["color"];
+}>`
   display: flex;
   svg {
     height: auto;
     width: 100%;
   }
 
-  ${ifProp(
-    "hoverColor",
-    css`
-      :hover {
-        color: ${prop("hoverColor")};
-      }
-    `
-  )}
+  :hover {
+    ${({ hoverColor }) => (hoverColor ? `color: ${hoverColor}` : "")};
+  }
 
-  ${ifProp(
-    "noDomColor",
-    css`
-      color: ${prop("noDomColor")};
-    `
-  )}
+  ${({ $color }) => ($color ? `color: ${$color}` : "")};
 `;
 
 export { Parent };

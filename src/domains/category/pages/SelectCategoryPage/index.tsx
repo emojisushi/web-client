@@ -1,62 +1,28 @@
-import { Await, defer, useAsyncValue, useLoaderData } from "react-router-dom";
 import * as S from "./styled";
 import { useTranslation } from "react-i18next";
 import { Container, SvgIcon, ToteSvg } from "~components";
-import { Suspense } from "react";
 import { Category } from "./components/Category";
 import Skeleton from "react-loading-skeleton";
-import { IGetCategoriesRes } from "~api/types";
-import { categoriesQuery } from "~queries";
-import { queryClient } from "~query-client";
-import { SelectCategoryPageLoaderData } from "~domains/category/types";
-import { PublishedCategories } from "~domains/category/components/PublishedCategories";
+import { useQuery } from "@tanstack/react-query";
+import { observer } from "mobx-react";
+import { Page } from "~components/Page";
+import { catalogQuery } from "~domains/catalog/catalog.query";
 
-const CategoriesList = () => {
-  const categories = useAsyncValue() as IGetCategoriesRes;
-
-  return (
-    <S.Category.List>
-      <PublishedCategories categories={categories.data}>
-        {({ categories }) =>
-          categories.map((category) => (
-            <Category key={category.id} category={category} />
-          ))
-        }
-      </PublishedCategories>
-    </S.Category.List>
-  );
-};
-
-const CategoriesSkeleton = () => {
-  return (
-    <S.Category.List>
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-      <Category />
-    </S.Category.List>
-  );
-};
-
-export const SelectCategoryPage = () => {
+export const SelectCategoryPage = observer(() => {
   const { t } = useTranslation();
 
-  const { categories } = useLoaderData() as SelectCategoryPageLoaderData;
+  const { data: catalogData, isLoading: isCatalogLoading } =
+    useQuery(catalogQuery);
 
   return (
-    <Container>
-      <S.Category>
-        <S.Category.Container>
-          <S.Category.Label>
-            <Suspense fallback={<Skeleton width={220} height={20} />}>
-              <Await resolve={categories}>
+    <Page>
+      <Container>
+        <S.Category>
+          <S.CategoryContainer>
+            <S.CategoryLabel>
+              {isCatalogLoading ? (
+                <Skeleton width={220} height={20} />
+              ) : (
                 <>
                   {t("categoryIndex.title")}
                   <S.IconWrapper>
@@ -65,39 +31,40 @@ export const SelectCategoryPage = () => {
                     </SvgIcon>
                   </S.IconWrapper>
                 </>
-              </Await>
-            </Suspense>
-          </S.Category.Label>
-          <S.Category.Items>
-            <Suspense fallback={<CategoriesSkeleton />}>
-              <Await
-                resolve={categories}
-                errorElement={<p>Error fetching categories!</p>}
-              >
-                <CategoriesList />
-              </Await>
-            </Suspense>
-          </S.Category.Items>
-        </S.Category.Container>
-      </S.Category>
-    </Container>
+              )}
+            </S.CategoryLabel>
+            <S.CategoryItems>
+              {isCatalogLoading ? (
+                <S.CategoryList>
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                  <Category />
+                </S.CategoryList>
+              ) : (
+                <S.CategoryList>
+                  {catalogData.categories.map((category) => (
+                    <Category key={category.id} category={category} />
+                  ))}
+                </S.CategoryList>
+              )}
+            </S.CategoryItems>
+          </S.CategoryContainer>
+        </S.Category>
+      </Container>
+    </Page>
   );
-};
+});
 
 export const Component = SelectCategoryPage;
 
 Object.assign(SelectCategoryPage, {
   displayName: "LazySelectCategoryPage",
 });
-
-export const loader = ({ params }) => {
-  const query = categoriesQuery();
-  return defer({
-    categories:
-      queryClient.getQueryData(query.queryKey) ?? queryClient.fetchQuery(query),
-  });
-};
-
-export const shouldRevalidate = ({ currentParams, nextParams }) => {
-  return currentParams.lang !== nextParams.lang;
-};

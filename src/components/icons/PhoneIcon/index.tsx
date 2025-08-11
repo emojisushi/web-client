@@ -1,4 +1,4 @@
-import PhoneSrc from "../../../assets/ui/icons/phone.svg";
+import PhoneSrc from "../../../assets/ui-icons/icons/phone.svg";
 
 export const PhoneIcon = () => {
   return (

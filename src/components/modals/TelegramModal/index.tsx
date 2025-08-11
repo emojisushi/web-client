@@ -1,34 +1,58 @@
-import { cloneElement } from "react";
 import { SvgIcon } from "../../SvgIcon";
 import { TelegramSvg } from "../../svg/TelegramSvg";
-import { ButtonFilled } from "../../buttons/Button";
-import { NotifyModal } from "../NotifyModal";
+import { Button } from "~common/ui-components/Button/Button";
 import { useTranslation } from "react-i18next";
+import NiceModal from "@ebay/nice-modal-react";
+import { useModal } from "~modal";
+import { useTheme } from "styled-components";
+import { Modal, ModalCloseButton, ModalContent } from "~components";
+import * as S from "./styled";
 
-export const TelegramModal = ({ children, ...rest }) => {
+export const TelegramModal = NiceModal.create(() => {
   const { t } = useTranslation();
+  const modal = useModal();
+
+  const theme = useTheme();
+  modal.resolve();
   return (
-    <NotifyModal
-      renderTitle={() => t("telegramModal.appeared")}
-      renderSubtitle={() => t("telegramModal.stock")}
-      renderIcon={() => (
-        <SvgIcon color={"#FFE600"} width={"60px"}>
-          <TelegramSvg strokeWidth={1} />
-        </SvgIcon>
-      )}
-      renderButton={() => (
-        <ButtonFilled
-          as={"a"}
-          href={"https://t.me/Emojisushibot"}
-          target={"_blank"}
-          width={"250px"}
-        >
-          {t("telegramModal.go_to")}
-        </ButtonFilled>
-      )}
-      {...rest}
+    <Modal
+      overlayStyles={{
+        display: "grid",
+        justifyContent: "center",
+        alignItems: "center",
+        background: "rgba(0, 0, 0, 0.4)",
+        zIndex: theme.zIndices.modals,
+      }}
+      onClose={() => {
+        modal.remove();
+      }}
+      open={modal.visible}
     >
-      {cloneElement(children)}
-    </NotifyModal>
+      <ModalContent>
+        <ModalCloseButton />
+        <S.Root>
+          <SvgIcon color={theme.colors.brand} width={"60px"}>
+            <TelegramSvg strokeWidth={1} />
+          </SvgIcon>
+
+          <S.Title>{t("telegramModal.appeared")}</S.Title>
+          <S.Subtitle>{t("telegramModal.stock")}</S.Subtitle>
+          <S.Footer>
+            <Button
+              filled
+              // @ts-ignore
+              as={"a"}
+              href={"https://t.me/Emojisushibot"}
+              target={"_blank"}
+              style={{
+                width: 250,
+              }}
+            >
+              {t("telegramModal.go_to")}
+            </Button>
+          </S.Footer>
+        </S.Root>
+      </ModalContent>
+    </Modal>
   );
-};
+});

@@ -1,9 +1,9 @@
-import * as S from "./styled";
 import { SvgIcon } from "../SvgIcon";
 import { EyeSvg } from "../svg/EyeSvg";
 import { forwardRef, useState } from "react";
 import { ClosedEyeSvg } from "../svg/ClosedEyeSvg";
 import { IInputComponentProps, Input } from "../Input";
+import { EndAdornment } from "~common/ui-components/EndAdornment";
 
 type IProps = IInputComponentProps & {
   name: string;
@@ -15,24 +15,27 @@ export const PasswordInput = forwardRef<HTMLInputElement, IProps>(
     const [hidden, setHidden] = useState(hiddenPassed);
 
     return (
-      <S.Wrapper>
-        <Input
-          name={name}
-          type={hidden ? "password" : "text"}
-          {...rest}
-          ref={ref}
-        />
-        <S.Eye
-          onClick={() => {
-            setHidden(!hidden);
-          }}
-        >
-          <SvgIcon width="20px">
-            {hidden && <ClosedEyeSvg />}
-            {!hidden && <EyeSvg />}
-          </SvgIcon>
-        </S.Eye>
-      </S.Wrapper>
+      <Input
+        name={name}
+        type={hidden ? "password" : "text"}
+        {...rest}
+        ref={ref}
+        endAdornment={
+          <EndAdornment
+            style={{
+              cursor: "pointer",
+            }}
+            onClick={(e) => {
+              e.preventDefault();
+              setHidden(!hidden);
+            }}
+          >
+            <SvgIcon clickable={true} width="20px">
+              {hidden ? <ClosedEyeSvg /> : <EyeSvg />}
+            </SvgIcon>
+          </EndAdornment>
+        }
+      />
     );
   }
 );

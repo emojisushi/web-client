@@ -5,7 +5,7 @@ const Heading = styled.p`
   font-weight: 600;
   font-size: 25px;
   line-height: 30px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
 const Container = styled.div`
@@ -22,9 +22,9 @@ const Cabinet = styled.div``;
 const Navbar = styled.div`
   width: 350px;
   height: 220px;
-  background: #1c1c1c;
-  box-shadow: 0px 4px 15px rgba(28, 28, 28, 0.3);
-  border-radius: 15px;
+  background: ${({ theme }) => theme.colors.canvas.inset2};
+  box-shadow: ${({ theme }) => theme.shadows.canvasInset2Shadow};
+  border-radius: ${({ theme }) => theme.borderRadius.default};
   padding: 10px;
 `;
 
@@ -32,11 +32,11 @@ const NavbarHeader = styled.p`
   font-weight: 600;
   font-size: 20px;
   line-height: 24px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
 const HorizontalBar = styled.div`
-  border: 1px solid #2d2d2d;
+  border: 1px solid ${({ theme }) => theme.colors.border.darker};
   width: 330px;
   margin-top: 10px;
 `;

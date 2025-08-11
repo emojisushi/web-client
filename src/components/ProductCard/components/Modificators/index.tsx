@@ -1,8 +1,9 @@
-import { Switcher } from "~components";
-import { Product } from "~models";
+import { SegmentedControl } from "~components";
+import { getProductModGroups } from "~domains/product/product.utils";
+import { IProduct } from "@layerok/emojisushi-js-sdk";
 
 type TModificatorsProps = {
-  product?: Product;
+  product?: IProduct;
   modificators: any;
   setModificators: any;
   loading?: boolean;
@@ -20,29 +21,24 @@ export const Modificators = ({
 
   return (
     <>
-      {(product?.modGroups || []).map((group) => (
-        <Switcher
+      {((product && getProductModGroups(product)) || []).map((group) => (
+        <SegmentedControl
           key={group.id}
           style={{ marginTop: "12px" }}
-          handleChange={({ option }) => {
+          onChange={(e) => {
             setModificators((state) => {
               return {
                 ...state,
-                [group.property.id]: option.id,
+                [group.property.id]: e.target.value,
               };
             });
           }}
           name={"modificator_" + group.property.id}
-          options={group.property.options.map((option) => ({
-            id: +option.poster_id,
-            name: option.value,
+          items={group.property.options.map((option) => ({
+            value: +option.poster_id,
+            label: option.value,
           }))}
-          selected={(option) => {
-            if (!option) {
-              return false;
-            }
-            return +modificators[group.property.id] === option.id;
-          }}
+          value={+modificators[group.property.id]}
         />
       ))}
     </>

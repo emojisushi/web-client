@@ -1,8 +1,16 @@
 import styled from "styled-components";
 import { prop } from "styled-tools";
 import OdessaMapSrc from "../../assets/img/odessa-map.png";
+import { CSSProperties } from "react";
 
-const Background = styled.div`
+const Background = styled.div<{
+  width: CSSProperties["width"];
+  height: CSSProperties["height"];
+  topRight: CSSProperties["borderTopRightRadius"];
+  topLeft: CSSProperties["borderTopLeftRadius"];
+  bottomRight: CSSProperties["borderBottomRightRadius"];
+  bottomLeft: CSSProperties["borderBottomLeftRadius"];
+}>`
   background-image: url(${OdessaMapSrc});
   display: flex;
   justify-content: center;

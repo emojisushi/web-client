@@ -1,8 +1,10 @@
 import styled from "styled-components";
-import { Link as LinkBase } from "react-router-dom";
 import { ifProp } from "styled-tools";
 
-const Link = styled(LinkBase)`
+const Link = styled.span<{
+  isActive: boolean;
+  end: boolean;
+}>`
   font-weight: 400;
   text-decoration: none;
   font-size: 15px;
@@ -10,9 +12,14 @@ const Link = styled(LinkBase)`
   margin-top: 10px;
   display: flex;
   flex-direction: column;
-  color: ${ifProp({ className: "active" }, "#FFE600", "#FFFFFF")};
+  color: ${(props) =>
+    ifProp(
+      "isActive",
+      props.theme.colors.brand,
+      props.theme.colors.fg.default
+    )(props)};
   :hover {
-    color: #ffe600;
+    color: ${({ theme }) => theme.colors.brand};
   }
   :after {
     border-bottom: none;

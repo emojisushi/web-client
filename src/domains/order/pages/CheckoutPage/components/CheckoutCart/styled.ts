@@ -14,8 +14,13 @@ const Wrapper = styled.div`
   `}
 `;
 
+const Inner = styled.div`
+  position: sticky;
+  top: 30px;
+`;
+
 const Items = styled.div`
-  max-height: 362px;
+  max-height: 426px;
   overflow-y: auto;
 `;
 
@@ -23,4 +28,4 @@ const EditButton = styled.div`
   margin-top: 20px;
 `;
 
-export { Wrapper, EditButton, Items };
+export { Wrapper, EditButton, Items, Inner };

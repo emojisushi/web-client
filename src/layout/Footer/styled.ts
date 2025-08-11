@@ -4,7 +4,7 @@ import media from "../../common/custom-media";
 const Footer = styled.footer`
   width: 100%;
   flex-shrink: 0;
-  background-color: #171717;
+  background-color: ${({ theme }) => theme.colors.canvas.inset};
   height: 239px;
   overflow: hidden;
 
@@ -31,6 +31,20 @@ const Left = styled.div`
     `}
 `;
 
+const AppVersion = styled.div`
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding-bottom: 16px;
+  font-size: 13px;
+  opacity: 0.5;
+  ${media.lessThan("pc")`
+        display: none;
+    `}
+`;
+
 const Right = styled.div`
   ${media.lessThan("tablet")`
         margin-top: 30px;
@@ -52,7 +66,7 @@ const List = styled.div``;
 
 const Phone = styled.a`
   text-decoration: none;
-  color: #ffff;
+  color: ${({ theme }) => theme.colors.fg.default};
   margin-bottom: 10px;
   width: 100%;
 `;
@@ -63,7 +77,7 @@ const LinkContainer = styled.div`
 
 const InstagramLink = styled.a`
   text-decoration: none;
-  color: #ffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
 const PhoneLabel = styled.div`
@@ -107,4 +121,5 @@ export {
   TelegramText,
   StaticMap,
   LinkContainer,
+  AppVersion,
 };

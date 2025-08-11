@@ -1,37 +1,59 @@
 name: (Prod) Build and deploy
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - production
 
 jobs:
   build:
-    environment: stage
     name: Build
-    env:
-      CI: false
-      REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL }}
+    environment: prod
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@main
+
+      - name: Get next version
+        uses: reecetech/version-increment@2023.9.3
+        id: version
+        with:
+          scheme: calver
+
       - name: Install dependencies
         run: yarn
+
       - name: Build dependencies
         run: yarn run build
+        env:
+          CI: false
+          REACT_APP_VERSION: ${{ steps.version.outputs.VERSION }}
+          REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL }}
+          REACT_APP_TRANSLATIONS_VERSION: ${{ github.run_id }}
+
       - name: Archive production artifact
-        uses: actions/upload-artifact@main
+        uses: actions/upload-artifact@v4.0.0
         with:
           name: build
           path: build
+
+      - name: Release version
+        uses: softprops/action-gh-release@v1
+        if: ${{ github.ref_name == github.event.repository.default_branch }}
+        with:
+          draft: false
+          prerelease: false
+          tag_name: "${{ steps.version.outputs.VERSION }}"
+
   deploy:
-    environment: stage
     name: Deploy
+    environment: prod
     needs: build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@main
       - name: Download artifact
-        uses: actions/download-artifact@main
+        uses: actions/download-artifact@v4.0.0
         with:
           name: build
           path: build

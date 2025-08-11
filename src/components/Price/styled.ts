@@ -13,7 +13,7 @@ const NewPrice = styled.div`
   font-size: 20px;
   line-height: 24px;
 
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
 export { OldPrice, NewPrice };

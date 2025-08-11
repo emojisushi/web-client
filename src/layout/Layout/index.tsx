@@ -2,304 +2,135 @@ import { Header } from "../Header";
 import { Footer } from "../Footer";
 import * as S from "./styled";
 import { useWindowScroll } from "react-use";
-import { StickyToTopBtn, Sticky, TinyCartButton, CartModal } from "~components";
-import { ReactNode, Suspense } from "react";
 import {
-  ActionFunctionArgs,
-  Await,
-  Outlet,
-  ShouldRevalidateFunction,
-  defer,
-  redirect,
-  useLoaderData,
-} from "react-router-dom";
-import { queryClient } from "~query-client";
-import { cartQuery, wishlistsQuery } from "~queries";
-import { authApi, cartApi } from "~api";
-import { CartProduct } from "~models";
-import { useOptimisticCartTotalPrice } from "~hooks/use-layout-fetchers";
-import { IUser, IGetCartRes, IGetCitiesRes, ICity, ISpot } from "~api/types";
-import { citiesQuery } from "~queries/cities.query";
-import { AwaitAll } from "~components/AwaitAll";
-import { spotQuery } from "~domains/spot/queries/spot.query";
-import { cityQuery } from "~domains/spot/queries/city.query";
-import Cookies from "js-cookie";
-import { AxiosError } from "axios";
+  StickyToTopBtn,
+  Sticky,
+  TinyCartButton,
+  CartModal,
+  LocationsModal,
+  RestaurantClosed,
+  TelegramModal,
+  ContactsModal,
+  MobMenuModal,
+  AuthModal,
+} from "~components";
+import { ReactNode, useEffect } from "react";
+import { Outlet } from "react-router-dom";
+import { cartQuery } from "~domains/cart/cart.query";
+import { PRODUCT_ID_SEARCH_QUERY_PARAM } from "~domains/product/products.query";
+import { useQuery } from "@tanstack/react-query";
+import { useUser } from "~hooks/use-auth";
+import { DefaultErrorBoundary } from "~components/DefaultErrorBoundary";
+import { observer } from "mobx-react";
+import { useAppStore } from "~stores/appStore";
+import { citiesQuery } from "~domains/city/cities.query";
+import { ModalIDEnum } from "~common/modal.constants";
+import { isClosed } from "~utils/time.utils";
+import { appConfig } from "~config/app";
+import { useShowModal } from "~modal";
+import { router } from "~router";
+import { RouterSubscriber, RouterState } from "@remix-run/router";
+import { RegisterModal } from "~components/modals/RegisterModal";
+import { ResetPasswordModal } from "~components/modals/ResetPasswordModal";
+import { ProductModal } from "~components/modals/ProductModal";
+import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
+import { SearchProductsModal } from "~components/modals/SearchProductsModal";
 
-export const Layout = ({ children, ...rest }: { children?: ReactNode }) => {
-  const { x, y } = useWindowScroll();
+export const Layout = observer(
+  ({ children, ...rest }: { children?: ReactNode }) => {
+    // todo: debounce it
+    const { x, y } = useWindowScroll();
+    const appStore = useAppStore();
+    const showStickyCart = y > 100;
 
-  const { cart, cities, user } = useLoaderData() as LayoutRouteLoaderData;
+    const { isLoading: isCartLoading, data: cart } = useQuery(cartQuery);
+    const { data: user, isLoading: isUserLoading } = useUser();
+    const showModal = useShowModal();
 
-  const showStickyCart = y > 100;
+    const citySlug = useCurrentCitySlug();
+    const { data: cities, isLoading: isCitiesLoading } = useQuery(citiesQuery);
+    const city = (cities?.data || []).find((c) => c.slug === citySlug);
 
-  const items = (cart?.data || []).map((json) => new CartProduct(json));
-  const cartTotal = useOptimisticCartTotalPrice({ items });
+    useEffect(() => {
+      const routerSubscriber: RouterSubscriber = (state: RouterState) => {
+        if (state.navigation.location) {
+          return;
+        }
+        const { location } = state;
+        const searchParams = new URLSearchParams(location.search);
 
-  return (
-    <S.Layout {...rest}>
-      <Suspense fallback={<Header loading />}>
-        <AwaitAll cities={cities} user={user} cart={cart}>
-          {({ cart, cities, user }) => (
-            <Header cart={cart} cities={cities.data} user={user} />
-          )}
-        </AwaitAll>
-      </Suspense>
+        if (searchParams.get(PRODUCT_ID_SEARCH_QUERY_PARAM)) {
+          showModal(ModalIDEnum.ProductModal);
+          return;
+        }
 
-      <S.Main>
-        <S.Content>
+        const closed = isClosed({
+          start: appConfig.workingHours[0],
+          end: appConfig.workingHours[1],
+        });
+
+        if (closed) {
+          //if (process.env.NODE_ENV !== "development") {
+          showModal(ModalIDEnum.RestaurantClosed);
+          //}
+        } else if (!appStore.userConfirmedLocation) {
+          showModal(ModalIDEnum.LocationModal);
+        }
+      };
+      // run immediately
+      routerSubscriber(router.state, {
+        unstable_flushSync: false,
+        deletedFetchers: [],
+      });
+
+      return router.subscribe(routerSubscriber);
+    }, []);
+
+    return (
+      <S.Layout {...rest}>
+        {isCartLoading || isUserLoading || isCitiesLoading ? (
+          <Header loading />
+        ) : (
+          <Header cart={cart} cities={cities.data} user={user} />
+        )}
+        <S.Main>
           <Outlet />
-        </S.Content>
-      </S.Main>
-
-      <Suspense fallback={<Footer loading={true} />}>
-        <Await resolve={cities}>
-          <Footer />
-        </Await>
-      </Suspense>
-
-      <Suspense>
-        <Await resolve={cart}>
+        </S.Main>
+        <Footer city={city} loading={isCitiesLoading} />
+        {!isCartLoading && (
           <Sticky top={"30px"} right={"30px"} show={showStickyCart}>
-            <CartModal>
-              <div>
-                <TinyCartButton price={cartTotal} />
-              </div>
-            </CartModal>
+            <S.TinyCartButtonOverlay>
+              <TinyCartButton
+                onClick={() => {
+                  showModal(ModalIDEnum.CartModal);
+                }}
+                price={cart.total}
+              />
+            </S.TinyCartButtonOverlay>
           </Sticky>
-        </Await>
-      </Suspense>
-      <StickyToTopBtn />
-    </S.Layout>
-  );
-};
+        )}
+        <LocationsModal id={ModalIDEnum.LocationModal} />
+        <RestaurantClosed id={ModalIDEnum.RestaurantClosed} />
+        <TelegramModal id={ModalIDEnum.TelegramModal} />
+        <SearchProductsModal id={ModalIDEnum.SearchProductsModal} />
+        <ContactsModal id={ModalIDEnum.ContactsModal} />
+        <CartModal id={ModalIDEnum.CartModal} />
+        <ProductModal id={ModalIDEnum.ProductModal} />
+
+        <AuthModal id={ModalIDEnum.AuthModal} />
+        <RegisterModal id={ModalIDEnum.RegisterModal} />
+        <ResetPasswordModal id={ModalIDEnum.ResetPasswordModal} />
+        <MobMenuModal id={ModalIDEnum.MobMenuModal} />
+        <StickyToTopBtn />
+      </S.Layout>
+    );
+  }
+);
 
 export const Component = Layout;
 
-export type LayoutRouteLoaderData = {
-  cart: IGetCartRes;
-  user: IUser | null;
-  cities: IGetCitiesRes;
-  city: ICity;
-  spot: ISpot;
-};
-
-export const layoutLoader = async ({ params }) => {
-  const userPromise = authApi
-    .fetchUser()
-    .then((res) => res.data)
-    .catch((e) => {
-      // // 406 simply means that user is not authorzied, no need to throw error in this case
-      if (![406].includes(e?.response.status)) {
-        throw e;
-      }
-      return null;
-    });
-
-  const citiesPromise =
-    queryClient.getQueryData<IGetCitiesRes>(citiesQuery.queryKey) ??
-    queryClient.fetchQuery<IGetCitiesRes>(citiesQuery);
-
-  const cityQuery_ = cityQuery(params.citySlug);
-
-  const cityPromise =
-    queryClient.getQueryData<ICity>(cityQuery_.queryKey) ??
-    queryClient.fetchQuery<ICity>(cityQuery_);
-
-  const spotQuery_ = spotQuery(params.spotSlug);
-
-  const spotPromise =
-    queryClient.getQueryData<ISpot>(spotQuery_.queryKey) ??
-    queryClient.fetchQuery<ISpot>(spotQuery_);
-
-  const cartPromise =
-    queryClient.getQueryData<IGetCartRes>(cartQuery.queryKey) ??
-    queryClient.fetchQuery<IGetCartRes>(cartQuery);
-
-  return defer({
-    cart: cartPromise,
-    user: userPromise,
-    cities: citiesPromise,
-    city: await cityPromise,
-    spot: await spotPromise,
-  });
-};
-
-// todo: figure out how to not refetch user after modifying cart products
-
-const updateCartProduct = async ({ formData }: { formData: FormData }) => {
-  const product_id = formData.get("product_id");
-  const variant_id = formData.get("variant_id");
-  const quantity = formData.get("quantity");
-
-  const res = await cartApi.addProduct({
-    product_id,
-    quantity,
-    variant_id,
-  });
-
-  queryClient.setQueryData(cartQuery.queryKey, res.data);
-  return res.data;
-};
-
-const deleteCartProduct = async ({ formData }: { formData: FormData }) => {
-  const cart_product_id = formData.get("cart_product_id");
-  const res = await cartApi.removeCartProduct(cart_product_id);
-  queryClient.setQueryData(cartQuery.queryKey, res.data);
-  return res.data;
-};
-
-const register = async ({
-  formData,
-  params,
-}: {
-  formData: FormData;
-  params: any;
-}) => {
-  const { spotSlug, lang, citySlug } = params;
-
-  const email = formData.get("email") + "";
-  const password = formData.get("password") + "";
-  const password_confirmation = formData.get("password") + "";
-  const name = formData.get("name") + "";
-  const surname = formData.get("surname") + "";
-  const agree = !!formData.get("agree");
-  const spot_slug_or_id = spotSlug;
-
-  try {
-    const res = await authApi.register({
-      email,
-      password,
-      password_confirmation,
-      name,
-      surname,
-      agree,
-      // check if this field is needed
-      spot_slug_or_id,
-    });
-    const { token } = res.data.data;
-    Cookies.set("jwt", token);
-    await queryClient.removeQueries(wishlistsQuery.queryKey);
-    await queryClient.removeQueries(cartQuery.queryKey);
-
-    return redirect(
-      "/" + [lang, citySlug, spotSlug, "account", "profile"].join("/")
-    );
-  } catch (e) {
-    if (e instanceof AxiosError) {
-      if (e.response.data?.errors) {
-        return e.response.data;
-      }
-    }
-    throw e;
-  }
-};
-
-const login = async ({
-  formData,
-  params,
-}: {
-  formData: FormData;
-  params: any;
-}) => {
-  const email = formData.get("email") + "";
-  const password = formData.get("password") + "";
-  const redirect_to = formData.get("redirect_to") + "";
-  const { spotSlug, lang, citySlug } = params;
-  const default_redirect_to =
-    "/" + [lang, citySlug, spotSlug, "account", "profile"].join("/");
-  try {
-    const res = await authApi.login({
-      email,
-      password,
-    });
-
-    const { token } = res.data.data;
-    Cookies.set("jwt", token);
-
-    await queryClient.removeQueries(wishlistsQuery.queryKey);
-    await queryClient.removeQueries(cartQuery.queryKey);
-    return redirect(redirect_to || default_redirect_to);
-  } catch (e) {
-    if (e instanceof AxiosError) {
-      if (e.response.data?.errors) {
-        return e.response.data;
-      }
-    }
-    throw e;
-  }
-};
-
-const resetPassword = async ({
-  formData,
-  params,
-}: {
-  formData: FormData;
-  params: any;
-}) => {
-  const email = formData.get("email") + "";
-
-  try {
-    await authApi.restorePassword(email);
-    return {
-      isSent: true,
-    };
-  } catch (e) {
-    if (e instanceof AxiosError) {
-      if (e.response.data?.errors) {
-        return e.response.data;
-      }
-    }
-    throw e;
-  }
-};
-
-const logout = async ({
-  formData,
-  params,
-}: {
-  formData: FormData;
-  params: any;
-}) => {
-  const { lang, citySlug, spotSlug } = params;
-  Cookies.remove("jwt");
-  await queryClient.removeQueries(wishlistsQuery.queryKey);
-  await queryClient.removeQueries(cartQuery.queryKey);
-  return redirect("/" + [lang, citySlug, spotSlug].join("/"));
-};
-
-export const layoutAction = async ({ request, params }: ActionFunctionArgs) => {
-  let formData = await request.formData();
-  const type = formData.get("type");
-  if (request.method === "POST") {
-    if (type === "register") {
-      return register({ formData, params });
-    } else if (type === "login") {
-      return login({ formData, params });
-    } else if (type === "reset-password") {
-      return resetPassword({ formData, params });
-    } else if (type === "logout") {
-      return logout({ formData, params });
-    }
-    return updateCartProduct({ formData });
-  } else if (request.method === "DELETE") {
-    return deleteCartProduct({ formData });
-  }
-};
-
-export const action = layoutAction;
-
-export const loader = layoutLoader;
+export const ErrorBoundary = DefaultErrorBoundary;
 
 Object.assign(Component, {
   displayName: "LazyLayout",
 });
-
-export const shouldRevalidate: ShouldRevalidateFunction = ({
-  currentParams,
-  nextParams,
-}) => {
-  if (currentParams.lang !== nextParams.lang) {
-    return false;
-  }
-};

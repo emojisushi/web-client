@@ -1,6 +1,7 @@
 import * as S from "./styled";
 import { SvgIcon, LogoSvg } from "~components";
 import FadeLoader from "react-spinners/FadeLoader";
+import { useTheme } from "styled-components";
 
 export const Preloader = () => {
   const override = {
@@ -8,6 +9,7 @@ export const Preloader = () => {
     left: "50%",
     top: "50%",
   };
+  const theme = useTheme();
   return (
     <S.Container>
       <S.ImageWrapper>
@@ -17,7 +19,7 @@ export const Preloader = () => {
       </S.ImageWrapper>
 
       <FadeLoader
-        color={"#FFE600"}
+        color={theme.colors.brand}
         width={2}
         height={12}
         margin={10}

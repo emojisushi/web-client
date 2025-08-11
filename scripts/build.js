@@ -17,6 +17,7 @@ require("../config/env");
 const path = require("path");
 const chalk = require("react-dev-utils/chalk");
 const fs = require("fs-extra");
+const fs_simple = require("fs");
 const bfj = require("bfj");
 const webpack = require("webpack");
 const configFactory = require("../config/webpack.config");
@@ -62,6 +63,14 @@ checkBrowsers(paths.appPath, isInteractive)
     // Remove all content but keep the directory so that
     // if you're in it, you don't end up in Trash
     fs.emptyDirSync(paths.appBuild);
+
+    console.log("Creating version.json file...");
+
+    fs_simple.writeFileSync(`${paths.appPublic}/version.json`, JSON.stringify({
+      version: process.env.REACT_APP_VERSION
+    }))
+
+
     // Merge with the public folder
     copyPublicFolder();
     // Start the webpack build

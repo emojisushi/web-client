@@ -1,7 +1,7 @@
 import styled from "styled-components";
 
 const Text = styled.p`
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
   font-weight: 400;
   font-size: 16px;
   margin-top: 20px;

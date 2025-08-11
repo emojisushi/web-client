@@ -1,4 +1,4 @@
-import InstagramSrc from "../../../assets/ui/icons/instagram.svg";
+import InstagramSrc from "../../../assets/ui-icons/icons/instagram.svg";
 
 export const InstagramIcon = () => {
   return (

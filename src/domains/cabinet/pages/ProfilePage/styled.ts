@@ -23,9 +23,9 @@ const BtnWrapper = styled.div`
 const Properties = styled.div`
   width: 634px;
 
-  background: #1c1c1c;
-  box-shadow: 0 4px 15px rgba(28, 28, 28, 0.3);
-  border-radius: 15px;
+  background: ${({ theme }) => theme.colors.canvas.inset2};
+  box-shadow: ${({ theme }) => theme.shadows.canvasInset2Shadow};
+  border-radius: ${({ theme }) => theme.borderRadius.default};
   margin-top: 20px;
   padding: 15px;
   display: flex;
@@ -47,8 +47,8 @@ const Property = styled.div`
   }
 `;
 
-Property.Label = styled.div`
-  color: #616161;
+const PropertyLabel = styled.div`
+  color: ${({ theme }) => theme.colors.fg.muted};
   width: 270px;
   flex-shrink: 0;
   ${media.lessThan("pc")`
@@ -57,35 +57,35 @@ Property.Label = styled.div`
   `}
 `;
 
-Property.Value = styled.div`
-  color: #ffffff;
+const PropertyValue = styled.div`
+  color: ${({ theme }) => theme.colors.fg.default};
   word-break: break-all;
 `;
 
-export const Birth = styled.div`
+const Birth = styled.div`
   margin-top: 30px;
 `;
 
-Birth.Heading = styled.p`
+const BirthHeading = styled.p`
   font-weight: 600;
   font-size: 20px;
   line-height: 24px;
-  color: #ffffff;
+  color: ${({ theme }) => theme.colors.fg.default};
 `;
 
-Birth.Label = styled.p`
+const BirthLabel = styled.p`
   font-weight: 400;
   font-size: 15px;
   line-height: 18px;
 
-  color: #616161;
+  color: ${({ theme }) => theme.colors.fg.muted};
 `;
 
-Birth.Properties = styled.div`
+const BirthProperties = styled.div`
   display: flex;
 `;
 
-Birth.Property = styled.div`
+const BirthProperty = styled.div`
   margin-left: 35px;
   margin-top: 20px;
   :first-child {
@@ -99,17 +99,32 @@ Birth.Property = styled.div`
 const Sex = styled.div`
   margin-top: 20px;
 `;
-Sex.Label = styled.p`
+const SexLabel = styled.p`
   font-weight: 400;
   font-size: 15px;
   line-height: 18px;
 
-  color: #616161;
+  color: ${({ theme }) => theme.colors.fg.muted};
 `;
 
 const HorizontalBar = styled.div`
-  border: 1px solid #2d2d2d;
+  border: 1px solid ${({ theme }) => theme.colors.border.darker};
   margin-top: 30px;
 `;
 
-export { Properties, BtnGroup, BtnWrapper, Sex, HorizontalBar, Property };
+export {
+  Properties,
+  BtnGroup,
+  BtnWrapper,
+  Sex,
+  SexLabel,
+  HorizontalBar,
+  Property,
+  BirthProperty,
+  BirthProperties,
+  BirthLabel,
+  BirthHeading,
+  Birth,
+  PropertyLabel,
+  PropertyValue,
+};
