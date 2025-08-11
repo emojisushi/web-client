@@ -101,10 +101,6 @@ enum HouseType {
   HighRiseBuilding = "high_rise_building",
 }
 
-const getDistrictDefaultSpot = (district: IDistrict) => {
-  return district.spots[0];
-};
-
 const first = (array) => {
   return array[0];
 };
@@ -235,8 +231,7 @@ export const CheckoutForm = observer(
       value: district.id,
       disabledText: t("checkout.temporarilyUnavailable"),
       disabled:
-        !user?.is_call_center_admin &&
-        getDistrictDefaultSpot(district).temporarily_unavailable,
+        !user?.is_call_center_admin && district.spot.temporarily_unavailable,
     }));
 
     const initialValues: FormValues = {
@@ -314,7 +309,7 @@ export const CheckoutForm = observer(
 
       const resultant_spot_id = isTakeawayShipmentMethod
         ? spot_id
-        : getDistrictDefaultSpot(district).id;
+        : district.spot.id;
 
       const paymentMethod = paymentMethods.find(
         (method) => method.code === payment_method_code

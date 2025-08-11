@@ -9,7 +9,7 @@
     "@huse/action-pending": "^1.1.2",
     "@huse/boolean": "^1.1.2",
     "@huse/debug": "^1.1.1",
-    "@layerok/emojisushi-js-sdk": "1.0.16",
+    "@layerok/emojisushi-js-sdk": "1.0.17",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.3",
     "@react-input/mask": "^2.0.4",
     "@svgr/webpack": "^5.5.0",
