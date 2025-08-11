@@ -17,6 +17,7 @@ import { useTheme } from "styled-components";
 import { ROUTES } from "~routes";
 import { ICity } from "@layerok/emojisushi-js-sdk";
 import { Fragment } from "react";
+import { useClientAppVersion } from "~hooks/use-client-app-version";
 
 type FooterProps = {
   loading?: boolean;
@@ -27,6 +28,7 @@ export const Footer = ({ loading = false, city }: FooterProps) => {
   const theme = useTheme();
   const showModal = useShowModal();
   const { t } = useTranslation();
+  const appVersion = useClientAppVersion();
 
   const renderPhoneSection = () => {
     if (city?.phones?.length < 1) {
@@ -181,10 +183,18 @@ export const Footer = ({ loading = false, city }: FooterProps) => {
       </SkeletonWrap>
     );
   };
+  const renderAppVersion = () => {
+    return (
+      <S.AppVersion>
+        {t("app_version")}: {appVersion}
+      </S.AppVersion>
+    );
+  };
   return (
     <S.Footer>
       <Container flexDirection={"row"}>
         <S.Left>
+          {renderAppVersion()}
           <S.Logo>{renderLogo()}</S.Logo>
           <S.List>
             {renderPhoneSection()}

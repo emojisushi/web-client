@@ -250,5 +250,6 @@
   "validation": {
     "required": "Заповніть це поле"
   },
-  "public_offer": "Публічна оферта"
+  "public_offer": "Публічна оферта",
+  "app_version": "Версія застосунку"
 }

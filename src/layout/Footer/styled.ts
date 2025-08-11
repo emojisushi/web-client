@@ -31,6 +31,20 @@ const Left = styled.div`
     `}
 `;
 
+const AppVersion = styled.div`
+  display: flex;
+  align-items: center;
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  padding-bottom: 16px;
+  font-size: 13px;
+  opacity: 0.5;
+  ${media.lessThan("pc")`
+        display: none;
+    `}
+`;
+
 const Right = styled.div`
   ${media.lessThan("tablet")`
         margin-top: 30px;
@@ -107,4 +121,5 @@ export {
   TelegramText,
   StaticMap,
   LinkContainer,
+  AppVersion,
 };

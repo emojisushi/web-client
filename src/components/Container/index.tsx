@@ -5,6 +5,7 @@ import { PropsWithChildren } from "react";
 
 export const Container = styled.div<PropsWithChildren<FlexboxProps>>`
   display: flex;
+  position: relative;
   flex-direction: column;
   width: 100%;
   max-width: 1110px;

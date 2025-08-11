@@ -23,6 +23,7 @@ import { useTheme } from "styled-components";
 import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
 import { LOCATION_CONFIRMED_SEARCH_PARAM } from "~common/constants";
 import { LocationDropdownTrigger } from "~components/modals/MobMenuModal/LocationDropdownTrigger";
+import { useClientAppVersion } from "~hooks/use-client-app-version";
 
 export const MobMenuModal = NiceModal.create(() => {
   const modal = useModal();
@@ -32,6 +33,7 @@ export const MobMenuModal = NiceModal.create(() => {
     justifyContent: "end",
     alignItems: "start",
   };
+  const appVersion = useClientAppVersion();
   const { data: user } = useUser();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -176,6 +178,9 @@ export const MobMenuModal = NiceModal.create(() => {
             </SvgIcon>
           </FlexBox>
         </S.Item>
+        <S.AppVersion>
+          {t("app_version")}: {appVersion}
+        </S.AppVersion>
       </S.Wrapper>
     </Modal>
   );

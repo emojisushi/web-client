@@ -17,4 +17,10 @@ const Item = styled.div`
   }
 `;
 
-export { Wrapper, Item };
+const AppVersion = styled.div`
+  opacity: 0.5;
+  font-size: 12px;
+  margin-top: 20px;
+`;
+
+export { Wrapper, Item, AppVersion };

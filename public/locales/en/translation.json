@@ -249,5 +249,6 @@
   "validation": {
     "required": "Fill out this field"
   },
-  "public_offer": "Public offer"
+  "public_offer": "Public offer",
+  "app_version": "App version"
 }
