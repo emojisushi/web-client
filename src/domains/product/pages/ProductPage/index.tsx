@@ -38,7 +38,7 @@ export const ProductPage = () => {
   return isCartLoading || isCatalogLoading ? (
     <ProductsGrid loading />
   ) : (
-    <div style={{ flexGrow: 1 }}>
+    <div id={"products"} style={{ flexGrow: 1 }}>
       <ProductsGrid
         wishlists={catalogData.wishlists}
         cart={cart}
