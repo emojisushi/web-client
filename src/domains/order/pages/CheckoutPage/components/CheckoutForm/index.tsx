@@ -241,7 +241,7 @@ export const CheckoutForm = observer(
 
     const initialValues: FormValues = {
       name: user && !user.is_call_center_admin ? getUserFullName(user) : "",
-      phone: user && !user.is_call_center_admin ? user.phone || "" : "",
+      phone: user && !user.is_call_center_admin ? user.phone || "+38" : "+38",
       street: "",
       house: "",
       apartment: "",
