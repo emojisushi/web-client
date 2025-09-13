@@ -37,19 +37,13 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
   const q = searchParams.get(SEARCH_QUERY_SEARCH_PARAM);
 
   const goUp = () => {
-    const isUp =
-      rootRef.current.offsetTop >= stickyContainerRef.current.offsetTop;
-
-    if (isUp) {
-      return;
+    const products = document.querySelector("#products");
+    if (products) {
+      products.scrollIntoView({
+        behavior: "auto",
+        block: "start",
+      });
     }
-
-    let top = rootRef.current.offsetTop - STICKY_SIDEBAR_CONTAINER_OFFSET;
-
-    window.scrollTo({
-      top,
-      behavior: "smooth",
-    });
   };
 
   const [debouncedFetch] = useDebounce((form) => {
@@ -58,10 +52,7 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
       replace: !isFirstSearch,
       preventScrollReset: true,
     });
-    // don't scroll up immediately, wait for the products to update and then scroll up
-    setTimeout(() => {
-      goUp();
-    });
+    goUp();
   }, 200);
 
   const handleChange = (event) => {
@@ -75,9 +66,7 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
     navigate(to, {
       preventScrollReset: true,
     });
-    setTimeout(() => {
-      goUp();
-    }, 200);
+    goUp();
   };
 
   const handleFavoritesClick: MouseEventHandler<HTMLAnchorElement> = (e) => {
@@ -85,9 +74,7 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
     navigate(ROUTES.CATEGORY.WISHLIST.path, {
       preventScrollReset: true,
     });
-    setTimeout(() => {
-      goUp();
-    });
+    goUp();
   };
 
   const searchParamsInputs = Array.from(searchParams.entries())
