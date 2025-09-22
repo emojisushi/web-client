@@ -353,7 +353,7 @@ export const CheckoutForm = observer(
           wayforpayFormContainer.current.querySelector("form").submit();
         } else {
           const order_id = res.data?.poster_order?.incoming_order_id;
-          clearCart();
+
           navigate(
             ROUTES.THANKYOU.buildPath(
               {},
@@ -362,6 +362,11 @@ export const CheckoutForm = observer(
               }
             )
           );
+          // setTimeout ensures that cart is cleared on 'thank you' page instead on 'checkout page'
+          // clearing cart on 'checkout page' can trigger useEffect that redirect user to catalog when cart is empty
+          setTimeout(() => {
+            clearCart();
+          });
         }
       } catch (e) {
         if (!axios.isAxiosError(e)) {
