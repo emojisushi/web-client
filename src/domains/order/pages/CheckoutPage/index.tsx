@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useNavigation } from "react-router-dom";
@@ -17,13 +17,16 @@ import * as S from "./styled";
 import { useShowBinotel } from "~hooks/use-binotel";
 import { checkoutFormQuery } from "~domains/order/order.query";
 import { catalogQuery } from "~domains/catalog/catalog.query";
+import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 
 const CheckoutPage = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   useShowBinotel();
+  const isRedirectionToThankYouPage = useRef<boolean>(false);
 
   const { data: user, isLoading: isUserLoading } = useUser();
+  const { mutate: clearCart } = useClearCart();
 
   const { data: cart, isLoading: isCartLoading } = useQuery({
     ...cartQuery,
@@ -46,6 +49,9 @@ const CheckoutPage = () => {
     if (state !== "idle") {
       // prevent below navigation from interrupting ongoing navigations
       // fixes the bug when navigation to 'thank you' page was interrupted by navigation below
+      return;
+    }
+    if (isRedirectionToThankYouPage.current) {
       return;
     }
 
@@ -72,6 +78,10 @@ const CheckoutPage = () => {
         key={user ? "one" : "second"}
         cart={cart}
         city={city}
+        onRedirectToThankYouPage={() => {
+          isRedirectionToThankYouPage.current = true;
+          clearCart();
+        }}
         shippingMethods={checkoutForm.shipping_methods}
         paymentMethods={checkoutForm.payment_methods}
         user={user}
