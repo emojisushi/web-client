@@ -152,6 +152,7 @@ export const CheckoutForm = observer(
     city,
     spots: spotsRes,
     loading = false,
+    onRedirectToThankYouPage,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -159,8 +160,6 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
-
-    const { mutate: clearCart } = useClearCart();
 
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
@@ -236,7 +235,7 @@ export const CheckoutForm = observer(
 
     const initialValues: FormValues = {
       name: user && !user.is_call_center_admin ? getUserFullName(user) : "",
-      phone: user && !user.is_call_center_admin ? user.phone || "" : "",
+      phone: user && !user.is_call_center_admin ? user.phone || "+38" : "+38",
       street: "",
       house: "",
       apartment: "",
@@ -348,7 +347,7 @@ export const CheckoutForm = observer(
           wayforpayFormContainer.current.querySelector("form").submit();
         } else {
           const order_id = res.data?.poster_order?.incoming_order_id;
-          clearCart();
+
           navigate(
             ROUTES.THANKYOU.buildPath(
               {},
@@ -357,6 +356,7 @@ export const CheckoutForm = observer(
               }
             )
           );
+          onRedirectToThankYouPage();
         }
       } catch (e) {
         if (!axios.isAxiosError(e)) {
