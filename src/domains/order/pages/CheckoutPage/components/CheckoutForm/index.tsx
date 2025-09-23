@@ -156,6 +156,7 @@ export const CheckoutForm = observer(
     city,
     spots: spotsRes,
     loading = false,
+    onRedirectToThankYouPage,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -163,8 +164,6 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
-
-    const { mutate: clearCart } = useClearCart();
 
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
@@ -362,11 +361,7 @@ export const CheckoutForm = observer(
               }
             )
           );
-          // setTimeout ensures that cart is cleared on 'thank you' page instead on 'checkout page'
-          // clearing cart on 'checkout page' can trigger useEffect that redirect user to catalog when cart is empty
-          setTimeout(() => {
-            clearCart();
-          });
+          onRedirectToThankYouPage();
         }
       } catch (e) {
         if (!axios.isAxiosError(e)) {
