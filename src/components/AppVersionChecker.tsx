@@ -30,7 +30,9 @@ export const AppVersionChecker = ({
         getActualAppVersion().then((actualAppVersion) => {
           const clientAppVersion = getClientAppVersion();
           if (actualAppVersion !== clientAppVersion) {
-            window.require_reload = true;
+            if (clientAppVersion !== null) {
+              window.require_reload = true;
+            }
             localStorage.setItem(APP_VERSION_STORAGE_KEY, actualAppVersion);
             appConfig.version = actualAppVersion;
           }
