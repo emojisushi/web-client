@@ -6,7 +6,8 @@
       {
         "root": ["./"],
         "alias": {
-          "^~(.+)": "./src/\\1"
+          "^~(.+)": "./src/\\1",
+          "@layerok/emojisushi-js-sdk": "./src/js-api"
         },
         "extensions": [
           ".ios.js",

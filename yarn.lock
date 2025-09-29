@@ -1635,13 +1635,6 @@
     "@jridgewell/resolve-uri" "^3.1.0"
     "@jridgewell/sourcemap-codec" "^1.4.14"
 
-"@layerok/emojisushi-js-sdk@1.0.17":
-  version "1.0.17"
-  resolved "https://registry.npmjs.org/@layerok/emojisushi-js-sdk/-/emojisushi-js-sdk-1.0.17.tgz"
-  integrity sha512-I6MH1rQUzpZEC6qRo7R1DVMiD2T9JtqHmu1JEcsdk7O3DjNw7oz/s7wNSgM6oAo8T0+Nagvb7Q59X8ZTNgSbOA==
-  dependencies:
-    axios "*"
-
 "@leichtgewicht/ip-codec@^2.0.1":
   version "2.0.3"
   resolved "https://registry.npmjs.org/@leichtgewicht/ip-codec/-/ip-codec-2.0.3.tgz"
@@ -3045,7 +3038,7 @@ axios-auth-refresh@^3.3.6:
   resolved "https://registry.npmjs.org/axios-auth-refresh/-/axios-auth-refresh-3.3.6.tgz"
   integrity sha512-2CeBUce/SxIfFxow5/n8vApJ97yYF6qoV4gh1UrswT7aEOnlOdBLxxyhOI4IaxGs6BY0l8YujU2jlc4aCmK17Q==
 
-axios@*, axios@^0.27.2:
+axios@^0.27.2:
   version "0.27.2"
   resolved "https://registry.npmjs.org/axios/-/axios-0.27.2.tgz"
   integrity sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==

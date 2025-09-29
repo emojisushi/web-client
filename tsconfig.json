@@ -9,7 +9,8 @@
     "resolveJsonModule": true,
     "target": "es5",
     "paths": {
-      "~*": ["src/*"]
+      "~*": ["src/*"],
+      "@layerok/emojisushi-js-sdk": ["src/js-api"],
     }
   },
   "exclude": ["node_modules", "build", "config", "public", "scripts"],
