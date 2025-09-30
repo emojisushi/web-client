@@ -10,7 +10,7 @@
     "target": "es5",
     "paths": {
       "~*": ["src/*"],
-      "@layerok/emojisushi-js-sdk": ["src/js-api-2"],
+      "@layerok/emojisushi-js-sdk": ["src/js-api"],
     }
   },
   "exclude": ["node_modules", "build", "config", "public", "scripts"],
