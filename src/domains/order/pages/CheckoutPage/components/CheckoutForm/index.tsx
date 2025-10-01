@@ -39,6 +39,7 @@ import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 import { unformat, useMask } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
+import { Autocomplete } from "~components/Autocomplete";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -612,7 +613,15 @@ export const CheckoutForm = observer(
                   />
                 </FlexBox>
               </S.Control>
-
+              <S.Control>
+                <Autocomplete
+                  placeholder={t("checkout.form.street.placeholder")}
+                  noResultsText={t("checkout.form.street.noResults")}
+                  typeMoreText={t("checkout.form.street.typeMore")}
+                  loading={loading}
+                  data={[{ id: 1, name: 'testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest' }, { id: 2, name: 'asd' }]}
+                />
+              </S.Control>
               {formik.values.house_type === HouseType.HighRiseBuilding && (
                 <S.Control>
                   <FlexBox

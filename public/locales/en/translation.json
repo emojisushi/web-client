@@ -125,7 +125,9 @@
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",
       "street": {
-        "placeholder": "Street"
+        "placeholder": "Street",
+        "typeMore": "Search from three letters",
+        "noResults": "Not found"
       },
       "house": {
         "placeholder": "House"
