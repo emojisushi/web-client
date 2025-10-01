@@ -131,7 +131,9 @@
         "placeholder": "Оберіть найближчий заклад"
       },
       "street": {
-        "placeholder": "Вулиця"
+        "placeholder": "Вулиця",
+        "typeMore": "Пошук від трьох літер",
+        "noResults": "Не знайдено"
       },
       "house": {
         "placeholder": "Будинок"
