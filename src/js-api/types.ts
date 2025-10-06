@@ -265,6 +265,23 @@ export type IGetCheckoutFormRes = {
   spots: ISpot[];
 };
 
+export type Address = {
+  id: number;
+  name_ua: string;
+  name_ru: string;
+  suburb_ua: string;
+  suburb_ru: string;
+  spot_name: string;
+};
+
+export type IGetAddresses = {
+  addresses: Address[];
+};
+
+export type IGetAddressOptions = {
+  enable_address_system: boolean;
+};
+
 export type ICartProduct = {
   quantity: number;
   product: IProduct;
@@ -372,6 +389,7 @@ export enum ShippingMethodCodeEnum {
 
 export enum PaymentMethodCodeEnum {
   Cash = "cash",
+  Online = "online",
 }
 
 export type Banner = {
