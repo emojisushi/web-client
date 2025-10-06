@@ -18,6 +18,7 @@ import { useShowBinotel } from "~hooks/use-binotel";
 import { checkoutFormQuery } from "~domains/order/order.query";
 import { catalogQuery } from "~domains/catalog/catalog.query";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
+import { addressOptionsQuery } from "~domains/order/addressOptions.query";
 
 const CheckoutPage = () => {
   const { t } = useTranslation();
@@ -32,6 +33,11 @@ const CheckoutPage = () => {
     ...cartQuery,
   });
 
+  const { data: addressOptions, isLoading: isAddressOptionsLoading } = useQuery(
+    {
+      ...addressOptionsQuery,
+    }
+  );
   const { state } = useNavigation();
 
   const { isLoading: isLoadingCatalog } = useQuery({
@@ -66,7 +72,8 @@ const CheckoutPage = () => {
       isCartLoading ||
       isLoadingCatalog ||
       isUserLoading ||
-      isCheckoutFormLoading;
+      isCheckoutFormLoading ||
+      isAddressOptionsLoading;
 
     if (loading) {
       return <CheckoutForm loading />;
@@ -84,6 +91,7 @@ const CheckoutPage = () => {
         }}
         shippingMethods={checkoutForm.shipping_methods}
         paymentMethods={checkoutForm.payment_methods}
+        addressAutocomplete={addressOptions.enable_address_system}
         user={user}
         spots={checkoutForm.spots}
       />

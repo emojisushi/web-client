@@ -21,7 +21,14 @@ import {
   PaymentMethodCodeEnum,
   ShippingMethodCodeEnum,
 } from "@layerok/emojisushi-js-sdk";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Cart } from "~domains/cart/cart.query";
 import axios, { AxiosError } from "axios";
 import { observer } from "mobx-react";
@@ -40,6 +47,9 @@ import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 import { unformat, useMask } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
+import { addressQuery } from "~domains/order/address.query";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -49,6 +59,7 @@ type TCheckoutFormProps = {
   paymentMethods?: IPaymentMethod[] | undefined;
   spots?: ISpot[];
   city?: ICity;
+  addressAutocomplete?: boolean;
   onRedirectToThankYouPage?: () => void;
 };
 
@@ -109,7 +120,7 @@ const first = (array) => {
 type FormValues = {
   name: string;
   phone: string;
-  street: string;
+  street: number | string;
   house: string;
   apartment: string;
   entrance: string;
@@ -153,6 +164,7 @@ export const CheckoutForm = observer(
     city,
     spots: spotsRes,
     loading = false,
+    addressAutocomplete = true,
     onRedirectToThankYouPage,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
@@ -161,6 +173,11 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
+
+    const { data: addresses, isLoading: isAddressLoading } = useQuery({
+      ...addressQuery,
+      enabled: !!addressAutocomplete,
+    });
 
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
@@ -182,7 +199,7 @@ export const CheckoutForm = observer(
           () => t("checkout.form.validation.phone.uk_format"),
           isValidUkrainianPhone
         ),
-      street: Yup.string().required(t("validation.required")),
+      street: Yup.string().nullable().required(t("validation.required")),
       house: Yup.string().required(t("validation.required")),
       district_id: Yup.number().required(t("validation.required")),
     });
@@ -195,14 +212,13 @@ export const CheckoutForm = observer(
           () => t("checkout.form.validation.phone.uk_format"),
           isValidUkrainianPhone
         ),
-      street: Yup.string().required(t("validation.required")),
+      street: Yup.string().nullable().required(t("validation.required")),
       house: Yup.string().required(t("validation.required")),
       apartment: Yup.string().required(t("validation.required")),
       entrance: Yup.string().required(t("validation.required")),
       floor: Yup.number().required(t("validation.required")),
       district_id: Yup.number().required(t("validation.required")),
     });
-
     const getValidationSchema = (values: FormValues) => {
       if (
         values.house_type === HouseType.HighRiseBuilding &&
@@ -274,6 +290,9 @@ export const CheckoutForm = observer(
 
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
+      if (!selectedAddress?.spotName) {
+        formik.setFieldError("street", "Ваша адреса не обслуговується");
+      }
       const {
         phone,
         name,
@@ -292,21 +311,35 @@ export const CheckoutForm = observer(
       } = values;
 
       const [firstname, lastname] = name.split(" ");
-      const address = [
-        ["Вулиця", street],
-        ["Будинок", house],
-        ["Квартира", apartment],
-        ["Під'їзд", entrance],
-        ["Поверх", floor],
-      ]
-        .filter(([label, value]) => !!value)
-        .map(([label, value]) => `${label}: ${value}`)
-        .join(", ");
+      let address;
+      let addressDetails;
 
+      if (addressAutocomplete) {
+        address = street;
+        addressDetails = [
+          ["Будинок", house],
+          ["Квартира", apartment],
+          ["Під'їзд", entrance],
+          ["Поверх", floor],
+        ]
+          .filter(([label, value]) => !!value)
+          .map(([label, value]) => `${label}: ${value}`)
+          .join(", ");
+      } else {
+        address = [
+          ["Вулиця", street],
+          ["Будинок", house],
+          ["Квартира", apartment],
+          ["Під'їзд", entrance],
+          ["Поверх", floor],
+        ]
+          .filter(([label, value]) => !!value)
+          .map(([label, value]) => `${label}: ${value}`)
+          .join(", ");
+      }
       const district = city?.districts.find(
         (district) => district.id === district_id
       );
-
       const resultant_spot_id = isTakeawayShipmentMethod
         ? spot_id
         : district.spot.id;
@@ -326,6 +359,7 @@ export const CheckoutForm = observer(
           email: user ? user.email : "",
 
           address,
+          address_details: addressDetails,
           payment_method_id: paymentMethod.id,
           shipping_method_id: shippingMethod.id,
           spot_id: resultant_spot_id,
@@ -342,7 +376,6 @@ export const CheckoutForm = observer(
           },
         });
         removeFromLocalStorage(localStorageKeys.draftOrder);
-
         if (res.data?.form) {
           wayforpayFormContainer.current.innerHTML = res.data.form;
           wayforpayFormContainer.current.querySelector("form").submit();
@@ -406,7 +439,6 @@ export const CheckoutForm = observer(
             (a, b) => fieldSortOrderMap[a] - fieldSortOrderMap[b]
           )
         );
-
         if (scrollToError) {
           fieldsRef.current[scrollToError]?.scrollIntoView({
             behavior: "smooth",
@@ -419,6 +451,7 @@ export const CheckoutForm = observer(
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [formik.isSubmitting, fieldsRef]
     );
+    console.log(formik.values[FormNames.Street]);
 
     const handleChange = (e: ChangeEvent<any>) => {
       setToLocalStorage(localStorageKeys.draftOrder, {
@@ -499,10 +532,27 @@ export const CheckoutForm = observer(
         label: t("checkout.form.highRiseBuilding"),
       },
     ];
-
+    const addressesMemo = useMemo(() => {
+      if (!addresses?.addresses) return [];
+      return addresses.addresses.map((el) => ({
+        id: el.id,
+        name: `${el.name_ua}, ${el.suburb_ua}`,
+        searchText:
+          el.name_ua == el.name_ru ? el.name_ua : `${el.name_ua} ${el.name_ru}`,
+        spotName: el.spot_name,
+      }));
+    }, [addresses?.addresses]);
     const setFieldRef =
       (name: keyof FormValues) => (node: HTMLElement | null) =>
         (fieldsRef.current[name] = node);
+    const style80 = useMemo(() => ({ width: "80%" }), []);
+    const setFieldValueCallback = useCallback((value) => {
+      setFieldValue(FormNames.Street, value);
+    }, []);
+
+    const selectedAddress = addressesMemo.find(
+      (el) => el.id === formik.values[FormNames.Street]
+    );
 
     return (
       <S.Container>
@@ -526,7 +576,6 @@ export const CheckoutForm = observer(
             onChange={handleShippingMethodChange}
             ref={setFieldRef(FormNames.ShippingMethodCode)}
           />
-
           <S.Control>
             {isTakeawayShipmentMethod && spots.length !== 1 ? (
               <Dropdown
@@ -564,7 +613,6 @@ export const CheckoutForm = observer(
               )
             )}
           </S.Control>
-
           {isCourierShipmentMethod && (
             <>
               <S.Control>
@@ -583,22 +631,41 @@ export const CheckoutForm = observer(
                     gap: 10,
                   }}
                 >
+                  {addressAutocomplete ? (
+                    <Autocomplete
+                      style={style80}
+                      //   name={FormNames.Street}
+                      placeholder={t("checkout.form.street.placeholder")}
+                      noResultsText={t("checkout.form.street.noResults")}
+                      typeMoreText={t("checkout.form.street.typeMore")}
+                      loading={loading || isAddressLoading}
+                      value={formik.values[FormNames.Street]}
+                      onChange={setFieldValueCallback}
+                      error={
+                        formik.touched[FormNames.Street] &&
+                        formik.errors["street"]
+                      }
+                      data={addressesMemo ?? null}
+                    />
+                  ) : (
+                    <Input
+                      style={{ width: "80%" }}
+                      loading={loading}
+                      name={FormNames.Street}
+                      placeholder={t("checkout.form.street.placeholder")}
+                      onChange={handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values[FormNames.Street]}
+                      error={
+                        formik.touched[FormNames.Street] &&
+                        formik.errors[FormNames.Street]
+                      }
+                      ref={setFieldRef(FormNames.Street)}
+                    />
+                  )}
+
                   <Input
-                    style={{ width: "70%" }}
-                    loading={loading}
-                    name={FormNames.Street}
-                    placeholder={t("checkout.form.street.placeholder")}
-                    onChange={handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values[FormNames.Street]}
-                    error={
-                      formik.touched[FormNames.Street] &&
-                      formik.errors[FormNames.Street]
-                    }
-                    ref={setFieldRef(FormNames.Street)}
-                  />
-                  <Input
-                    style={{ width: "30%" }}
+                    style={{ width: "20%" }}
                     loading={loading}
                     name={FormNames.House}
                     placeholder={t("checkout.form.house.placeholder")}
@@ -612,15 +679,6 @@ export const CheckoutForm = observer(
                     ref={setFieldRef(FormNames.House)}
                   />
                 </FlexBox>
-              </S.Control>
-              <S.Control>
-                <Autocomplete
-                  placeholder={t("checkout.form.street.placeholder")}
-                  noResultsText={t("checkout.form.street.noResults")}
-                  typeMoreText={t("checkout.form.street.typeMore")}
-                  loading={loading}
-                  data={[{ id: 1, name: 'testtesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttesttest' }, { id: 2, name: 'asd' }]}
-                />
               </S.Control>
               {formik.values.house_type === HouseType.HighRiseBuilding && (
                 <S.Control>
@@ -673,7 +731,6 @@ export const CheckoutForm = observer(
               )}
             </>
           )}
-
           <S.Control>
             <Input
               loading={loading}
@@ -688,7 +745,6 @@ export const CheckoutForm = observer(
               ref={setFieldRef(FormNames.Name)}
             />
           </S.Control>
-
           <S.Control>
             <Input
               loading={loading}
@@ -752,7 +808,6 @@ export const CheckoutForm = observer(
               />
             </S.Control>
           )}
-
           <div
             style={{
               marginTop: 20,
