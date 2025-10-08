@@ -164,7 +164,7 @@ export const CheckoutForm = observer(
     city,
     spots: spotsRes,
     loading = false,
-    addressAutocomplete = true,
+    addressAutocomplete = false,
     onRedirectToThankYouPage,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
@@ -287,10 +287,9 @@ export const CheckoutForm = observer(
       shipping_method_code: null,
       comment: null,
     });
-
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
-      if (!selectedAddress?.spotName) {
+      if (addressAutocomplete && !selectedAddress?.spotName) {
         formik.setFieldError("street", "Ваша адреса не обслуговується");
       }
       const {
@@ -451,7 +450,6 @@ export const CheckoutForm = observer(
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [formik.isSubmitting, fieldsRef]
     );
-    console.log(formik.values[FormNames.Street]);
 
     const handleChange = (e: ChangeEvent<any>) => {
       setToLocalStorage(localStorageKeys.draftOrder, {
@@ -594,7 +592,7 @@ export const CheckoutForm = observer(
                 }
               />
             ) : (
-              districts.length !== 1 && (
+              districts.length !== 1 && !addressAutocomplete && (
                 <Dropdown
                   showSkeleton={loading}
                   placeholder={t("checkout.form.district.placeholder")}
