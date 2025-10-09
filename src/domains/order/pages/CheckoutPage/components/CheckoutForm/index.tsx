@@ -592,7 +592,8 @@ export const CheckoutForm = observer(
                 }
               />
             ) : (
-              districts.length !== 1 && !addressAutocomplete && (
+              districts.length !== 1 &&
+              !addressAutocomplete && (
                 <Dropdown
                   showSkeleton={loading}
                   placeholder={t("checkout.form.district.placeholder")}
@@ -814,6 +815,7 @@ export const CheckoutForm = observer(
             <FlexBox justifyContent={"space-between"} alignItems={"flex-end"}>
               <Button
                 loading={formik.isSubmitting}
+                disabled={formik.isSubmitting}
                 showSkeleton={loading}
                 type={"submit"}
                 style={{
