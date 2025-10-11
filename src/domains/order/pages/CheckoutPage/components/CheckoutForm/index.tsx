@@ -241,7 +241,6 @@ export const CheckoutForm = observer(
       disabledText: t("checkout.temporarilyUnavailable"),
       disabled: !user?.is_call_center_admin && spot.temporarily_unavailable,
     }));
-
     const districts = (city?.districts || []).map((district) => ({
       label: district.name,
       value: district.id,
@@ -266,10 +265,12 @@ export const CheckoutForm = observer(
       house_type: HouseType.PrivateHouse,
       // if only one spot or district is available, then choose it by default
       spot_id: spots.length === 1 ? spots[0].value : undefined,
-      district_id: districts.length === 1 ? districts[0].value : undefined,
+      district_id:
+        districts.length === 1 || addressAutocomplete
+          ? districts[0].value
+          : undefined,
       ...(getFromLocalStorage(localStorageKeys.draftOrder) || {}),
     };
-
     const fieldsRef = useRef<Record<keyof FormValues, HTMLElement | null>>({
       phone: null,
       street: null,
@@ -377,6 +378,7 @@ export const CheckoutForm = observer(
         removeFromLocalStorage(localStorageKeys.draftOrder);
         if (res.data?.form) {
           wayforpayFormContainer.current.innerHTML = res.data.form;
+          //   onRedirectToThankYouPage();
           wayforpayFormContainer.current.querySelector("form").submit();
         } else {
           const order_id = res.data?.poster_order?.incoming_order_id;
@@ -393,7 +395,6 @@ export const CheckoutForm = observer(
         }
       } catch (e) {
         if (!axios.isAxiosError(e)) {
-          // todo: log
           return;
         }
         const { data } = (e as AxiosError<ErrorResponse>).response;

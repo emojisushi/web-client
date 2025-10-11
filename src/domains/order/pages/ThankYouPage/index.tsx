@@ -5,12 +5,19 @@ import { useTheme } from "styled-components";
 import { Page } from "~components/Page";
 import { useTypedSearchParams } from "react-router-typesafe-routes/dom";
 import { ROUTES } from "~routes";
+import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
+import { useEffect } from "react";
 
 // todo: don't prompt the user to choose a city
 export const ThankYouPage = () => {
   const { t } = useTranslation();
+  const { mutate: clearCart } = useClearCart();
   const [{ order_id }] = useTypedSearchParams(ROUTES.THANKYOU);
   const theme = useTheme();
+
+  useEffect(() => {
+    clearCart();
+  }, [clearCart]);
 
   return (
     <Page>
