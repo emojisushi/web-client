@@ -145,6 +145,14 @@ const phoneMaskOptions = {
   mask: "+38(___) ___-__-__",
   replacement: { _: /\d/ },
   showMask: true,
+  track: ({ inputType, data }) => {
+    if (inputType === "insert") {
+      if (data.startsWith("+38")) {
+        data = data.slice(3);
+      }
+    }
+    return data;
+  },
 };
 
 export const CheckoutForm = observer(
@@ -371,14 +379,17 @@ export const CheckoutForm = observer(
         const { data } = (e as AxiosError<ErrorResponse>).response;
 
         const errors = data?.errors;
-        //const message = data?.message;
-
+        const message = data?.message;
         if (!errors) {
           return;
         }
 
         if (errors.firstname) {
           formik.setFieldError(FormNames.Name, errors.firstname[0]);
+        }
+
+        if (message.includes("phone")) {
+          formik.setFieldError(FormNames.Phone, "Недійсний номер телефону");
         }
 
         // todo: handle other server errors
