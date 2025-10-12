@@ -36,7 +36,17 @@ export const ROUTES = {
       order_id: string(),
     },
   }),
-  PUBLIC_OFFER: route("public-offer"),
+  PUBLIC_OFFER: route(
+    "public-offer",
+    {},
+    {
+      OFFER: route(":id", {
+        params: {
+          id: string(),
+        },
+      }),
+    }
+  ),
   DELIVERYANDPAYMENT: route("dostavka-i-oplata"),
   CHECKOUT: route("checkout"),
   ACCOUNT: route(

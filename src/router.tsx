@@ -27,7 +27,16 @@ const routes = [
                 lazy: lazy(
                   () => import("~pages/PublicOfferPage/PublicOfferPage")
                 ),
+                children: [
+                  {
+                    path: ROUTES.PUBLIC_OFFER.OFFER.path,
+                    lazy: lazy(
+                      () => import("~pages/PublicOfferPage/PublicOfferPage")
+                    ),
+                  },
+                ],
               },
+
               {
                 path: ROUTES.CATEGORY.path,
                 id: "categories",
