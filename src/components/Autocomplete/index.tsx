@@ -83,7 +83,7 @@ const AutocompleteComponent = ({
         !wrapperRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
-        if (!confirmed) {
+        if (!confirmed && !loading) {
           setSearchText("");
           onChange(null);
         }
