@@ -272,13 +272,15 @@ export type Address = {
   suburb_ua: string;
   suburb_ru: string;
   spot_name: string;
+  min_amount: number;
+  delivery_price: number;
 };
 
-export type IGetAddresses = {
+export type IGetAddressesRes = {
   addresses: Address[];
 };
 
-export type IGetAddressOptions = {
+export type IGetAddressOptionsRes = {
   enable_address_system: boolean;
 };
 
@@ -389,7 +391,7 @@ export enum ShippingMethodCodeEnum {
 
 export enum PaymentMethodCodeEnum {
   Cash = "cash",
-  Online = "online",
+  Wayforpay = "wayforpay",
 }
 
 export type Banner = {

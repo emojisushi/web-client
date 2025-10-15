@@ -33,6 +33,7 @@ const CheckoutPage = () => {
     ...cartQuery,
   });
 
+  const citySlug = useCurrentCitySlug();
   const { data: addressOptions, isLoading: isAddressOptionsLoading } = useQuery(
     {
       ...addressOptionsQuery,
@@ -47,7 +48,6 @@ const CheckoutPage = () => {
   const { data: checkoutForm, isLoading: isCheckoutFormLoading } =
     useQuery(checkoutFormQuery);
 
-  const citySlug = useCurrentCitySlug();
   const { data: cities, isLoading: isCitiesLoading } = useQuery(citiesQuery);
   const city = (cities?.data || []).find((c) => c.slug === citySlug);
 

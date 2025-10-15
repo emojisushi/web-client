@@ -158,7 +158,9 @@
     "selectSavedAddress": "Select saved address",
     "alreadyHaveAccount": "Already have an account?",
     "order": "Checkout",
-    "to_pay": "To pay:"
+    "to_pay": "To pay:",
+    "order_price" : "Order:",
+    "delivery_price" : "Delivery:"
   },
   "shippingMethods": {
     "courier": "Courier",

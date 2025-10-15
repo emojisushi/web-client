@@ -50,6 +50,7 @@ import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
+import { CitySlug } from "~common/constants";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -173,9 +174,8 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
-
     const { data: addresses, isLoading: isAddressLoading } = useQuery({
-      ...addressQuery,
+      ...addressQuery(city?.slug),
       enabled: !!addressAutocomplete,
     });
 
@@ -468,7 +468,6 @@ export const CheckoutForm = observer(
       });
       formik.setFieldValue(name, value);
     };
-
     const shippingMethodOptions = (shippingMethods || []).map((item) => ({
       value: item.code,
       // todo: don't use dynamic translation keys
@@ -521,6 +520,32 @@ export const CheckoutForm = observer(
     const isCashPaymentMethod =
       formik.values.payment_method_code === PaymentMethodCodeEnum.Cash;
 
+    const isOnlinePaymentMethod =
+      formik.values.payment_method_code === PaymentMethodCodeEnum.Wayforpay;
+
+    let filteredPaymentMethods = paymentMethodOptions;
+
+    if (isTakeawayShipmentMethod) {
+      filteredPaymentMethods = paymentMethodOptions.filter(
+        (option) => option.value !== "wayforpay"
+      );
+    }
+    useEffect(() => {
+      if (
+        isTakeawayShipmentMethod &&
+        isOnlinePaymentMethod &&
+        formik.values.payment_method_code !== PaymentMethodCodeEnum.Cash
+      ) {
+        formik.setFieldValue(
+          FormNames.PaymentMethodCode,
+          PaymentMethodCodeEnum.Cash
+        );
+      }
+    }, [
+      isTakeawayShipmentMethod,
+      isOnlinePaymentMethod,
+      formik.values.payment_method_code,
+    ]);
     const houseTypes = [
       {
         value: HouseType.PrivateHouse,
@@ -539,6 +564,8 @@ export const CheckoutForm = observer(
         searchText:
           el.name_ua == el.name_ru ? el.name_ua : `${el.name_ua} ${el.name_ru}`,
         spotName: el.spot_name,
+        min_amount: el.min_amount,
+        delivery_price: el.delivery_price,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -552,6 +579,13 @@ export const CheckoutForm = observer(
     const selectedAddress = addressesMemo.find(
       (el) => el.id === formik.values[FormNames.Street]
     );
+
+    let deliveryFee = 0;
+    let cartTotal = Number(cart?.total.replace("грн.", ""));
+    if (isCourierShipmentMethod && cartTotal < selectedAddress?.min_amount) {
+      deliveryFee = selectedAddress?.delivery_price;
+      cartTotal += deliveryFee;
+    }
 
     return (
       <S.Container>
@@ -679,6 +713,13 @@ export const CheckoutForm = observer(
                     ref={setFieldRef(FormNames.House)}
                   />
                 </FlexBox>
+                {addressAutocomplete && !(loading || isAddressLoading) && (
+                  <S.Container>
+                    {selectedAddress?.min_amount &&
+                      deliveryFee !== 0 &&
+                      `Безкоштовна доставка при замовлені від ${selectedAddress?.min_amount} грн`}
+                  </S.Container>
+                )}
               </S.Control>
               {formik.values.house_type === HouseType.HighRiseBuilding && (
                 <S.Control>
@@ -789,7 +830,7 @@ export const CheckoutForm = observer(
             <SegmentedControl
               showSkeleton={loading}
               name={FormNames.PaymentMethodCode}
-              items={paymentMethodOptions}
+              items={filteredPaymentMethods}
               onChange={handleChange}
               value={formik.values[FormNames.PaymentMethodCode]}
               ref={setFieldRef(FormNames.PaymentMethodCode)}
@@ -813,27 +854,55 @@ export const CheckoutForm = observer(
               marginTop: 20,
             }}
           >
-            <FlexBox justifyContent={"space-between"} alignItems={"flex-end"}>
+            <FlexBox flexDirection={"column"}>
+              <SkeletonWrap loading={loading || isAddressLoading}>
+                <FlexBox justifyContent={"space-between"}>
+                  <Trans
+                    showSkeleton={loading || isAddressLoading}
+                    i18nKey={"checkout.order_price"}
+                  />
+                  <span>{cart?.total}</span>
+                </FlexBox>
+                {isCourierShipmentMethod && (
+                  <FlexBox justifyContent={"space-between"}>
+                    <Trans
+                      showSkeleton={loading || isAddressLoading}
+                      i18nKey={"checkout.delivery_price"}
+                    />
+                    <span>{deliveryFee} грн.</span>
+                  </FlexBox>
+                )}
+                <S.Total
+                  style={{
+                    marginTop: "20px",
+                    justifyContent: "space-between",
+                    display: "flex",
+                  }}
+                >
+                  <Trans i18nKey={"checkout.to_pay"} />
+                  {/* &nbsp; */}
+                  <span>{cart?.total ? `${cartTotal} грн.` : "🤪🤪🤪"}</span>
+                </S.Total>
+              </SkeletonWrap>
+            </FlexBox>
+          </div>
+          <div style={{ marginTop: "20px" }}>
+            <SkeletonWrap
+              loading={loading || isAddressLoading}
+              style={{ width: "100%" }}
+            >
               <Button
                 loading={formik.isSubmitting}
                 disabled={formik.isSubmitting}
-                showSkeleton={loading}
+                showSkeleton={loading || isAddressLoading}
                 type={"submit"}
                 style={{
-                  width: 160,
+                  width: "100%",
                 }}
               >
                 {t("checkout.order")}
               </Button>
-
-              <S.Total>
-                <Trans showSkeleton={loading} i18nKey={"checkout.to_pay"} />
-                &nbsp;
-                <SkeletonWrap loading={loading}>
-                  {cart?.total ? cart.total : "🤪🤪🤪"}
-                </SkeletonWrap>
-              </S.Total>
-            </FlexBox>
+            </SkeletonWrap>
           </div>
         </S.Form>
         <div style={{ display: "none" }} ref={wayforpayFormContainer}></div>

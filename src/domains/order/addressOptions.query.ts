@@ -1,8 +1,8 @@
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { QueryOptions } from "@tanstack/react-query";
-import { IGetAddressOptions } from "@layerok/emojisushi-js-sdk";
+import { IGetAddressOptionsRes } from "@layerok/emojisushi-js-sdk";
 
-export const addressOptionsQuery: QueryOptions<IGetAddressOptions> = {
+export const addressOptionsQuery: QueryOptions<IGetAddressOptionsRes> = {
   queryKey: ["addressOptions"],
   queryFn: async ({ signal }) => {
     return (

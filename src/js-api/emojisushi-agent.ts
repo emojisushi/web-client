@@ -21,8 +21,8 @@ import {
   IGetCitiesRes,
   IGetCatalogRes,
   IGetCheckoutFormRes,
-  IGetAddresses,
-  IGetAddressOptions,
+  IGetAddressesRes,
+  IGetAddressOptionsRes,
 } from "./types";
 
 export function createEmojisushiAgent(options: { service: string }) {
@@ -75,10 +75,12 @@ export function createEmojisushiAgent(options: { service: string }) {
   }
 
   function getAddresses(
-    params: any,
+    params: {
+      city_slug: string;
+    },
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
-    return client.get<IGetAddresses>("addresses", {
+    return client.get<IGetAddressesRes>("addresses", {
       params,
       ...axiosConfig,
     });
@@ -88,7 +90,7 @@ export function createEmojisushiAgent(options: { service: string }) {
     params: any,
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
-    return client.get<IGetAddressOptions>("address/options", {
+    return client.get<IGetAddressOptionsRes>("address/options", {
       params,
       ...axiosConfig,
     });

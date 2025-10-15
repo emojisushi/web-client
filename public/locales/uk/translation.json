@@ -160,7 +160,9 @@
     "selectSavedAddress": "Оберіть збережу адресу",
     "alreadyHaveAccount": "Вже маєте акаунт?",
     "order": "Замовити",
-    "to_pay": "До сплати:"
+    "to_pay": "До сплати:",
+    "order_price" : "Замовлення:",
+    "delivery_price" : "Доставка:"
   },
   "shippingMethods": {
     "courier": "Кур'єр",
