@@ -174,11 +174,11 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
-    const { data: addresses, isLoading: isAddressLoading } = useQuery({
+    const { data: addresses, isLoading: _isAddressLoading } = useQuery({
       ...addressQuery(city?.slug),
       enabled: !!addressAutocomplete,
     });
-
+    const isAddressLoading = addressAutocomplete ? _isAddressLoading : false;
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
         // todo: show more user friendly validation errors
@@ -855,10 +855,16 @@ export const CheckoutForm = observer(
             }}
           >
             <FlexBox flexDirection={"column"}>
-              <SkeletonWrap loading={loading || isAddressLoading}>
+              <SkeletonWrap
+                loading={
+                  loading || (isCourierShipmentMethod && isAddressLoading)
+                }
+              >
                 <FlexBox justifyContent={"space-between"}>
                   <Trans
-                    showSkeleton={loading || isAddressLoading}
+                    showSkeleton={
+                      loading || (isCourierShipmentMethod && isAddressLoading)
+                    }
                     i18nKey={"checkout.order_price"}
                   />
                   <span>{cart?.total}</span>
@@ -866,7 +872,9 @@ export const CheckoutForm = observer(
                 {isCourierShipmentMethod && (
                   <FlexBox justifyContent={"space-between"}>
                     <Trans
-                      showSkeleton={loading || isAddressLoading}
+                      showSkeleton={
+                        loading || (isCourierShipmentMethod && isAddressLoading)
+                      }
                       i18nKey={"checkout.delivery_price"}
                     />
                     <span>{deliveryFee} грн.</span>
@@ -888,13 +896,15 @@ export const CheckoutForm = observer(
           </div>
           <div style={{ marginTop: "20px" }}>
             <SkeletonWrap
-              loading={loading || isAddressLoading}
+              loading={loading || (isCourierShipmentMethod && isAddressLoading)}
               style={{ width: "100%" }}
             >
               <Button
                 loading={formik.isSubmitting}
                 disabled={formik.isSubmitting}
-                showSkeleton={loading || isAddressLoading}
+                showSkeleton={
+                  loading || (isCourierShipmentMethod && isAddressLoading)
+                }
                 type={"submit"}
                 style={{
                   width: "100%",

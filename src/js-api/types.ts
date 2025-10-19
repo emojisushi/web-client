@@ -280,6 +280,12 @@ export type IGetAddressesRes = {
   addresses: Address[];
 };
 
+export type IGetOrderStatusRes = {
+  status: number;
+  online_payment_id: string;
+  poster_id: string;
+};
+
 export type IGetAddressOptionsRes = {
   enable_address_system: boolean;
 };
@@ -339,7 +345,7 @@ export type IWishlist = {
   created_at: string;
   updated_at: string;
   shipping_method_id: null | number;
-  spot_id: null | number; // todo: remove this field from database, we don't need it anymore, session already knows about right spot_id
+  spot_id: null | number; // todo: remove this field from database, we dont need it anymore, session already knows about right spot_id
   items: IWishlistItem[];
   shipping_method: null | IShippingMethod;
 };

@@ -49,4 +49,4 @@ const Login = styled.div`
   cursor: pointer;
 `;
 
-export { Form, ErrorBag, Container, Button, Control, Total, Login, Line };
+export { Form, ErrorBag, Container, Button, Control, Total, Login };

@@ -12,7 +12,7 @@ import { useEffect } from "react";
 export const ThankYouPage = () => {
   const { t } = useTranslation();
   const { mutate: clearCart } = useClearCart();
-  const [{ order_id }] = useTypedSearchParams(ROUTES.THANKYOU);
+  const [{ order_id, online_order }] = useTypedSearchParams(ROUTES.THANKYOU);
   const theme = useTheme();
 
   useEffect(() => {
@@ -39,7 +39,9 @@ export const ThankYouPage = () => {
           <SvgIcon color={theme.colors.brand} style={{ width: "60px" }}>
             <CheckCircleSvg />
           </SvgIcon>
-          <S.Text>{t("thankYou.text")}</S.Text>
+          <S.Text>
+            {online_order ? t("thankYou.onlineOrderText") : t("thankYou.text")}
+          </S.Text>
         </S.Center>
       </Container>
     </Page>
