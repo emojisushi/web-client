@@ -1,13 +1,13 @@
-name: (Prod) Build and deploy
+name: (Stage) Build and deploy
 on:
   push:
     branches:
-      - production
+      - stage
 
 jobs:
   build:
     name: Build
-    environment: prod
+    environment: stage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -32,7 +32,7 @@ jobs:
           REACT_APP_CHORNOMORSK: ${{ vars.REACT_APP_CHORNOMORSK }}
           REACT_APP_TRANSLATIONS_VERSION: ${{ github.run_id }}
 
-      - name: Archive production artifact
+      - name: Archive stage artifact
         uses: actions/upload-artifact@v4.0.0
         with:
           name: build
@@ -48,7 +48,7 @@ jobs:
 
   deploy:
     name: Deploy
-    environment: prod
+    environment: stage
     needs: build
     runs-on: ubuntu-latest
     steps:
