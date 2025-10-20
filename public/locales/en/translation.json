@@ -125,7 +125,9 @@
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",
       "street": {
-        "placeholder": "Street"
+        "placeholder": "Street",
+        "typeMore": "Search from three letters",
+        "noResults": "Not found"
       },
       "house": {
         "placeholder": "House"
@@ -156,7 +158,9 @@
     "selectSavedAddress": "Select saved address",
     "alreadyHaveAccount": "Already have an account?",
     "order": "Checkout",
-    "to_pay": "To pay:"
+    "to_pay": "To pay:",
+    "order_price" : "Order:",
+    "delivery_price" : "Delivery:"
   },
   "shippingMethods": {
     "courier": "Courier",
@@ -167,11 +171,28 @@
     "card": "Card",
     "cash": "Cash"
   },
+  "orderStatus": {
+    "title": "Order status #{{id}}",
+    "notFound": "Order not found.",
+    "cancelled": {
+        "text": "This order has been cancelled. If you think this is a mistake, please contact support."
+    },
+    "pending": {
+        "text": "We’ve received your order and are waiting for confirmation from payment provider. This may take a few minutes."
+    },
+    "waiting": {
+        "text": "Please complete your payment to confirm your order."
+    },
+    "expired": {
+        "text": "This order has expired because payment was not made on time or the payment provider was unable to process the payment. Please check that your card details are correct, check your internet limit, and place a new order if you still wish to proceed."
+    }
+  },
   "thankYou": {
     "title": "Thank you for your order!",
     "subtitle": "Your order #{{id}} has been successfully accepted and sent to work!",
     "subtitleWithoutId": "Your order has been successfully accepted and sent to work!",
-    "text": "A manager will call you back shortly to confirm your order. Then the order will be prepared and sent to the address you specified."
+    "text": "A manager will call you back shortly to confirm your order. Then the order will be prepared and sent to the address you specified.",
+    "onlineOrderText": "The order will be prepared and sent to the address you specified."
   },
   "menu": {
     "weightComment": "Actual weight may vary by 5% from stated weight"

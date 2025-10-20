@@ -52,7 +52,6 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
       replace: !isFirstSearch,
       preventScrollReset: true,
     });
-
     goUp();
   }, 200);
 
@@ -67,7 +66,6 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
     navigate(to, {
       preventScrollReset: true,
     });
-
     goUp();
   };
 
@@ -76,7 +74,6 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
     navigate(ROUTES.CATEGORY.WISHLIST.path, {
       preventScrollReset: true,
     });
-
     goUp();
   };
 

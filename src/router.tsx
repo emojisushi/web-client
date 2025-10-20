@@ -73,6 +73,12 @@ const routes = [
                 lazy: lazy(() => import("~domains/order/pages/ThankYouPage")),
               },
               {
+                path: ROUTES.ORDER_STATUS.path,
+                lazy: lazy(
+                  () => import("~domains/order/pages/OrderStatusPage")
+                ),
+              },
+              {
                 path: ROUTES.DELIVERYANDPAYMENT.path,
                 lazy: lazy(() => import("~domains/spot/pages/DeliveryPage")),
               },

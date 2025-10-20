@@ -21,7 +21,14 @@ import {
   PaymentMethodCodeEnum,
   ShippingMethodCodeEnum,
 } from "@layerok/emojisushi-js-sdk";
-import { ChangeEvent, useEffect, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Cart } from "~domains/cart/cart.query";
 import axios, { AxiosError } from "axios";
 import { observer } from "mobx-react";
@@ -39,6 +46,11 @@ import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 import { unformat, useMask } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
+import { Autocomplete } from "~components/Autocomplete";
+import { addressQuery } from "~domains/order/address.query";
+import { useQuery } from "@tanstack/react-query";
+import React from "react";
+import { CitySlug } from "~common/constants";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -48,6 +60,7 @@ type TCheckoutFormProps = {
   paymentMethods?: IPaymentMethod[] | undefined;
   spots?: ISpot[];
   city?: ICity;
+  addressAutocomplete?: boolean;
   onRedirectToThankYouPage?: () => void;
 };
 
@@ -101,10 +114,6 @@ enum HouseType {
   HighRiseBuilding = "high_rise_building",
 }
 
-const getDistrictDefaultSpot = (district: IDistrict) => {
-  return district.spots[0];
-};
-
 const first = (array) => {
   return array[0];
 };
@@ -112,7 +121,7 @@ const first = (array) => {
 type FormValues = {
   name: string;
   phone: string;
-  street: string;
+  street: number | string;
   house: string;
   apartment: string;
   entrance: string;
@@ -164,6 +173,7 @@ export const CheckoutForm = observer(
     city,
     spots: spotsRes,
     loading = false,
+    addressAutocomplete = false,
     onRedirectToThankYouPage,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
@@ -172,7 +182,11 @@ export const CheckoutForm = observer(
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
-
+    const { data: addresses, isLoading: _isAddressLoading } = useQuery({
+      ...addressQuery(city?.slug),
+      enabled: !!addressAutocomplete,
+    });
+    const isAddressLoading = addressAutocomplete ? _isAddressLoading : false;
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
         // todo: show more user friendly validation errors
@@ -193,7 +207,7 @@ export const CheckoutForm = observer(
           () => t("checkout.form.validation.phone.uk_format"),
           isValidUkrainianPhone
         ),
-      street: Yup.string().required(t("validation.required")),
+      street: Yup.string().nullable().required(t("validation.required")),
       house: Yup.string().required(t("validation.required")),
       district_id: Yup.number().required(t("validation.required")),
     });
@@ -206,14 +220,13 @@ export const CheckoutForm = observer(
           () => t("checkout.form.validation.phone.uk_format"),
           isValidUkrainianPhone
         ),
-      street: Yup.string().required(t("validation.required")),
+      street: Yup.string().nullable().required(t("validation.required")),
       house: Yup.string().required(t("validation.required")),
       apartment: Yup.string().required(t("validation.required")),
       entrance: Yup.string().required(t("validation.required")),
       floor: Yup.number().required(t("validation.required")),
       district_id: Yup.number().required(t("validation.required")),
     });
-
     const getValidationSchema = (values: FormValues) => {
       if (
         values.house_type === HouseType.HighRiseBuilding &&
@@ -236,14 +249,12 @@ export const CheckoutForm = observer(
       disabledText: t("checkout.temporarilyUnavailable"),
       disabled: !user?.is_call_center_admin && spot.temporarily_unavailable,
     }));
-
     const districts = (city?.districts || []).map((district) => ({
       label: district.name,
       value: district.id,
       disabledText: t("checkout.temporarilyUnavailable"),
       disabled:
-        !user?.is_call_center_admin &&
-        getDistrictDefaultSpot(district).temporarily_unavailable,
+        !user?.is_call_center_admin && district.spot.temporarily_unavailable,
     }));
 
     const initialValues: FormValues = {
@@ -262,10 +273,12 @@ export const CheckoutForm = observer(
       house_type: HouseType.PrivateHouse,
       // if only one spot or district is available, then choose it by default
       spot_id: spots.length === 1 ? spots[0].value : undefined,
-      district_id: districts.length === 1 ? districts[0].value : undefined,
+      district_id:
+        districts.length === 1 || addressAutocomplete
+          ? districts[0].value
+          : undefined,
       ...(getFromLocalStorage(localStorageKeys.draftOrder) || {}),
     };
-
     const fieldsRef = useRef<Record<keyof FormValues, HTMLElement | null>>({
       phone: null,
       street: null,
@@ -283,9 +296,11 @@ export const CheckoutForm = observer(
       shipping_method_code: null,
       comment: null,
     });
-
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
+      if (addressAutocomplete && !selectedAddress?.spotName) {
+        formik.setFieldError("street", "Ваша адреса не обслуговується");
+      }
       const {
         phone,
         name,
@@ -304,24 +319,38 @@ export const CheckoutForm = observer(
       } = values;
 
       const [firstname, lastname] = name.split(" ");
-      const address = [
-        ["Вулиця", street],
-        ["Будинок", house],
-        ["Квартира", apartment],
-        ["Під'їзд", entrance],
-        ["Поверх", floor],
-      ]
-        .filter(([label, value]) => !!value)
-        .map(([label, value]) => `${label}: ${value}`)
-        .join(", ");
+      let address;
+      let addressDetails;
 
+      if (addressAutocomplete) {
+        address = street;
+        addressDetails = [
+          ["Будинок", house],
+          ["Квартира", apartment],
+          ["Під'їзд", entrance],
+          ["Поверх", floor],
+        ]
+          .filter(([label, value]) => !!value)
+          .map(([label, value]) => `${label}: ${value}`)
+          .join(", ");
+      } else {
+        address = [
+          ["Вулиця", street],
+          ["Будинок", house],
+          ["Квартира", apartment],
+          ["Під'їзд", entrance],
+          ["Поверх", floor],
+        ]
+          .filter(([label, value]) => !!value)
+          .map(([label, value]) => `${label}: ${value}`)
+          .join(", ");
+      }
       const district = city?.districts.find(
         (district) => district.id === district_id
       );
-
       const resultant_spot_id = isTakeawayShipmentMethod
         ? spot_id
-        : getDistrictDefaultSpot(district).id;
+        : district.spot.id;
 
       const paymentMethod = paymentMethods.find(
         (method) => method.code === payment_method_code
@@ -338,6 +367,7 @@ export const CheckoutForm = observer(
           email: user ? user.email : "",
 
           address,
+          address_details: addressDetails,
           payment_method_id: paymentMethod.id,
           shipping_method_id: shippingMethod.id,
           spot_id: resultant_spot_id,
@@ -354,9 +384,9 @@ export const CheckoutForm = observer(
           },
         });
         removeFromLocalStorage(localStorageKeys.draftOrder);
-
         if (res.data?.form) {
           wayforpayFormContainer.current.innerHTML = res.data.form;
+          //   onRedirectToThankYouPage();
           wayforpayFormContainer.current.querySelector("form").submit();
         } else {
           const order_id = res.data?.poster_order?.incoming_order_id;
@@ -373,7 +403,6 @@ export const CheckoutForm = observer(
         }
       } catch (e) {
         if (!axios.isAxiosError(e)) {
-          // todo: log
           return;
         }
         const { data } = (e as AxiosError<ErrorResponse>).response;
@@ -421,7 +450,6 @@ export const CheckoutForm = observer(
             (a, b) => fieldSortOrderMap[a] - fieldSortOrderMap[b]
           )
         );
-
         if (scrollToError) {
           fieldsRef.current[scrollToError]?.scrollIntoView({
             behavior: "smooth",
@@ -451,7 +479,6 @@ export const CheckoutForm = observer(
       });
       formik.setFieldValue(name, value);
     };
-
     const shippingMethodOptions = (shippingMethods || []).map((item) => ({
       value: item.code,
       // todo: don't use dynamic translation keys
@@ -504,6 +531,32 @@ export const CheckoutForm = observer(
     const isCashPaymentMethod =
       formik.values.payment_method_code === PaymentMethodCodeEnum.Cash;
 
+    const isOnlinePaymentMethod =
+      formik.values.payment_method_code === PaymentMethodCodeEnum.Wayforpay;
+
+    let filteredPaymentMethods = paymentMethodOptions;
+
+    if (isTakeawayShipmentMethod) {
+      filteredPaymentMethods = paymentMethodOptions.filter(
+        (option) => option.value !== "wayforpay"
+      );
+    }
+    useEffect(() => {
+      if (
+        isTakeawayShipmentMethod &&
+        isOnlinePaymentMethod &&
+        formik.values.payment_method_code !== PaymentMethodCodeEnum.Cash
+      ) {
+        formik.setFieldValue(
+          FormNames.PaymentMethodCode,
+          PaymentMethodCodeEnum.Cash
+        );
+      }
+    }, [
+      isTakeawayShipmentMethod,
+      isOnlinePaymentMethod,
+      formik.values.payment_method_code,
+    ]);
     const houseTypes = [
       {
         value: HouseType.PrivateHouse,
@@ -514,10 +567,36 @@ export const CheckoutForm = observer(
         label: t("checkout.form.highRiseBuilding"),
       },
     ];
-
+    const addressesMemo = useMemo(() => {
+      if (!addresses?.addresses) return [];
+      return addresses.addresses.map((el) => ({
+        id: el.id,
+        name: `${el.name_ua}, ${el.suburb_ua}`,
+        searchText:
+          el.name_ua == el.name_ru ? el.name_ua : `${el.name_ua} ${el.name_ru}`,
+        spotName: el.spot_name,
+        min_amount: el.min_amount,
+        delivery_price: el.delivery_price,
+      }));
+    }, [addresses?.addresses]);
     const setFieldRef =
       (name: keyof FormValues) => (node: HTMLElement | null) =>
         (fieldsRef.current[name] = node);
+    const style80 = useMemo(() => ({ width: "80%" }), []);
+    const setFieldValueCallback = useCallback((value) => {
+      setFieldValue(FormNames.Street, value);
+    }, []);
+
+    const selectedAddress = addressesMemo.find(
+      (el) => el.id === formik.values[FormNames.Street]
+    );
+
+    let deliveryFee = 0;
+    let cartTotal = Number(cart?.total.replace("грн.", ""));
+    if (isCourierShipmentMethod && cartTotal < selectedAddress?.min_amount) {
+      deliveryFee = selectedAddress?.delivery_price;
+      cartTotal += deliveryFee;
+    }
 
     return (
       <S.Container>
@@ -541,7 +620,6 @@ export const CheckoutForm = observer(
             onChange={handleShippingMethodChange}
             ref={setFieldRef(FormNames.ShippingMethodCode)}
           />
-
           <S.Control>
             {isTakeawayShipmentMethod && spots.length !== 1 ? (
               <Dropdown
@@ -560,7 +638,8 @@ export const CheckoutForm = observer(
                 }
               />
             ) : (
-              districts.length !== 1 && (
+              districts.length !== 1 &&
+              !addressAutocomplete && (
                 <Dropdown
                   showSkeleton={loading}
                   placeholder={t("checkout.form.district.placeholder")}
@@ -579,7 +658,6 @@ export const CheckoutForm = observer(
               )
             )}
           </S.Control>
-
           {isCourierShipmentMethod && (
             <>
               <S.Control>
@@ -598,22 +676,41 @@ export const CheckoutForm = observer(
                     gap: 10,
                   }}
                 >
+                  {addressAutocomplete ? (
+                    <Autocomplete
+                      style={style80}
+                      //   name={FormNames.Street}
+                      placeholder={t("checkout.form.street.placeholder")}
+                      noResultsText={t("checkout.form.street.noResults")}
+                      typeMoreText={t("checkout.form.street.typeMore")}
+                      loading={loading || isAddressLoading}
+                      value={formik.values[FormNames.Street]}
+                      onChange={setFieldValueCallback}
+                      error={
+                        formik.touched[FormNames.Street] &&
+                        formik.errors["street"]
+                      }
+                      data={addressesMemo ?? null}
+                    />
+                  ) : (
+                    <Input
+                      style={{ width: "80%" }}
+                      loading={loading}
+                      name={FormNames.Street}
+                      placeholder={t("checkout.form.street.placeholder")}
+                      onChange={handleChange}
+                      onBlur={formik.handleBlur}
+                      value={formik.values[FormNames.Street]}
+                      error={
+                        formik.touched[FormNames.Street] &&
+                        formik.errors[FormNames.Street]
+                      }
+                      ref={setFieldRef(FormNames.Street)}
+                    />
+                  )}
+
                   <Input
-                    style={{ width: "70%" }}
-                    loading={loading}
-                    name={FormNames.Street}
-                    placeholder={t("checkout.form.street.placeholder")}
-                    onChange={handleChange}
-                    onBlur={formik.handleBlur}
-                    value={formik.values[FormNames.Street]}
-                    error={
-                      formik.touched[FormNames.Street] &&
-                      formik.errors[FormNames.Street]
-                    }
-                    ref={setFieldRef(FormNames.Street)}
-                  />
-                  <Input
-                    style={{ width: "30%" }}
+                    style={{ width: "20%" }}
                     loading={loading}
                     name={FormNames.House}
                     placeholder={t("checkout.form.house.placeholder")}
@@ -627,8 +724,14 @@ export const CheckoutForm = observer(
                     ref={setFieldRef(FormNames.House)}
                   />
                 </FlexBox>
+                {addressAutocomplete && !(loading || isAddressLoading) && (
+                  <S.Container>
+                    {selectedAddress?.min_amount &&
+                      deliveryFee !== 0 &&
+                      `Безкоштовна доставка при замовлені від ${selectedAddress?.min_amount} грн`}
+                  </S.Container>
+                )}
               </S.Control>
-
               {formik.values.house_type === HouseType.HighRiseBuilding && (
                 <S.Control>
                   <FlexBox
@@ -680,7 +783,6 @@ export const CheckoutForm = observer(
               )}
             </>
           )}
-
           <S.Control>
             <Input
               loading={loading}
@@ -695,7 +797,6 @@ export const CheckoutForm = observer(
               ref={setFieldRef(FormNames.Name)}
             />
           </S.Control>
-
           <S.Control>
             <Input
               loading={loading}
@@ -740,7 +841,7 @@ export const CheckoutForm = observer(
             <SegmentedControl
               showSkeleton={loading}
               name={FormNames.PaymentMethodCode}
-              items={paymentMethodOptions}
+              items={filteredPaymentMethods}
               onChange={handleChange}
               value={formik.values[FormNames.PaymentMethodCode]}
               ref={setFieldRef(FormNames.PaymentMethodCode)}
@@ -759,32 +860,70 @@ export const CheckoutForm = observer(
               />
             </S.Control>
           )}
-
           <div
             style={{
               marginTop: 20,
             }}
           >
-            <FlexBox justifyContent={"space-between"} alignItems={"flex-end"}>
+            <FlexBox flexDirection={"column"}>
+              <SkeletonWrap
+                loading={
+                  loading || (isCourierShipmentMethod && isAddressLoading)
+                }
+              >
+                <FlexBox justifyContent={"space-between"}>
+                  <Trans
+                    showSkeleton={
+                      loading || (isCourierShipmentMethod && isAddressLoading)
+                    }
+                    i18nKey={"checkout.order_price"}
+                  />
+                  <span>{cart?.total}</span>
+                </FlexBox>
+                {isCourierShipmentMethod && (
+                  <FlexBox justifyContent={"space-between"}>
+                    <Trans
+                      showSkeleton={
+                        loading || (isCourierShipmentMethod && isAddressLoading)
+                      }
+                      i18nKey={"checkout.delivery_price"}
+                    />
+                    <span>{deliveryFee} грн.</span>
+                  </FlexBox>
+                )}
+                <S.Total
+                  style={{
+                    marginTop: "20px",
+                    justifyContent: "space-between",
+                    display: "flex",
+                  }}
+                >
+                  <Trans i18nKey={"checkout.to_pay"} />
+                  {/* &nbsp; */}
+                  <span>{cart?.total ? `${cartTotal} грн.` : "🤪🤪🤪"}</span>
+                </S.Total>
+              </SkeletonWrap>
+            </FlexBox>
+          </div>
+          <div style={{ marginTop: "20px" }}>
+            <SkeletonWrap
+              loading={loading || (isCourierShipmentMethod && isAddressLoading)}
+              style={{ width: "100%" }}
+            >
               <Button
                 loading={formik.isSubmitting}
-                showSkeleton={loading}
+                disabled={formik.isSubmitting}
+                showSkeleton={
+                  loading || (isCourierShipmentMethod && isAddressLoading)
+                }
                 type={"submit"}
                 style={{
-                  width: 160,
+                  width: "100%",
                 }}
               >
                 {t("checkout.order")}
               </Button>
-
-              <S.Total>
-                <Trans showSkeleton={loading} i18nKey={"checkout.to_pay"} />
-                &nbsp;
-                <SkeletonWrap loading={loading}>
-                  {cart?.total ? cart.total : "🤪🤪🤪"}
-                </SkeletonWrap>
-              </S.Total>
-            </FlexBox>
+            </SkeletonWrap>
           </div>
         </S.Form>
         <div style={{ display: "none" }} ref={wayforpayFormContainer}></div>

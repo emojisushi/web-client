@@ -38,7 +38,6 @@ import { Counter } from "~components/modals/CartModal/components/Counter";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 
-// todo: clear outdated products from the card. You can do it on the frontend or on the backend
 const CartItem = (props: { item: CartItemPayload }) => {
   const { item: cartItem } = props;
   const theme = useTheme();

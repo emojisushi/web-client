@@ -1,4 +1,9 @@
-import { route, string, union } from "react-router-typesafe-routes/dom";
+import {
+  route,
+  string,
+  union,
+  boolean,
+} from "react-router-typesafe-routes/dom";
 
 const PRODUCT_SORTER_MODES = [
   "default",
@@ -32,6 +37,12 @@ export const ROUTES = {
     }
   ),
   THANKYOU: route("thankyou", {
+    searchParams: {
+      order_id: string(),
+      online_order: boolean(),
+    },
+  }),
+  ORDER_STATUS: route("order-status", {
     searchParams: {
       order_id: string(),
     },
