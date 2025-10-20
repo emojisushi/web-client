@@ -78,12 +78,15 @@ const AutocompleteComponent = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (loading) {
+        return;
+      }
       if (
         wrapperRef.current &&
         !wrapperRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
-        if (!confirmed && !loading) {
+        if (!confirmed) {
           setSearchText("");
           onChange(null);
         }
@@ -94,7 +97,7 @@ const AutocompleteComponent = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [confirmed]);
+  }, [confirmed, loading]);
   const handleSelect = (item: TAutocompleteItem) => {
     setConfirmed(true);
     setSearchText(item.name);
