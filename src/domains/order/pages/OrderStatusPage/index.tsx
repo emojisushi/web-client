@@ -60,7 +60,11 @@ export const OrderStatusPage = () => {
       statusText = t("orderStatus.cancelled.text");
       svg = <CancelSvg />;
       button = (
-        <Button filled={true} onClick={() => navigate(ROUTES.CHECKOUT.path)}>
+        <Button
+          style={{ marginTop: "20px" }}
+          filled={true}
+          onClick={() => navigate(ROUTES.CHECKOUT.path)}
+        >
           {t("orderStatus.tryAgain.text")}
         </Button>
       );
@@ -69,7 +73,11 @@ export const OrderStatusPage = () => {
       statusText = t("orderStatus.expired.text");
       svg = <CancelSvg />;
       button = (
-        <Button filled={true} onClick={() => navigate(ROUTES.CHECKOUT.path)}>
+        <Button
+          style={{ marginTop: "20px" }}
+          filled={true}
+          onClick={() => navigate(ROUTES.CHECKOUT.path)}
+        >
           {t("orderStatus.tryAgain.text")}
         </Button>
       );
