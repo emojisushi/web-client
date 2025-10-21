@@ -365,7 +365,7 @@ export const CheckoutForm = observer(
       );
       let _comment = comment;
       if (formik.values[FormNames.DontCall]) {
-        _comment = "Не звоніть мені " + comment;
+        _comment = "Не передзвонювати " + comment;
       }
       try {
         const res = await EmojisushiAgent.placeOrderV2({
