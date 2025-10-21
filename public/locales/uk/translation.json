@@ -123,7 +123,8 @@
       "persons": "Кількість персон",
       "change": "Приготувати решту з",
       "privateHouse": "Приватний будинок",
-      "highRiseBuilding": "Апартаменти",
+      "highRiseBuilding": "Квартира",
+      "dont_call": "Не звоніть мені",
       "district": {
         "placeholder": "Оберіть найближчий район"
       },

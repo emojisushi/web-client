@@ -5,6 +5,7 @@ import {
   Dropdown,
   SkeletonWrap,
   Trans,
+  Checkbox,
 } from "~components";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
@@ -82,6 +83,7 @@ enum FormNames {
   Phone = "phone",
   Sticks = "sticks",
   Comment = "comment",
+  DontCall = "dont_call",
 }
 
 const fieldSortOrderMap: Record<keyof FormValues, number> = {
@@ -100,6 +102,7 @@ const fieldSortOrderMap: Record<keyof FormValues, number> = {
   comment: 12,
   payment_method_code: 13,
   change: 14,
+  dont_call: 15,
 };
 
 const localStorageKeys = {
@@ -134,6 +137,7 @@ type FormValues = {
   house_type: HouseType;
   spot_id: number | undefined;
   district_id: number | undefined;
+  dont_call: boolean;
 };
 
 type ErrorResponse = {
@@ -277,6 +281,7 @@ export const CheckoutForm = observer(
         districts.length === 1 || addressAutocomplete
           ? districts[0].value
           : undefined,
+      dont_call: false,
       ...(getFromLocalStorage(localStorageKeys.draftOrder) || {}),
     };
     const fieldsRef = useRef<Record<keyof FormValues, HTMLElement | null>>({
@@ -295,6 +300,7 @@ export const CheckoutForm = observer(
       house_type: null,
       shipping_method_code: null,
       comment: null,
+      dont_call: null,
     });
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
@@ -321,7 +327,6 @@ export const CheckoutForm = observer(
       const [firstname, lastname] = name.split(" ");
       let address;
       let addressDetails;
-
       if (addressAutocomplete) {
         address = street;
         addressDetails = [
@@ -358,7 +363,10 @@ export const CheckoutForm = observer(
       const shippingMethod = shippingMethods.find(
         (method) => method.code === shipping_method_code
       );
-
+      let _comment = comment;
+      if (formik.values[FormNames.DontCall]) {
+        _comment = "Не звоніть мені " + comment;
+      }
       try {
         const res = await EmojisushiAgent.placeOrderV2({
           phone: unformat(phone, phoneMaskOptions),
@@ -374,7 +382,7 @@ export const CheckoutForm = observer(
 
           change,
           sticks: +sticks,
-          comment,
+          comment: _comment,
           cart: {
             items: cart.items.map((item) => ({
               id: item.product.id + "",
@@ -858,6 +866,21 @@ export const CheckoutForm = observer(
                 value={formik.values[FormNames.Change]}
                 ref={setFieldRef(FormNames.Change)}
               />
+            </S.Control>
+          )}
+          {isCourierShipmentMethod && (
+            <S.Control>
+              <SkeletonWrap loading={loading}>
+                <Checkbox
+                  name={FormNames.DontCall}
+                  checked={formik.values[FormNames.DontCall]}
+                  onChange={(e) => {
+                    setFieldValue(FormNames.DontCall, e.target.checked);
+                  }}
+                >
+                  {t("checkout.form.dont_call")}
+                </Checkbox>
+              </SkeletonWrap>
             </S.Control>
           )}
           <div
