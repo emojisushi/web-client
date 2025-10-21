@@ -175,7 +175,7 @@
     "title": "Order status #{{id}}",
     "notFound": "Order not found.",
     "cancelled": {
-        "text": "This order has been cancelled. If you wish to try again, click the button below."
+        "text": "Payment failed - order canceled. If you wish to try again, click the button below."
     },
     "pending": {
         "text": "We’ve received your order and are waiting for confirmation from payment provider. This may take a few minutes."
