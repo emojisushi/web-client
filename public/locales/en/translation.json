@@ -124,6 +124,7 @@
       "change": "Prepare change from",
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",
+      "dont_call": "Don't call me",
       "street": {
         "placeholder": "Street",
         "typeMore": "Search from three letters",
