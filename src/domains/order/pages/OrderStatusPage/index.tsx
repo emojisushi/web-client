@@ -16,6 +16,7 @@ import { orderStatusQuery } from "~domains/order/orderStatus.query";
 import { CancelSvg } from "~components/svg/CancelSvg";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
+import { Button } from "~common/ui-components/Button/Button";
 
 enum OrderStatus {
   WAITING = 1,
@@ -36,6 +37,7 @@ export const OrderStatusPage = () => {
   });
   let statusText;
   let svg;
+  let button;
 
   useEffect(() => {
     if (order?.status === OrderStatus.PAID) {
@@ -57,10 +59,21 @@ export const OrderStatusPage = () => {
     case OrderStatus.CANCELLED:
       statusText = t("orderStatus.cancelled.text");
       svg = <CancelSvg />;
+      button = (
+        <Button filled={true} onClick={() => navigate(ROUTES.CHECKOUT.path)}>
+          {t("orderStatus.tryAgain.text")}
+        </Button>
+      );
       break;
     case OrderStatus.EXPIRED:
       statusText = t("orderStatus.expired.text");
       svg = <CancelSvg />;
+      button = (
+        <Button filled={true} onClick={() => navigate(ROUTES.CHECKOUT.path)}>
+          {t("orderStatus.tryAgain.text")}
+        </Button>
+      );
+
       break;
     default:
       break;
@@ -96,6 +109,7 @@ export const OrderStatusPage = () => {
                 {svg}
               </SvgIcon>
               <S.Text>{statusText}</S.Text>
+              {button}
             </SkeletonWrap>
           )}
         </S.Center>
