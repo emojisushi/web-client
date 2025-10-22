@@ -868,7 +868,7 @@ export const CheckoutForm = observer(
               />
             </S.Control>
           )}
-          {isCourierShipmentMethod && (
+          {isOnlinePaymentMethod && (
             <S.Control>
               <SkeletonWrap loading={loading}>
                 <Checkbox
