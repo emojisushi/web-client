@@ -364,7 +364,7 @@ export const CheckoutForm = observer(
         (method) => method.code === shipping_method_code
       );
       let _comment = comment;
-      if (formik.values[FormNames.DontCall]) {
+      if (isOnlinePaymentMethod && formik.values[FormNames.DontCall]) {
         _comment = "Не передзвонювати " + comment;
       }
       try {
