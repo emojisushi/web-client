@@ -52,6 +52,8 @@ import { addressQuery } from "~domains/order/address.query";
 import { useQuery } from "@tanstack/react-query";
 import React from "react";
 import { CitySlug } from "~common/constants";
+import { isClosed } from "~utils/time.utils";
+import { appConfig } from "~config/app";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -549,10 +551,23 @@ export const CheckoutForm = observer(
         (option) => option.value !== "wayforpay"
       );
     }
+
+    const onlinePaymentClosed = isClosed({
+      start: appConfig.onlinePaymentHours[0],
+      end: appConfig.onlinePaymentHours[1],
+    });
+
+    if (onlinePaymentClosed) {
+      filteredPaymentMethods = paymentMethodOptions.filter(
+        (option) => option.value !== "wayforpay"
+      );
+    }
+    console.log("test");
     useEffect(() => {
       if (
-        isTakeawayShipmentMethod &&
-        isOnlinePaymentMethod &&
+        !filteredPaymentMethods.find(
+          (el) => el.value === formik.values.payment_method_code
+        ) &&
         formik.values.payment_method_code !== PaymentMethodCodeEnum.Cash
       ) {
         formik.setFieldValue(
@@ -563,6 +578,7 @@ export const CheckoutForm = observer(
     }, [
       isTakeawayShipmentMethod,
       isOnlinePaymentMethod,
+      onlinePaymentClosed,
       formik.values.payment_method_code,
     ]);
     const houseTypes = [
