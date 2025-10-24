@@ -619,9 +619,10 @@ export const CheckoutForm = observer(
 
     let deliveryFee = 0;
     let cartTotal = Number(cart?.total.replace("грн.", ""));
+    let total = cartTotal;
     if (isCourierShipmentMethod && cartTotal < selectedAddress?.min_amount) {
       deliveryFee = selectedAddress?.delivery_price;
-      cartTotal += deliveryFee;
+      total += deliveryFee;
     }
 
     return (
@@ -922,15 +923,33 @@ export const CheckoutForm = observer(
                   <span>{cart?.total}</span>
                 </FlexBox>
                 {isCourierShipmentMethod && (
-                  <FlexBox justifyContent={"space-between"}>
-                    <Trans
-                      showSkeleton={
-                        loading || (isCourierShipmentMethod && isAddressLoading)
-                      }
-                      i18nKey={"checkout.delivery_price"}
-                    />
-                    <span>{deliveryFee} грн.</span>
-                  </FlexBox>
+                  <>
+                    <FlexBox justifyContent="space-between">
+                      <Trans
+                        showSkeleton={
+                          loading ||
+                          (isCourierShipmentMethod && isAddressLoading)
+                        }
+                        i18nKey="checkout.delivery_price"
+                      />
+                      <span>{deliveryFee} грн.</span>
+                    </FlexBox>
+
+                    {deliveryFee > 0 && (
+                      <FlexBox justifyContent="space-between">
+                        <Trans
+                          showSkeleton={
+                            loading ||
+                            (isCourierShipmentMethod && isAddressLoading)
+                          }
+                          i18nKey="checkout.not_enough_for_free_delivery"
+                        />
+                        <span>
+                          {selectedAddress?.min_amount - cartTotal} грн.
+                        </span>
+                      </FlexBox>
+                    )}
+                  </>
                 )}
                 <S.Total
                   style={{
@@ -941,7 +960,7 @@ export const CheckoutForm = observer(
                 >
                   <Trans i18nKey={"checkout.to_pay"} />
                   {/* &nbsp; */}
-                  <span>{cart?.total ? `${cartTotal} грн.` : "🤪🤪🤪"}</span>
+                  <span>{cart?.total ? `${total} грн.` : "🤪🤪🤪"}</span>
                 </S.Total>
               </SkeletonWrap>
             </FlexBox>
