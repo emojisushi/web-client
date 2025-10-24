@@ -7,58 +7,62 @@ export function fuzzySearch<El extends Record<string, unknown>>(
   options: {
     maxAllowedModifications?: number;
     caseSensitive?: boolean;
-  } = {
-    maxAllowedModifications: 1,
-    caseSensitive: false,
-  }
+  } = {}
 ) {
-  const { caseSensitive, maxAllowedModifications } = options;
-  const computeBestScore = (
-    el: El
-  ): El & {
-    bestScore: number;
-    partialMatch: boolean;
-  } => {
+  const { caseSensitive = false, maxAllowedModifications = 2 } = options;
+
+  const normalize = (s: string) => (caseSensitive ? s : s.toLowerCase());
+
+  const computeBestScore = (el: El) => {
     let value = getValue(el);
-    let search = searchArg;
-    if (!caseSensitive) {
-      value = value.toLowerCase();
-      search = search.toLowerCase();
-    }
+    const normalizedValue = normalize(value);
+    const normalizedSearch = normalize(searchArg);
 
-    const words = value.split(" ");
-    const searchWords = search.split(" ");
+    const words = normalizedValue.split(" ");
+    const searchWords = normalizedSearch.split(" ");
 
-    let bestScore = 1000;
-    let partialMatch = false;
+    let totalScore = 0;
+    let matchesAllWords = true;
 
-    if (value.includes(search)) {
-      partialMatch = true;
-    }
-
-    for (let i = 0; i < words.length; i++) {
-      for (let j = 0; j < searchWords.length; j++) {
-        const score = levenshtein(searchWords[j], words[i]);
-        if (bestScore > score) {
-          bestScore = score;
-        }
+    for (const sw of searchWords) {
+      let bestWordScore = Infinity;
+      for (const w of words) {
+        const score = levenshtein(sw, w);
+        if (score < bestWordScore) bestWordScore = score;
       }
+
+      if (!normalizedValue.includes(sw)) matchesAllWords = false;
+      totalScore += bestWordScore;
     }
 
-    return { ...el, bestScore, partialMatch };
+    const partialMatch = normalizedValue.includes(normalizedSearch);
+    const startsWith = normalizedValue.startsWith(normalizedSearch);
+
+    // бонусы
+    if (startsWith) totalScore -= 2;
+
+    return {
+      ...el,
+      bestScore: totalScore,
+      partialMatch,
+      startsWith,
+      matchesAllWords,
+    };
   };
 
-  return (
-    array
-      .map(computeBestScore)
-      .filter(
-        (product) =>
-          product.partialMatch || product.bestScore <= maxAllowedModifications
-      )
-      // todo: optimize sorting
-      .sort((a, b) => a.bestScore - b.bestScore)
-      .sort((a, b) =>
-        a.partial_match == b.partial_match ? 0 : a.partial_match ? -1 : 1
-      )
-  );
+  return array
+    .map(computeBestScore)
+    .filter(
+      (el) =>
+        el.partialMatch ||
+        el.matchesAllWords ||
+        el.bestScore <= maxAllowedModifications * 2
+    )
+    .sort((a, b) => {
+      if (a.startsWith !== b.startsWith) return a.startsWith ? -1 : 1;
+      if (a.matchesAllWords !== b.matchesAllWords)
+        return a.matchesAllWords ? -1 : 1;
+      if (a.partialMatch !== b.partialMatch) return a.partialMatch ? -1 : 1;
+      return a.bestScore - b.bestScore;
+    });
 }

@@ -59,8 +59,9 @@ const AutocompleteComponent = ({
   //   });
   const filteredData = useMemo(() => {
     return fuzzySearch(data, searchText, (el) => el.searchText, {
-      maxAllowedModifications: 1,
-    }).slice(0, 20);
+      maxAllowedModifications: 2,
+      caseSensitive: false,
+    }).slice(0, 25);
   }, [searchText]);
   useEffect(() => {
     if (value == null || data.length == 0) return;
