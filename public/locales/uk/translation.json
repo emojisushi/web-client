@@ -163,7 +163,8 @@
     "order": "Замовити",
     "to_pay": "До сплати:",
     "order_price" : "Замовлення:",
-    "delivery_price" : "Доставка:"
+    "delivery_price" : "Доставка:",
+    "not_enough_for_free_delivery" : "До безкоштовної доставки:"
   },
   "shippingMethods": {
     "courier": "Кур'єр",
