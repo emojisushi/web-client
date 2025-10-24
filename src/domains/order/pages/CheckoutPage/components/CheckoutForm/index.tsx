@@ -597,7 +597,9 @@ export const CheckoutForm = observer(
         id: el.id,
         name: `${el.name_ua}, ${el.suburb_ua}`,
         searchText:
-          el.name_ua == el.name_ru ? el.name_ua : `${el.name_ua} ${el.name_ru}`,
+          el.name_ua == el.name_ru
+            ? `${el.name_ua} ${el.suburb_ua}`
+            : `${el.name_ua} ${el.name_ru} ${el.suburb_ua}`,
         spotName: el.spot_name,
         min_amount: el.min_amount,
         delivery_price: el.delivery_price,
