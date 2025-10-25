@@ -274,6 +274,7 @@ export type Address = {
   spot_name: string;
   min_amount: number;
   delivery_price: number;
+  buildings: string[];
 };
 
 export type IGetAddressesRes = {
