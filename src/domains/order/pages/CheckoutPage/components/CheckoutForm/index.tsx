@@ -562,7 +562,6 @@ export const CheckoutForm = observer(
         (option) => option.value !== "wayforpay"
       );
     }
-    console.log("test");
     useEffect(() => {
       if (
         !filteredPaymentMethods.find(
@@ -617,6 +616,25 @@ export const CheckoutForm = observer(
       (el) => el.id === formik.values[FormNames.Street]
     );
 
+    useEffect(() => {
+      if (!addresses?.addresses || !selectedAddress?.name) return;
+
+      const houseNumber = formik.values[FormNames.House];
+      if (!houseNumber) return;
+
+      const matchingAddresses = addresses.addresses.filter(
+        (addr) => `${addr.name_ua}, ${addr.suburb_ua}` === selectedAddress.name
+      );
+      if (matchingAddresses.length === 0) return;
+
+      const matchedAddress = matchingAddresses?.find((addr) =>
+        addr.buildings?.some((b) => b === houseNumber)
+      );
+
+      if (matchedAddress) {
+        setFieldValue(FormNames.Street, matchedAddress.id);
+      }
+    }, [selectedAddress, formik.values[FormNames.House], addresses]);
     let deliveryFee = 0;
     let cartTotal = Number(cart?.total.replace("грн.", ""));
     let total = cartTotal;
@@ -717,6 +735,7 @@ export const CheckoutForm = observer(
                         formik.touched[FormNames.Street] &&
                         formik.errors["street"]
                       }
+                      duplicates={false}
                       data={addressesMemo ?? null}
                     />
                   ) : (
@@ -753,7 +772,7 @@ export const CheckoutForm = observer(
                 </FlexBox>
                 {addressAutocomplete && !(loading || isAddressLoading) && (
                   <S.Container>
-                    {selectedAddress?.min_amount &&
+                    {!!selectedAddress?.min_amount &&
                       deliveryFee !== 0 &&
                       `Безкоштовна доставка при замовлені від ${selectedAddress?.min_amount} грн`}
                   </S.Container>

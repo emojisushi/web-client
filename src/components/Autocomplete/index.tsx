@@ -23,6 +23,7 @@ type TAutocomplete = {
   error?: string | null;
   style?: CSSProperties;
   data?: TAutocompleteItem[];
+  duplicates?: boolean;
 };
 type TAutocompleteItem = {
   searchText: string;
@@ -42,6 +43,7 @@ const AutocompleteComponent = ({
   value = null,
   error = null,
   data = [],
+  duplicates = true,
 }: TAutocomplete) => {
   const [searchText, setSearchText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -61,7 +63,12 @@ const AutocompleteComponent = ({
     return fuzzySearch(data, searchText, (el) => el.searchText, {
       maxAllowedModifications: 2,
       caseSensitive: false,
-    }).slice(0, 25);
+    })
+      .slice(0, 25)
+      .filter(
+        (addr, index, self) =>
+          index === self.findIndex((a) => a.name === addr.name)
+      );
   }, [searchText]);
   useEffect(() => {
     if (value == null || data.length == 0) return;
