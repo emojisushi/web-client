@@ -602,6 +602,7 @@ export const CheckoutForm = observer(
         spotName: el.spot_name,
         min_amount: el.min_amount,
         delivery_price: el.delivery_price,
+        min: el.min,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -774,9 +775,23 @@ export const CheckoutForm = observer(
                 </FlexBox>
                 {addressAutocomplete && !(loading || isAddressLoading) && (
                   <S.Container>
-                    {!!selectedAddress?.min_amount &&
-                      deliveryFee !== 0 &&
-                      `Безкоштовна доставка при замовлені від ${selectedAddress?.min_amount} грн`}
+                    {cartTotal < selectedAddress?.min && (
+                      <>
+                        <br />
+                        <b>
+                          {`Доставка кур'єром доступна для замовлень на суму від ${selectedAddress?.min} грн`}
+                        </b>
+                        <br />
+                      </>
+                    )}
+
+                    {!!selectedAddress?.min_amount && deliveryFee !== 0 && (
+                      <>
+                        <br />
+                        {`Безкоштовна доставка для замовлень на суму від
+                        ${selectedAddress?.min_amount} грн`}
+                      </>
+                    )}
                   </S.Container>
                 )}
               </S.Control>
@@ -991,19 +1006,22 @@ export const CheckoutForm = observer(
               loading={loading || (isCourierShipmentMethod && isAddressLoading)}
               style={{ width: "100%" }}
             >
-              <Button
-                loading={formik.isSubmitting}
-                disabled={formik.isSubmitting}
-                showSkeleton={
-                  loading || (isCourierShipmentMethod && isAddressLoading)
-                }
-                type={"submit"}
-                style={{
-                  width: "100%",
-                }}
-              >
-                {t("checkout.order")}
-              </Button>
+              {isCourierShipmentMethod &&
+              cartTotal < selectedAddress?.min ? null : (
+                <Button
+                  loading={formik.isSubmitting}
+                  disabled={formik.isSubmitting}
+                  showSkeleton={
+                    loading || (isCourierShipmentMethod && isAddressLoading)
+                  }
+                  type={"submit"}
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  {t("checkout.order")}
+                </Button>
+              )}
             </SkeletonWrap>
           </div>
         </S.Form>
