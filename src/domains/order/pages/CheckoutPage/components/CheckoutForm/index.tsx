@@ -628,7 +628,9 @@ export const CheckoutForm = observer(
       if (matchingAddresses.length === 0) return;
 
       const matchedAddress = matchingAddresses?.find((addr) =>
-        addr.buildings?.some((b) => b === houseNumber)
+        addr.buildings?.some(
+          (b) => b.toLowerCase().trim() === houseNumber.toLowerCase().trim()
+        )
       );
 
       if (matchedAddress) {
