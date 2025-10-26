@@ -636,6 +636,8 @@ export const CheckoutForm = observer(
 
       if (matchedAddress) {
         setFieldValue(FormNames.Street, matchedAddress.id);
+      } else {
+        setFieldValue(FormNames.Street, matchingAddresses[0].id); //set to oldest street
       }
     }, [selectedAddress, formik.values[FormNames.House], addresses]);
     let deliveryFee = 0;
