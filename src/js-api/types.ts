@@ -274,6 +274,8 @@ export type Address = {
   spot_name: string;
   min_amount: number;
   delivery_price: number;
+  buildings: string[];
+  min: number;
 };
 
 export type IGetAddressesRes = {
@@ -284,6 +286,10 @@ export type IGetOrderStatusRes = {
   status: number;
   online_payment_id: string;
   poster_id: string;
+};
+
+export type IGetPhoneRes = {
+  confirmed: boolean;
 };
 
 export type IGetAddressOptionsRes = {

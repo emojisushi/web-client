@@ -23,6 +23,7 @@ type TAutocomplete = {
   error?: string | null;
   style?: CSSProperties;
   data?: TAutocompleteItem[];
+  duplicates?: boolean;
 };
 type TAutocompleteItem = {
   searchText: string;
@@ -42,6 +43,7 @@ const AutocompleteComponent = ({
   value = null,
   error = null,
   data = [],
+  duplicates = true,
 }: TAutocomplete) => {
   const [searchText, setSearchText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
@@ -59,8 +61,14 @@ const AutocompleteComponent = ({
   //   });
   const filteredData = useMemo(() => {
     return fuzzySearch(data, searchText, (el) => el.searchText, {
-      maxAllowedModifications: 1,
-    }).slice(0, 20);
+      maxAllowedModifications: 2,
+      caseSensitive: false,
+    })
+      .slice(0, 25)
+      .filter(
+        (addr, index, self) =>
+          index === self.findIndex((a) => a.name === addr.name)
+      );
   }, [searchText]);
   useEffect(() => {
     if (value == null || data.length == 0) return;
@@ -78,12 +86,15 @@ const AutocompleteComponent = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
+      if (loading) {
+        return;
+      }
       if (
         wrapperRef.current &&
         !wrapperRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
-        if (!confirmed && !loading) {
+        if (!confirmed) {
           setSearchText("");
           onChange(null);
         }
@@ -94,7 +105,7 @@ const AutocompleteComponent = ({
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [confirmed]);
+  }, [confirmed, loading]);
   const handleSelect = (item: TAutocompleteItem) => {
     setConfirmed(true);
     setSearchText(item.name);

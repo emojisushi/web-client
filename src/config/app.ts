@@ -8,5 +8,11 @@ export const appConfig = {
     [0, 1],
     [24, 0],
   ] as WorkingHours,
+
+  onlinePaymentHours: [
+    [10, 0],
+    [23, 20],
+  ] as WorkingHours,
+
   version: getClientAppVersion(),
 };

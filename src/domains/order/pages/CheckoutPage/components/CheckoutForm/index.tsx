@@ -5,6 +5,7 @@ import {
   Dropdown,
   SkeletonWrap,
   Trans,
+  Checkbox,
 } from "~components";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
@@ -43,14 +44,15 @@ import {
   setToLocalStorage,
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
-import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 import { unformat, useMask } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
-import { CitySlug } from "~common/constants";
+import { isClosed } from "~utils/time.utils";
+import { appConfig } from "~config/app";
+import { useSmsVerification } from "~hooks/useSmsVerification";
+import { margin } from "styled-system";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -82,6 +84,7 @@ enum FormNames {
   Phone = "phone",
   Sticks = "sticks",
   Comment = "comment",
+  DontCall = "dont_call",
 }
 
 const fieldSortOrderMap: Record<keyof FormValues, number> = {
@@ -100,6 +103,7 @@ const fieldSortOrderMap: Record<keyof FormValues, number> = {
   comment: 12,
   payment_method_code: 13,
   change: 14,
+  dont_call: 15,
 };
 
 const localStorageKeys = {
@@ -134,6 +138,7 @@ type FormValues = {
   house_type: HouseType;
   spot_id: number | undefined;
   district_id: number | undefined;
+  dont_call: boolean;
 };
 
 type ErrorResponse = {
@@ -256,6 +261,7 @@ export const CheckoutForm = observer(
       disabled:
         !user?.is_call_center_admin && district.spot.temporarily_unavailable,
     }));
+    const [smsError, setSmsError] = useState<string>("");
 
     const initialValues: FormValues = {
       name: user && !user.is_call_center_admin ? getUserFullName(user) : "",
@@ -277,6 +283,7 @@ export const CheckoutForm = observer(
         districts.length === 1 || addressAutocomplete
           ? districts[0].value
           : undefined,
+      dont_call: false,
       ...(getFromLocalStorage(localStorageKeys.draftOrder) || {}),
     };
     const fieldsRef = useRef<Record<keyof FormValues, HTMLElement | null>>({
@@ -295,12 +302,18 @@ export const CheckoutForm = observer(
       house_type: null,
       shipping_method_code: null,
       comment: null,
+      dont_call: null,
     });
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
       if (addressAutocomplete && !selectedAddress?.spotName) {
         formik.setFieldError("street", "Ваша адреса не обслуговується");
       }
+      if (formik.values[FormNames.DontCall] && !phoneConfirmed) {
+        setSmsError(t("phone.confirm"));
+        return;
+      }
+
       const {
         phone,
         name,
@@ -321,7 +334,6 @@ export const CheckoutForm = observer(
       const [firstname, lastname] = name.split(" ");
       let address;
       let addressDetails;
-
       if (addressAutocomplete) {
         address = street;
         addressDetails = [
@@ -358,7 +370,10 @@ export const CheckoutForm = observer(
       const shippingMethod = shippingMethods.find(
         (method) => method.code === shipping_method_code
       );
-
+      let _comment = comment;
+      if (isOnlinePaymentMethod && formik.values[FormNames.DontCall]) {
+        _comment = "Не передзвонювати " + comment;
+      }
       try {
         const res = await EmojisushiAgent.placeOrderV2({
           phone: unformat(phone, phoneMaskOptions),
@@ -374,7 +389,7 @@ export const CheckoutForm = observer(
 
           change,
           sticks: +sticks,
-          comment,
+          comment: _comment,
           cart: {
             items: cart.items.map((item) => ({
               id: item.product.id + "",
@@ -541,10 +556,22 @@ export const CheckoutForm = observer(
         (option) => option.value !== "wayforpay"
       );
     }
+
+    const onlinePaymentClosed = isClosed({
+      start: appConfig.onlinePaymentHours[0],
+      end: appConfig.onlinePaymentHours[1],
+    });
+
+    if (onlinePaymentClosed) {
+      filteredPaymentMethods = paymentMethodOptions.filter(
+        (option) => option.value !== "wayforpay"
+      );
+    }
     useEffect(() => {
       if (
-        isTakeawayShipmentMethod &&
-        isOnlinePaymentMethod &&
+        !filteredPaymentMethods.find(
+          (el) => el.value === formik.values.payment_method_code
+        ) &&
         formik.values.payment_method_code !== PaymentMethodCodeEnum.Cash
       ) {
         formik.setFieldValue(
@@ -555,6 +582,7 @@ export const CheckoutForm = observer(
     }, [
       isTakeawayShipmentMethod,
       isOnlinePaymentMethod,
+      onlinePaymentClosed,
       formik.values.payment_method_code,
     ]);
     const houseTypes = [
@@ -573,10 +601,13 @@ export const CheckoutForm = observer(
         id: el.id,
         name: `${el.name_ua}, ${el.suburb_ua}`,
         searchText:
-          el.name_ua == el.name_ru ? el.name_ua : `${el.name_ua} ${el.name_ru}`,
+          el.name_ua == el.name_ru
+            ? `${el.name_ua} ${el.suburb_ua}`
+            : `${el.name_ua} ${el.name_ru} ${el.suburb_ua}`,
         spotName: el.spot_name,
         min_amount: el.min_amount,
         delivery_price: el.delivery_price,
+        min: el.min,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -591,12 +622,56 @@ export const CheckoutForm = observer(
       (el) => el.id === formik.values[FormNames.Street]
     );
 
+    useEffect(() => {
+      if (!addresses?.addresses || !selectedAddress?.name) return;
+
+      const houseNumber = formik.values[FormNames.House];
+      if (!houseNumber) return;
+
+      const matchingAddresses = addresses.addresses.filter(
+        (addr) => `${addr.name_ua}, ${addr.suburb_ua}` === selectedAddress.name
+      );
+      if (matchingAddresses.length === 0) return;
+
+      const matchedAddress = matchingAddresses?.find((addr) =>
+        addr.buildings?.some(
+          (b) => b.toLowerCase().trim() === houseNumber.toLowerCase().trim()
+        )
+      );
+
+      if (matchedAddress) {
+        setFieldValue(FormNames.Street, matchedAddress.id);
+      } else {
+        setFieldValue(FormNames.Street, matchingAddresses[0].id); //set to oldest street
+      }
+    }, [selectedAddress, formik.values[FormNames.House], addresses]);
     let deliveryFee = 0;
     let cartTotal = Number(cart?.total.replace("грн.", ""));
+    let total = cartTotal;
     if (isCourierShipmentMethod && cartTotal < selectedAddress?.min_amount) {
       deliveryFee = selectedAddress?.delivery_price;
-      cartTotal += deliveryFee;
+      total += deliveryFee;
     }
+
+    const {
+      phoneConfirmed,
+      smsSent,
+      smsCode,
+      setSmsCode,
+      smsVerified,
+      error,
+      setError,
+      sendSms,
+      verifySms,
+      sendSmsLoading,
+      verifySmsLoading,
+      isPhoneStatusLoading,
+      smsCooldown,
+      isCheckCodeButtonDisabled,
+    } = useSmsVerification({
+      phone: formik.values[FormNames.Phone],
+      city_slug: city?.slug,
+    });
 
     return (
       <S.Container>
@@ -690,6 +765,7 @@ export const CheckoutForm = observer(
                         formik.touched[FormNames.Street] &&
                         formik.errors["street"]
                       }
+                      duplicates={false}
                       data={addressesMemo ?? null}
                     />
                   ) : (
@@ -726,9 +802,23 @@ export const CheckoutForm = observer(
                 </FlexBox>
                 {addressAutocomplete && !(loading || isAddressLoading) && (
                   <S.Container>
-                    {selectedAddress?.min_amount &&
-                      deliveryFee !== 0 &&
-                      `Безкоштовна доставка при замовлені від ${selectedAddress?.min_amount} грн`}
+                    {cartTotal < selectedAddress?.min && (
+                      <>
+                        <br />
+                        <b>
+                          {`Доставка кур'єром доступна для замовлень на суму від ${selectedAddress?.min} грн`}
+                        </b>
+                        <br />
+                      </>
+                    )}
+
+                    {!!selectedAddress?.min_amount && deliveryFee !== 0 && (
+                      <>
+                        <br />
+                        {`Безкоштовна доставка для замовлень на суму від
+                        ${selectedAddress?.min_amount} грн`}
+                      </>
+                    )}
                   </S.Container>
                 )}
               </S.Control>
@@ -860,6 +950,95 @@ export const CheckoutForm = observer(
               />
             </S.Control>
           )}
+          {isOnlinePaymentMethod && (
+            <>
+              <S.Control>
+                <SkeletonWrap loading={loading}>
+                  <Checkbox
+                    name={FormNames.DontCall}
+                    checked={formik.values[FormNames.DontCall]}
+                    onChange={(e) => {
+                      setFieldValue(FormNames.DontCall, e.target.checked);
+                    }}
+                  >
+                    {t("checkout.form.dont_call")}
+                  </Checkbox>
+                </SkeletonWrap>
+              </S.Control>
+              {formik.values[FormNames.DontCall] && (
+                <SkeletonWrap loading={loading}>
+                  {phoneConfirmed ? (
+                    <p style={{ marginTop: "10px" }}>
+                      <b>{t("phone.confirmed")}</b>
+                    </p>
+                  ) : (
+                    <>
+                      <p style={{ marginTop: "10px" }}>
+                        {t("phone.confirm_first")}
+                      </p>
+
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        style={{ marginTop: "10px" }}
+                        loading={loading}
+                        placeholder={t("phone.enter_code")}
+                        onChange={(e) => {
+                          setSmsError("");
+                          setError("");
+                          setSmsCode(e.currentTarget.value);
+                        }}
+                        onBlur={formik.handleBlur}
+                        value={smsCode}
+                        error={smsError || error}
+                      />
+
+                      <FlexBox
+                        style={{ marginTop: "10px" }}
+                        justifyContent="space-around"
+                      >
+                        <Button
+                          type="button"
+                          style={{ width: "45%" }}
+                          loading={sendSmsLoading}
+                          disabled={smsCooldown > 0}
+                          onClick={async () => {
+                            await formik.validateForm();
+                            formik.setFieldTouched(FormNames.Phone, true, true);
+                            if (!formik.errors[FormNames.Phone]) {
+                              sendSms();
+                            }
+                          }}
+                        >
+                          {smsCooldown > 0
+                            ? `${t("phone.code_sent")} (${smsCooldown})`
+                            : t("phone.send_code")}
+                        </Button>
+                        <Button
+                          type="button"
+                          style={{ width: "45%" }}
+                          loading={verifySmsLoading}
+                          disabled={
+                            verifySmsLoading || isCheckCodeButtonDisabled
+                          }
+                          onClick={verifySms}
+                        >
+                          {t("phone.confirm_code")}
+                        </Button>
+                      </FlexBox>
+
+                      {/* {error && (
+                        <p style={{ color: "red", marginTop: "5px" }}>
+                          {error}
+                        </p>
+                      )} */}
+                    </>
+                  )}
+                </SkeletonWrap>
+              )}
+            </>
+          )}
           <div
             style={{
               marginTop: 20,
@@ -881,15 +1060,33 @@ export const CheckoutForm = observer(
                   <span>{cart?.total}</span>
                 </FlexBox>
                 {isCourierShipmentMethod && (
-                  <FlexBox justifyContent={"space-between"}>
-                    <Trans
-                      showSkeleton={
-                        loading || (isCourierShipmentMethod && isAddressLoading)
-                      }
-                      i18nKey={"checkout.delivery_price"}
-                    />
-                    <span>{deliveryFee} грн.</span>
-                  </FlexBox>
+                  <>
+                    <FlexBox justifyContent="space-between">
+                      <Trans
+                        showSkeleton={
+                          loading ||
+                          (isCourierShipmentMethod && isAddressLoading)
+                        }
+                        i18nKey="checkout.delivery_price"
+                      />
+                      <span>{deliveryFee} грн.</span>
+                    </FlexBox>
+
+                    {deliveryFee > 0 && (
+                      <FlexBox justifyContent="space-between">
+                        <Trans
+                          showSkeleton={
+                            loading ||
+                            (isCourierShipmentMethod && isAddressLoading)
+                          }
+                          i18nKey="checkout.not_enough_for_free_delivery"
+                        />
+                        <span>
+                          {selectedAddress?.min_amount - cartTotal} грн.
+                        </span>
+                      </FlexBox>
+                    )}
+                  </>
                 )}
                 <S.Total
                   style={{
@@ -900,7 +1097,7 @@ export const CheckoutForm = observer(
                 >
                   <Trans i18nKey={"checkout.to_pay"} />
                   {/* &nbsp; */}
-                  <span>{cart?.total ? `${cartTotal} грн.` : "🤪🤪🤪"}</span>
+                  <span>{cart?.total ? `${total} грн.` : "🤪🤪🤪"}</span>
                 </S.Total>
               </SkeletonWrap>
             </FlexBox>
@@ -910,19 +1107,22 @@ export const CheckoutForm = observer(
               loading={loading || (isCourierShipmentMethod && isAddressLoading)}
               style={{ width: "100%" }}
             >
-              <Button
-                loading={formik.isSubmitting}
-                disabled={formik.isSubmitting}
-                showSkeleton={
-                  loading || (isCourierShipmentMethod && isAddressLoading)
-                }
-                type={"submit"}
-                style={{
-                  width: "100%",
-                }}
-              >
-                {t("checkout.order")}
-              </Button>
+              {isCourierShipmentMethod &&
+              cartTotal < selectedAddress?.min ? null : (
+                <Button
+                  loading={formik.isSubmitting}
+                  disabled={formik.isSubmitting}
+                  showSkeleton={
+                    loading || (isCourierShipmentMethod && isAddressLoading)
+                  }
+                  type={"submit"}
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  {t("checkout.order")}
+                </Button>
+              )}
             </SkeletonWrap>
           </div>
         </S.Form>
