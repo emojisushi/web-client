@@ -5,13 +5,13 @@ export type WorkingHours = [[number, number], [number, number]];
 export const appConfig = {
   // todo: extract working hours to a remote config
   workingHours: [
-    [0, 1],
-    [24, 0],
+    [10, 0],
+    [21, 45],
   ] as WorkingHours,
 
   onlinePaymentHours: [
-    [10, 0],
-    [23, 20],
+    [0, 1],
+    [23, 59],
   ] as WorkingHours,
 
   version: getClientAppVersion(),
