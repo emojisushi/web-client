@@ -44,16 +44,15 @@ import {
   setToLocalStorage,
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
-import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 import { unformat, useMask } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
 import { useQuery } from "@tanstack/react-query";
-import React from "react";
-import { CitySlug } from "~common/constants";
 import { isClosed } from "~utils/time.utils";
 import { appConfig } from "~config/app";
+import { useSmsVerification } from "~hooks/useSmsVerification";
+import { margin } from "styled-system";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -262,6 +261,7 @@ export const CheckoutForm = observer(
       disabled:
         !user?.is_call_center_admin && district.spot.temporarily_unavailable,
     }));
+    const [smsError, setSmsError] = useState<string>("");
 
     const initialValues: FormValues = {
       name: user && !user.is_call_center_admin ? getUserFullName(user) : "",
@@ -309,6 +309,11 @@ export const CheckoutForm = observer(
       if (addressAutocomplete && !selectedAddress?.spotName) {
         formik.setFieldError("street", "Ваша адреса не обслуговується");
       }
+      if (formik.values[FormNames.DontCall] && !phoneConfirmed) {
+        setSmsError(t("phone.confirm"));
+        return;
+      }
+
       const {
         phone,
         name,
@@ -648,6 +653,26 @@ export const CheckoutForm = observer(
       total += deliveryFee;
     }
 
+    const {
+      phoneConfirmed,
+      smsSent,
+      smsCode,
+      setSmsCode,
+      smsVerified,
+      error,
+      setError,
+      sendSms,
+      verifySms,
+      sendSmsLoading,
+      verifySmsLoading,
+      isPhoneStatusLoading,
+      smsCooldown,
+      isCheckCodeButtonDisabled,
+    } = useSmsVerification({
+      phone: formik.values[FormNames.Phone],
+      city_slug: city?.slug,
+    });
+
     return (
       <S.Container>
         {!user && (
@@ -926,19 +951,93 @@ export const CheckoutForm = observer(
             </S.Control>
           )}
           {isOnlinePaymentMethod && (
-            <S.Control>
-              <SkeletonWrap loading={loading}>
-                <Checkbox
-                  name={FormNames.DontCall}
-                  checked={formik.values[FormNames.DontCall]}
-                  onChange={(e) => {
-                    setFieldValue(FormNames.DontCall, e.target.checked);
-                  }}
-                >
-                  {t("checkout.form.dont_call")}
-                </Checkbox>
-              </SkeletonWrap>
-            </S.Control>
+            <>
+              <S.Control>
+                <SkeletonWrap loading={loading}>
+                  <Checkbox
+                    name={FormNames.DontCall}
+                    checked={formik.values[FormNames.DontCall]}
+                    onChange={(e) => {
+                      setFieldValue(FormNames.DontCall, e.target.checked);
+                    }}
+                  >
+                    {t("checkout.form.dont_call")}
+                  </Checkbox>
+                </SkeletonWrap>
+              </S.Control>
+              {formik.values[FormNames.DontCall] && (
+                <SkeletonWrap loading={loading}>
+                  {phoneConfirmed ? (
+                    <p style={{ marginTop: "10px" }}>
+                      <b>{t("phone.confirmed")}</b>
+                    </p>
+                  ) : (
+                    <>
+                      <p style={{ marginTop: "10px" }}>
+                        {t("phone.confirm_first")}
+                      </p>
+
+                      <Input
+                        type="text"
+                        inputMode="numeric"
+                        autoComplete="one-time-code"
+                        style={{ marginTop: "10px" }}
+                        loading={loading}
+                        placeholder={t("phone.enter_code")}
+                        onChange={(e) => {
+                          setSmsError("");
+                          setError("");
+                          setSmsCode(e.currentTarget.value);
+                        }}
+                        onBlur={formik.handleBlur}
+                        value={smsCode}
+                        error={smsError || error}
+                      />
+
+                      <FlexBox
+                        style={{ marginTop: "10px" }}
+                        justifyContent="space-around"
+                      >
+                        <Button
+                          type="button"
+                          style={{ width: "45%" }}
+                          loading={sendSmsLoading}
+                          disabled={smsCooldown > 0}
+                          onClick={async () => {
+                            await formik.validateForm();
+                            formik.setFieldTouched(FormNames.Phone, true, true);
+                            if (!formik.errors[FormNames.Phone]) {
+                              sendSms();
+                            }
+                          }}
+                        >
+                          {smsCooldown > 0
+                            ? `${t("phone.code_sent")} (${smsCooldown})`
+                            : t("phone.send_code")}
+                        </Button>
+                        <Button
+                          type="button"
+                          style={{ width: "45%" }}
+                          loading={verifySmsLoading}
+                          disabled={
+                            verifySmsLoading || isCheckCodeButtonDisabled
+                          }
+                          onClick={verifySms}
+                        >
+                          {t("phone.confirm_code")}
+                        </Button>
+                      </FlexBox>
+
+                      {/* {error && (
+                        <p style={{ color: "red", marginTop: "5px" }}>
+                          {error}
+                        </p>
+                      )} */}
+                    </>
+                  )}
+                </SkeletonWrap>
+              )}
+            </>
           )}
           <div
             style={{
