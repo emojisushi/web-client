@@ -1,12 +1,16 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function useSmsAutoFill(
   setCode: (code: string) => void,
   phone: string,
   submit: (phone: string, code: string) => void
 ) {
+  const [listening, setListening] = useState(false);
+
   useEffect(() => {
-    if ("OTPCredential" in window) {
+    if (!listening && "OTPCredential" in window) {
+      setListening(true);
+
       const ac = new AbortController();
       navigator.credentials
         .get({
@@ -28,5 +32,5 @@ export function useSmsAutoFill(
         ac.abort();
       };
     }
-  }, [setCode]);
+  }, [setCode, submit, phone]);
 }
