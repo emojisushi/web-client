@@ -72,7 +72,7 @@ export const useSmsVerification = ({
   });
 
   const verifySmsMutation = useMutation({
-    mutationFn: ({ phone, code }: { phone: string; code: string }) => {
+    mutationFn: ({ phone, smsCode }: { phone: string; smsCode: string }) => {
       return EmojisushiAgent.verifyCode({
         phone,
         code: smsCode,
@@ -95,8 +95,11 @@ export const useSmsVerification = ({
     if (timer > 0) return;
     sendSmsMutation.mutate({ phone, city_slug });
   };
-  const verifySms = () => verifySmsMutation.mutate({ phone, code: smsCode });
-  useSmsAutoFill(setSmsCode, verifySms);
+  const verifySms = () => verifySmsMutation.mutate({ phone, smsCode });
+  const verifySmsWithCode = (code: string) => {
+    verifySmsMutation.mutate({ phone, smsCode: code });
+  };
+  useSmsAutoFill(setSmsCode, verifySmsWithCode);
 
   return {
     phoneConfirmed: phoneConfirmed?.confirmed,
