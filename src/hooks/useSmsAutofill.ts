@@ -1,6 +1,9 @@
 import { useEffect } from "react";
 
-export function useSmsAutoFill(setCode: (code: string) => void) {
+export function useSmsAutoFill(
+  setCode: (code: string) => void,
+  submit: () => void
+) {
   useEffect(() => {
     if ("OTPCredential" in window) {
       const ac = new AbortController();
@@ -13,6 +16,9 @@ export function useSmsAutoFill(setCode: (code: string) => void) {
         .then((otp: any) => {
           if (otp && otp.code) {
             setCode(otp.code);
+            setTimeout(() => {
+              submit();
+            }, 500);
           }
         })
         .catch((err) => {

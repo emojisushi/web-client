@@ -29,7 +29,6 @@ export const useSmsVerification = ({
   const [isCheckCodeButtonDisabled, setIsCheckCodeButtonDisabled] =
     useState(true);
 
-  useSmsAutoFill(setSmsCode);
   useEffect(() => {
     if (timer <= 0) return;
     const interval = setInterval(() => setTimer((t) => t - 1), 1000);
@@ -97,6 +96,7 @@ export const useSmsVerification = ({
     sendSmsMutation.mutate({ phone, city_slug });
   };
   const verifySms = () => verifySmsMutation.mutate({ phone, code: smsCode });
+  useSmsAutoFill(setSmsCode, verifySms);
 
   return {
     phoneConfirmed: phoneConfirmed?.confirmed,
