@@ -88,7 +88,7 @@ export const useSmsVerification = ({
       setSmsVerified(false);
       setError(t("phone.code_error"));
     },
-    retry: false,
+    retry: 1,
   });
 
   const sendSms = () => {
