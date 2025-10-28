@@ -5,12 +5,8 @@ export function useSmsAutoFill(
   phone: string,
   submit: (phone: string, code: string) => void
 ) {
-  const [listening, setListening] = useState(false);
-
   useEffect(() => {
-    if (!listening && "OTPCredential" in window) {
-      setListening(true);
-
+    if ("OTPCredential" in window) {
       const ac = new AbortController();
       navigator.credentials
         .get({
