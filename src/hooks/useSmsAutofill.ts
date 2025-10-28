@@ -2,7 +2,8 @@ import { useEffect } from "react";
 
 export function useSmsAutoFill(
   setCode: (code: string) => void,
-  submit: (code: string) => void
+  phone: string,
+  submit: (phone: string, code: string) => void
 ) {
   useEffect(() => {
     if ("OTPCredential" in window) {
@@ -16,9 +17,7 @@ export function useSmsAutoFill(
         .then((otp: any) => {
           if (otp && otp.code) {
             setCode(otp.code);
-            setTimeout(() => {
-              submit(otp.code);
-            }, 500);
+            submit(phone, otp.code);
           }
         })
         .catch((err) => {

@@ -10,8 +10,8 @@ export const appConfig = {
   ] as WorkingHours,
 
   onlinePaymentHours: [
-    [0, 1],
-    [23, 59],
+    [10, 0],
+    [21, 20],
   ] as WorkingHours,
 
   version: getClientAppVersion(),

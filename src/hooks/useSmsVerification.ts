@@ -96,10 +96,10 @@ export const useSmsVerification = ({
     sendSmsMutation.mutate({ phone, city_slug });
   };
   const verifySms = () => verifySmsMutation.mutate({ phone, smsCode });
-  const verifySmsWithCode = (code: string) => {
+  const verifySmsWithCode = (phone: string, code: string) => {
     verifySmsMutation.mutate({ phone, smsCode: code });
   };
-  useSmsAutoFill(setSmsCode, verifySmsWithCode);
+  useSmsAutoFill(setSmsCode, phone, verifySmsWithCode);
 
   return {
     phoneConfirmed: phoneConfirmed?.confirmed,
