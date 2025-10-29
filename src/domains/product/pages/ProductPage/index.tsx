@@ -10,6 +10,7 @@ import {
 import { useShowBinotel } from "~hooks/use-binotel";
 import { catalogQuery } from "~domains/catalog/catalog.query";
 import { getGridItems } from "~domains/catalog/catalog.utils";
+import { Helmet } from "react-helmet";
 
 export const ProductPage = () => {
   const { categorySlug } = useTypedParams(ROUTES.CATEGORY.SHOW);
@@ -35,18 +36,41 @@ export const ProductPage = () => {
     return category.slug === categorySlug;
   });
 
+  const title = selectedCategory
+    ? `${selectedCategory.name} | EmojiSushi - роли та піца`
+    : "Emoji Sushi | Суші та роли";
+
+  const description = selectedCategory
+    ? `Замовляйте ${selectedCategory.name.toLowerCase()} в Emoji Sushi 🍣 — швидка доставка по Одесі, свіжі інгредієнти, акційні сети.`
+    : "Emoji Sushi — доставка суші, ролів, піци та супів в Одесі. Смачні сети, вигідні акції та швидка доставка.";
+
+  const url = `https://emojisushi.com.ua/${categorySlug || ""}`;
+
   return isCartLoading || isCatalogLoading ? (
     <ProductsGrid loading />
   ) : (
-    <div id={"products"} style={{ flexGrow: 1 }}>
-      <ProductsGrid
-        wishlists={catalogData.wishlists}
-        cart={cart}
-        title={selectedCategory?.name}
-        loading={false}
-        items={items}
-      />
-    </div>
+    <>
+      <Helmet>
+        <title>{title}</title>
+        <meta name="description" content={description} />
+        <link rel="canonical" href={url} />
+
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:url" content={url} />
+        <meta property="og:type" content="website" />
+      </Helmet>
+
+      <div id={"products"} style={{ flexGrow: 1 }}>
+        <ProductsGrid
+          wishlists={catalogData.wishlists}
+          cart={cart}
+          title={selectedCategory?.name}
+          loading={false}
+          items={items}
+        />
+      </div>
+    </>
   );
 };
 
