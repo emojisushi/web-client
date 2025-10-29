@@ -115,6 +115,16 @@
     "contacts": "Contacts",
     "delivery": "Delivery and payment"
   },
+  "phone": {
+    "confirm": "Confirm phone",
+    "confirm_first": "Confirm your phone with sms verification",
+    "confirmed": "Telefon confirmed",
+    "enter_code": "Enter received code",
+    "code_sent": "Code sent",
+    "send_code": "Receive sms",
+    "confirm_code": "Send code",
+    "code_error": "Incorrect code"
+  },
   "checkout": {
     "title": "Checkout",
     "form": {

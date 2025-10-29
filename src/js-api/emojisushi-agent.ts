@@ -24,6 +24,7 @@ import {
   IGetAddressesRes,
   IGetAddressOptionsRes,
   IGetOrderStatusRes,
+  IGetPhoneRes,
 } from "./types";
 
 export function createEmojisushiAgent(options: { service: string }) {
@@ -85,6 +86,38 @@ export function createEmojisushiAgent(options: { service: string }) {
       params,
       ...axiosConfig,
     });
+  }
+
+  function getPhoneStatus(
+    params: {
+      phone: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetPhoneRes>("/sms/check-phone", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function generateCode(
+    data: {
+      phone: string;
+      city_slug: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post("/sms/generate-code", data, axiosConfig);
+  }
+
+  function verifyCode(
+    data: {
+      phone: string;
+      code: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post("/sms/check-code", data, axiosConfig);
   }
 
   function getOrderStatus(
@@ -520,5 +553,8 @@ export function createEmojisushiAgent(options: { service: string }) {
     getAddresses,
     getAddressOptions,
     getOrderStatus,
+    getPhoneStatus,
+    generateCode,
+    verifyCode,
   };
 }

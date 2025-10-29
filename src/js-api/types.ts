@@ -288,6 +288,10 @@ export type IGetOrderStatusRes = {
   poster_id: string;
 };
 
+export type IGetPhoneRes = {
+  confirmed: boolean;
+};
+
 export type IGetAddressOptionsRes = {
   enable_address_system: boolean;
 };
