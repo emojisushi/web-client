@@ -44,7 +44,7 @@ export const ProductPage = () => {
     ? `Замовляйте ${selectedCategory.name.toLowerCase()} в Emoji Sushi 🍣 — швидка доставка по Одесі, свіжі інгредієнти, акційні сети.`
     : "Emoji Sushi — доставка суші, ролів, піци та супів в Одесі. Смачні сети, вигідні акції та швидка доставка.";
 
-  const url = `https://emojisushi.com.ua/${categorySlug || ""}`;
+  const url = `https://emojisushi.com.ua/category/${categorySlug || ""}`;
 
   return isCartLoading || isCatalogLoading ? (
     <ProductsGrid loading />
@@ -59,6 +59,10 @@ export const ProductPage = () => {
         <meta property="og:description" content={description} />
         <meta property="og:url" content={url} />
         <meta property="og:type" content="website" />
+        <meta
+          property="og:image"
+          content="https://odesa.emojisushi.com.ua/favicon-32x32.png"
+        />
       </Helmet>
 
       <div id={"products"} style={{ flexGrow: 1 }}>
