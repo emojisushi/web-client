@@ -276,6 +276,7 @@ export type Address = {
   delivery_price: number;
   buildings: string[];
   min: number;
+  unavailable_categories: number[];
 };
 
 export type IGetAddressesRes = {
@@ -662,6 +663,11 @@ export type ISpot = {
   is_main: boolean;
   district: IDistrict;
   temporarily_unavailable: boolean;
+  unavailable_categories: unavailable_category[];
+};
+
+export type unavailable_category = {
+  id: number;
 };
 
 export type IDistrict = {

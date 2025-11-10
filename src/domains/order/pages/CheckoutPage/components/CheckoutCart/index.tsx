@@ -11,9 +11,14 @@ import { Cart } from "~domains/cart/cart.query";
 type CheckoutCartProps = {
   cart?: Cart;
   loading?: boolean;
+  unavailableCategories?: number[];
 };
 
-export const CheckoutCart = ({ cart, loading = false }: CheckoutCartProps) => {
+export const CheckoutCart = ({
+  cart,
+  loading = false,
+  unavailableCategories = [],
+}: CheckoutCartProps) => {
   const { t } = useTranslation();
   const items = loading
     ? [
@@ -34,6 +39,9 @@ export const CheckoutCart = ({ cart, loading = false }: CheckoutCartProps) => {
                 key={item.product_id}
                 loading={loading}
                 item={item}
+                unavailable={item?.product?.categories.some((cat) =>
+                  unavailableCategories.includes(cat.id)
+                )}
               />
             );
           })}

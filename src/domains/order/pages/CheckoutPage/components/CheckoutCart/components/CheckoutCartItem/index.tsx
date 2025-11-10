@@ -22,11 +22,13 @@ import { dummyCartProduct } from "~domains/order/mocks";
 type CheckoutCartItemProps = {
   item: CartItem;
   loading?: boolean;
+  unavailable?: boolean;
 };
 
 export const CheckoutCartItem = ({
   item,
   loading = false,
+  unavailable = false,
 }: CheckoutCartItemProps) => {
   const { quantity, product, variant } = loading
     ? dummyCartProduct
@@ -98,6 +100,13 @@ export const CheckoutCartItem = ({
 
     const oldPrice = getOldProductPrice(product, variant)?.price_formatted;
     const newPrice = getNewProductPrice(product, variant)?.price_formatted;
+    if (unavailable) {
+      return (
+        <S.Price>
+          <Price newPrice={"Товар тимчасово недоступний"} />
+        </S.Price>
+      );
+    }
     return (
       <S.Price>
         <Price newPrice={newPrice} oldPrice={oldPrice} />
