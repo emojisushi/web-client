@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useNavigation } from "react-router-dom";
@@ -25,6 +25,9 @@ const CheckoutPage = () => {
   const navigate = useNavigate();
   useShowBinotel();
   const isRedirectionToThankYouPage = useRef<boolean>(false);
+  const [unavailableCategories, setUnavailableCategories] = useState<number[]>(
+    []
+  );
 
   const { data: user, isLoading: isUserLoading } = useUser();
   const { mutate: clearCart } = useClearCart();
@@ -94,6 +97,8 @@ const CheckoutPage = () => {
         addressAutocomplete={addressOptions?.enable_address_system}
         user={user}
         spots={checkoutForm.spots}
+        unavailableCategories={unavailableCategories}
+        setUnavailableCategories={setUnavailableCategories}
       />
     );
   };
@@ -102,7 +107,9 @@ const CheckoutPage = () => {
     if (isCartLoading || isLoadingCatalog) {
       return <CheckoutCart loading={true} />;
     }
-    return <CheckoutCart cart={cart} />;
+    return (
+      <CheckoutCart cart={cart} unavailableCategories={unavailableCategories} />
+    );
   };
 
   return (

@@ -128,6 +128,7 @@
   "checkout": {
     "title": "Checkout",
     "form": {
+      "unavailable_item": "Sorry, some items are temporarily not available:",
       "address": "Delivery address",
       "comment": "Comments on the order",
       "persons": "Number of persons",

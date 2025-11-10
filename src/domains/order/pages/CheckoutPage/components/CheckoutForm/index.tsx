@@ -24,6 +24,8 @@ import {
 } from "@layerok/emojisushi-js-sdk";
 import {
   ChangeEvent,
+  Dispatch,
+  SetStateAction,
   useCallback,
   useEffect,
   useMemo,
@@ -52,7 +54,6 @@ import { useQuery } from "@tanstack/react-query";
 import { isClosed } from "~utils/time.utils";
 import { appConfig } from "~config/app";
 import { useSmsVerification } from "~hooks/useSmsVerification";
-import { margin } from "styled-system";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -64,6 +65,8 @@ type TCheckoutFormProps = {
   city?: ICity;
   addressAutocomplete?: boolean;
   onRedirectToThankYouPage?: () => void;
+  unavailableCategories?: number[] | undefined;
+  setUnavailableCategories?: Dispatch<SetStateAction<number[]>> | undefined;
 };
 
 // todo: mark optional fields instead of marking required fields
@@ -180,6 +183,8 @@ export const CheckoutForm = observer(
     loading = false,
     addressAutocomplete = false,
     onRedirectToThankYouPage,
+    unavailableCategories,
+    setUnavailableCategories,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -608,6 +613,7 @@ export const CheckoutForm = observer(
         min_amount: el.min_amount,
         delivery_price: el.delivery_price,
         min: el.min,
+        unavailable_categories: el.unavailable_categories,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -652,6 +658,13 @@ export const CheckoutForm = observer(
       deliveryFee = selectedAddress?.delivery_price;
       total += deliveryFee;
     }
+    const unavailableItems = cart?.items
+      .filter((item) =>
+        item.product.categories.some((cat) =>
+          unavailableCategories.includes(cat.id)
+        )
+      )
+      .map((item) => item.product.name);
 
     const {
       phoneConfirmed,
@@ -672,6 +685,28 @@ export const CheckoutForm = observer(
       phone: formik.values[FormNames.Phone],
       city_slug: city?.slug,
     });
+
+    useEffect(() => {
+      if (loading) return;
+      const { spot_id, shipping_method_code, street } = formik.values;
+      if (shipping_method_code === ShippingMethodCodeEnum.Takeaway) {
+        const spot = spotsRes?.find((el) => el.id === spot_id);
+        setUnavailableCategories(
+          spot?.unavailable_categories?.map((el) => el.id) ?? []
+        );
+      } else {
+        const address = selectedAddress;
+        setUnavailableCategories(address?.unavailable_categories ?? []);
+      }
+    }, [
+      loading,
+      formik.values[FormNames.SpotId],
+      formik.values[FormNames.ShippingMethodCode],
+      formik.values[FormNames.Street],
+      spotsRes,
+      selectedAddress,
+      setUnavailableCategories,
+    ]);
 
     return (
       <S.Container>
@@ -1044,71 +1079,92 @@ export const CheckoutForm = observer(
               marginTop: 20,
             }}
           >
-            <FlexBox flexDirection={"column"}>
-              <SkeletonWrap
-                loading={
-                  loading || (isCourierShipmentMethod && isAddressLoading)
-                }
+            {unavailableItems?.length > 0 ? (
+              <S.Total
+                style={{
+                  justifyContent: "space-between",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "10px",
+                }}
               >
-                <FlexBox justifyContent={"space-between"}>
-                  <Trans
-                    showSkeleton={
-                      loading || (isCourierShipmentMethod && isAddressLoading)
-                    }
-                    i18nKey={"checkout.order_price"}
-                  />
-                  <span>{cart?.total}</span>
-                </FlexBox>
-                {isCourierShipmentMethod && (
-                  <>
-                    <FlexBox justifyContent="space-between">
-                      <Trans
-                        showSkeleton={
-                          loading ||
-                          (isCourierShipmentMethod && isAddressLoading)
-                        }
-                        i18nKey="checkout.delivery_price"
-                      />
-                      <span>{deliveryFee} грн.</span>
-                    </FlexBox>
-
-                    {deliveryFee > 0 && (
+                <span style={{ color: "rgba(205, 56, 56, 1)" }}>
+                  <Trans i18nKey={"checkout.form.unavailable_item"} />
+                </span>
+                {unavailableItems.map((el) => (
+                  <span key={el}>— {el}</span>
+                ))}
+              </S.Total>
+            ) : (
+              <FlexBox flexDirection={"column"}>
+                <SkeletonWrap
+                  loading={
+                    loading || (isCourierShipmentMethod && isAddressLoading)
+                  }
+                >
+                  <FlexBox justifyContent={"space-between"}>
+                    <Trans
+                      showSkeleton={
+                        loading || (isCourierShipmentMethod && isAddressLoading)
+                      }
+                      i18nKey={"checkout.order_price"}
+                    />
+                    <span>{cart?.total}</span>
+                  </FlexBox>
+                  {isCourierShipmentMethod && (
+                    <>
                       <FlexBox justifyContent="space-between">
                         <Trans
                           showSkeleton={
                             loading ||
                             (isCourierShipmentMethod && isAddressLoading)
                           }
-                          i18nKey="checkout.not_enough_for_free_delivery"
+                          i18nKey="checkout.delivery_price"
                         />
-                        <span>
-                          {selectedAddress?.min_amount - cartTotal} грн.
-                        </span>
+                        <span>{deliveryFee} грн.</span>
                       </FlexBox>
-                    )}
-                  </>
-                )}
-                <S.Total
-                  style={{
-                    marginTop: "20px",
-                    justifyContent: "space-between",
-                    display: "flex",
-                  }}
-                >
-                  <Trans i18nKey={"checkout.to_pay"} />
-                  {/* &nbsp; */}
-                  <span>{cart?.total ? `${total} грн.` : "🤪🤪🤪"}</span>
-                </S.Total>
-              </SkeletonWrap>
-            </FlexBox>
+
+                      {deliveryFee > 0 && (
+                        <FlexBox justifyContent="space-between">
+                          <Trans
+                            showSkeleton={
+                              loading ||
+                              (isCourierShipmentMethod && isAddressLoading)
+                            }
+                            i18nKey="checkout.not_enough_for_free_delivery"
+                          />
+                          <span>
+                            {selectedAddress?.min_amount - cartTotal} грн.
+                          </span>
+                        </FlexBox>
+                      )}
+                    </>
+                  )}
+                  <S.Total
+                    style={{
+                      marginTop: "20px",
+                      justifyContent: "space-between",
+                      display: "flex",
+                    }}
+                  >
+                    <Trans i18nKey={"checkout.to_pay"} />
+                    {/* &nbsp; */}
+                    <span>{cart?.total ? `${total} грн.` : "🤪🤪🤪"}</span>
+                  </S.Total>
+                </SkeletonWrap>
+              </FlexBox>
+            )}
           </div>
-          <div style={{ marginTop: "20px" }}>
-            <SkeletonWrap
-              loading={loading || (isCourierShipmentMethod && isAddressLoading)}
-              style={{ width: "100%" }}
-            >
-              {isCourierShipmentMethod &&
-              cartTotal < selectedAddress?.min ? null : (
+          {unavailableItems?.length > 0 ||
+          (isCourierShipmentMethod &&
+            cartTotal < selectedAddress?.min) ? null : (
+            <div style={{ marginTop: "20px" }}>
+              <SkeletonWrap
+                loading={
+                  loading || (isCourierShipmentMethod && isAddressLoading)
+                }
+                style={{ width: "100%" }}
+              >
                 <Button
                   loading={formik.isSubmitting}
                   disabled={formik.isSubmitting}
@@ -1122,9 +1178,9 @@ export const CheckoutForm = observer(
                 >
                   {t("checkout.order")}
                 </Button>
-              )}
-            </SkeletonWrap>
-          </div>
+              </SkeletonWrap>
+            </div>
+          )}
         </S.Form>
         <div style={{ display: "none" }} ref={wayforpayFormContainer}></div>
       </S.Container>
