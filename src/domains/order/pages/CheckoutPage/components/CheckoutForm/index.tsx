@@ -67,6 +67,8 @@ type TCheckoutFormProps = {
   onRedirectToThankYouPage?: () => void;
   unavailableCategories?: number[] | undefined;
   setUnavailableCategories?: Dispatch<SetStateAction<number[]>> | undefined;
+  unavailableProducts?: number[] | undefined;
+  setUnavailableProducts?: Dispatch<SetStateAction<number[]>> | undefined;
 };
 
 // todo: mark optional fields instead of marking required fields
@@ -185,6 +187,8 @@ export const CheckoutForm = observer(
     onRedirectToThankYouPage,
     unavailableCategories,
     setUnavailableCategories,
+    unavailableProducts,
+    setUnavailableProducts,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -614,6 +618,7 @@ export const CheckoutForm = observer(
         delivery_price: el.delivery_price,
         min: el.min,
         unavailable_categories: el.unavailable_categories,
+        unavailable_products: el.unavailable_products,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -659,10 +664,12 @@ export const CheckoutForm = observer(
       total += deliveryFee;
     }
     const unavailableItems = cart?.items
-      .filter((item) =>
-        item.product.categories.some((cat) =>
-          unavailableCategories.includes(cat.id)
-        )
+      .filter(
+        (item) =>
+          unavailableProducts.includes(item.product.id) ||
+          item.product.categories.some((cat) =>
+            unavailableCategories.includes(cat.id)
+          )
       )
       .map((item) => item.product.name);
 
@@ -694,9 +701,11 @@ export const CheckoutForm = observer(
         setUnavailableCategories(
           spot?.unavailable_categories?.map((el) => el.id) ?? []
         );
+        setUnavailableProducts(spot?.unavailable_products ?? []);
       } else {
         const address = selectedAddress;
         setUnavailableCategories(address?.unavailable_categories ?? []);
+        setUnavailableProducts(address?.unavailable_products ?? []);
       }
     }, [
       loading,
@@ -706,6 +715,7 @@ export const CheckoutForm = observer(
       spotsRes,
       selectedAddress,
       setUnavailableCategories,
+      setUnavailableProducts,
     ]);
 
     return (

@@ -12,12 +12,14 @@ type CheckoutCartProps = {
   cart?: Cart;
   loading?: boolean;
   unavailableCategories?: number[];
+  unavailableProducts?: number[];
 };
 
 export const CheckoutCart = ({
   cart,
   loading = false,
   unavailableCategories = [],
+  unavailableProducts = [],
 }: CheckoutCartProps) => {
   const { t } = useTranslation();
   const items = loading
@@ -39,9 +41,12 @@ export const CheckoutCart = ({
                 key={item.product_id}
                 loading={loading}
                 item={item}
-                unavailable={item?.product?.categories.some((cat) =>
-                  unavailableCategories.includes(cat.id)
-                )}
+                unavailable={
+                  unavailableProducts.includes(item.product.id) ||
+                  item?.product?.categories.some((cat) =>
+                    unavailableCategories.includes(cat.id)
+                  )
+                }
               />
             );
           })}
