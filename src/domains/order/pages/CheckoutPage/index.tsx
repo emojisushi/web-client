@@ -28,7 +28,7 @@ const CheckoutPage = () => {
   const [unavailableCategories, setUnavailableCategories] = useState<number[]>(
     []
   );
-
+  const [unavailableProducts, setUnavailableProducts] = useState<number[]>([]);
   const { data: user, isLoading: isUserLoading } = useUser();
   const { mutate: clearCart } = useClearCart();
 
@@ -99,6 +99,8 @@ const CheckoutPage = () => {
         spots={checkoutForm.spots}
         unavailableCategories={unavailableCategories}
         setUnavailableCategories={setUnavailableCategories}
+        unavailableProducts={unavailableProducts}
+        setUnavailableProducts={setUnavailableProducts}
       />
     );
   };
@@ -108,7 +110,11 @@ const CheckoutPage = () => {
       return <CheckoutCart loading={true} />;
     }
     return (
-      <CheckoutCart cart={cart} unavailableCategories={unavailableCategories} />
+      <CheckoutCart
+        cart={cart}
+        unavailableCategories={unavailableCategories}
+        unavailableProducts={unavailableProducts}
+      />
     );
   };
 
