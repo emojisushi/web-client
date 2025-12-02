@@ -278,6 +278,7 @@ export type Address = {
   min: number;
   unavailable_categories: number[];
   unavailable_products: number[];
+  recommended_products: number[];
 };
 
 export type IGetAddressesRes = {
@@ -666,6 +667,7 @@ export type ISpot = {
   temporarily_unavailable: boolean;
   unavailable_categories: unavailable_category[];
   unavailable_products: number[];
+  recommended_products: IProduct[];
 };
 
 export type unavailable_category = {
