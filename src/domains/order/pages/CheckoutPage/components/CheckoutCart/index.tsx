@@ -42,7 +42,7 @@ export const CheckoutCart = ({
                 loading={loading}
                 item={item}
                 unavailable={
-                  unavailableProducts.includes(item.product.id) ||
+                  unavailableProducts?.includes(item.product?.id) ||
                   item?.product?.categories.some((cat) =>
                     unavailableCategories.includes(cat.id)
                   )

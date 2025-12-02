@@ -16,6 +16,7 @@ import {
   ICity,
   IDistrict,
   IPaymentMethod,
+  IProduct,
   IShippingMethod,
   ISpot,
   IUser,
@@ -54,6 +55,7 @@ import { useQuery } from "@tanstack/react-query";
 import { isClosed } from "~utils/time.utils";
 import { appConfig } from "~config/app";
 import { useSmsVerification } from "~hooks/useSmsVerification";
+import { CheckoutRecommended } from "../CheckoutRecommended";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -193,6 +195,10 @@ export const CheckoutForm = observer(
     const { t } = useTranslation();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const [recommendedProducts, setRecommendedProducts] = useState<IProduct[]>(
+      []
+    );
 
     const showModal = useShowModal();
     const phoneInputRef = useMask(phoneMaskOptions);
@@ -619,6 +625,7 @@ export const CheckoutForm = observer(
         min: el.min,
         unavailable_categories: el.unavailable_categories,
         unavailable_products: el.unavailable_products,
+        recommended_products: el.recommended_products,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -702,10 +709,16 @@ export const CheckoutForm = observer(
           spot?.unavailable_categories?.map((el) => el.id) ?? []
         );
         setUnavailableProducts(spot?.unavailable_products ?? []);
+        setRecommendedProducts(spot?.recommended_products ?? []);
       } else {
         const address = selectedAddress;
         setUnavailableCategories(address?.unavailable_categories ?? []);
         setUnavailableProducts(address?.unavailable_products ?? []);
+        const all = spotsRes.map((el) => el.recommended_products).flat();
+        const filtered = all.filter((el) =>
+          address?.recommended_products.includes(el.id)
+        );
+        setRecommendedProducts(filtered ?? []);
       }
     }, [
       loading,
@@ -1084,6 +1097,19 @@ export const CheckoutForm = observer(
               )}
             </>
           )}
+          <div
+            style={{
+              marginTop: 20,
+            }}
+          >
+            <CheckoutRecommended
+              loading={loading}
+              products={recommendedProducts}
+              cart={cart}
+              unavailableCategories={unavailableCategories}
+              unavailableProducts={unavailableProducts}
+            />
+          </div>
           <div
             style={{
               marginTop: 20,
