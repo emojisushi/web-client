@@ -715,9 +715,12 @@ export const CheckoutForm = observer(
         setUnavailableCategories(address?.unavailable_categories ?? []);
         setUnavailableProducts(address?.unavailable_products ?? []);
         const all = spotsRes.map((el) => el.recommended_products).flat();
-        const filtered = all.filter((el) =>
-          address?.recommended_products.includes(el.id)
-        );
+        const seen = new Set();
+        const filtered = all.filter((el) => {
+          if (seen.has(el.id)) return false;
+          seen.add(el.id);
+          return address?.recommended_products.includes(el.id);
+        });
         setRecommendedProducts(filtered ?? []);
       }
     }, [
