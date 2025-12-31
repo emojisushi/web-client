@@ -451,6 +451,19 @@ export const CheckoutForm = observer(
           formik.setFieldError(FormNames.Phone, "Недійсний номер телефону");
         }
 
+        if (message.includes("адрес")) {
+          formik.setFieldError(
+            FormNames.Street,
+            "Обраний заклад або адрес доставки тимчасово недоступні"
+          );
+          formik.setFieldError(
+            FormNames.SpotId,
+            "Обраний заклад або адрес доставки тимчасово недоступні"
+          );
+          fieldsRef.current.street?.scrollIntoView({
+            behavior: "smooth",
+          });
+        }
         // todo: handle other server errors
         // todo: there can be more errors than just firstname
       }
@@ -806,7 +819,8 @@ export const CheckoutForm = observer(
                   ref={setFieldRef(FormNames.HouseType)}
                 />
               </S.Control>
-              <S.Control>
+
+              <S.Control ref={setFieldRef(FormNames.Street)}>
                 <FlexBox
                   style={{
                     gap: 10,
