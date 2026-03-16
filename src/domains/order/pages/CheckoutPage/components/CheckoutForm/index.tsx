@@ -670,10 +670,13 @@ export const CheckoutForm = observer(
         )
       );
 
+      const defaultAddress =
+        matchingAddresses?.find((addr) => addr.buildings.length === 0) ??
+        matchingAddresses[0];
       if (matchedAddress) {
         setFieldValue(FormNames.Street, matchedAddress.id);
       } else {
-        setFieldValue(FormNames.Street, matchingAddresses[0].id); //set to oldest street
+        setFieldValue(FormNames.Street, defaultAddress.id);
       }
     }, [selectedAddress, formik.values[FormNames.House], addresses]);
     let deliveryFee = 0;
