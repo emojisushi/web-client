@@ -173,7 +173,11 @@
     "to_pay": "To pay:",
     "order_price" : "Order:",
     "delivery_price" : "Delivery:",
-    "not_enough_for_free_delivery" : "Order more for free delivery:"
+    "not_enough_for_free_delivery" : "Order more for free delivery:",
+    "wait_time" : "Estimated wait time:",
+    "minutes" : "minutes",
+    "hour" : "hour",
+    "hours" : "hours"
   },
   "shippingMethods": {
     "courier": "Courier",

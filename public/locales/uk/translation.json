@@ -175,7 +175,11 @@
     "to_pay": "До сплати:",
     "order_price" : "Замовлення:",
     "delivery_price" : "Доставка:",
-    "not_enough_for_free_delivery" : "До безкоштовної доставки:"
+    "not_enough_for_free_delivery" : "До безкоштовної доставки:",
+    "wait_time" : "Приблизний час очікування:",
+    "minutes" : "хвилин",
+    "hour" : "година",
+    "hours" : "години"
   },
   "shippingMethods": {
     "courier": "Кур'єр",
