@@ -426,6 +426,7 @@ export const CheckoutForm = observer(
               {},
               {
                 order_id: !!order_id ? `${order_id}` : "",
+                wait_time: currentWaitTime,
               }
             )
           );
@@ -639,6 +640,7 @@ export const CheckoutForm = observer(
         unavailable_categories: el.unavailable_categories,
         unavailable_products: el.unavailable_products,
         recommended_products: el.recommended_products,
+        wait_minutes: el.wait_minutes_delivery,
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -679,6 +681,7 @@ export const CheckoutForm = observer(
         setFieldValue(FormNames.Street, defaultAddress.id);
       }
     }, [selectedAddress, formik.values[FormNames.House], addresses]);
+
     let deliveryFee = 0;
     let cartTotal = Number(cart?.total.replace("грн.", ""));
     let total = cartTotal;
@@ -716,11 +719,16 @@ export const CheckoutForm = observer(
       city_slug: city?.slug,
     });
 
+    let currentSpot = spotsRes?.find((el) => el.id === formik.values.spot_id);
+    let currentWaitTime = isTakeawayShipmentMethod
+      ? currentSpot?.wait_minutes_spot
+      : selectedAddress?.wait_minutes;
+
     useEffect(() => {
       if (loading) return;
       const { spot_id, shipping_method_code, street } = formik.values;
       if (shipping_method_code === ShippingMethodCodeEnum.Takeaway) {
-        const spot = spotsRes?.find((el) => el.id === spot_id);
+        const spot = currentSpot;
         setUnavailableCategories(
           spot?.unavailable_categories?.map((el) => el.id) ?? []
         );
@@ -749,6 +757,24 @@ export const CheckoutForm = observer(
       setUnavailableCategories,
       setUnavailableProducts,
     ]);
+
+    const formatMinutes = useCallback((minutes: number) => {
+      const hours = Math.floor(minutes / 60);
+      const mins = minutes % 60;
+
+      let result = "";
+      if (hours === 1) {
+        result += `${hours} ${t("checkout.hour")}`;
+      } else if (hours > 1) {
+        result += `${hours} ${t("checkout.hours")}`;
+      }
+
+      if (mins > 0) {
+        if (hours > 0) result += " ";
+        result += `${mins} ${t("checkout.minutes")}`;
+      }
+      return result;
+    }, []);
 
     return (
       <S.Container>
@@ -1207,6 +1233,22 @@ export const CheckoutForm = observer(
                     {/* &nbsp; */}
                     <span>{cart?.total ? `${total} грн.` : "🤪🤪🤪"}</span>
                   </S.Total>
+                  {currentWaitTime > 0 && (
+                    <S.Total
+                      style={{
+                        marginTop: "20px",
+                        justifyContent: "space-between",
+                        display: "flex",
+                      }}
+                    >
+                      <Trans i18nKey={"checkout.wait_time"} />
+                      <span style={{ textAlign: "right" }}>
+                        {`${formatMinutes(currentWaitTime)} (± 20 ${t(
+                          "checkout.minutes"
+                        )})`}
+                      </span>
+                    </S.Total>
+                  )}
                 </SkeletonWrap>
               </FlexBox>
             )}

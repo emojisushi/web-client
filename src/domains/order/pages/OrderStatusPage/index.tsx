@@ -30,7 +30,7 @@ enum OrderStatus {
 export const OrderStatusPage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const [{ order_id }] = useTypedSearchParams(ROUTES.ORDER_STATUS);
+  const [{ order_id, wait_time }] = useTypedSearchParams(ROUTES.ORDER_STATUS);
   const { data: order, failureCount } = useQuery({
     ...orderStatusQuery(order_id),
     refetchInterval: 5000,
@@ -42,7 +42,7 @@ export const OrderStatusPage = () => {
   useEffect(() => {
     if (order?.status === OrderStatus.PAID) {
       navigate(
-        `${ROUTES.THANKYOU.path}?order_id=${order.poster_id} (${order.online_payment_id})&online_order=true&location_confirmed=true`
+        `${ROUTES.THANKYOU.path}?order_id=${order.poster_id} (${order.online_payment_id})&online_order=true&location_confirmed=true&wait_time=${wait_time}`
       );
     }
   }, [order?.status, navigate]);

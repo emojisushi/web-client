@@ -3,6 +3,7 @@ import {
   string,
   union,
   boolean,
+  number,
 } from "react-router-typesafe-routes/dom";
 
 const PRODUCT_SORTER_MODES = [
@@ -40,11 +41,13 @@ export const ROUTES = {
     searchParams: {
       order_id: string(),
       online_order: boolean(),
+      wait_time: number(),
     },
   }),
   ORDER_STATUS: route("order-status", {
     searchParams: {
       order_id: string(),
+      wait_time: number(),
     },
   }),
   PUBLIC_OFFER: route(
