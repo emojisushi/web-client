@@ -1243,9 +1243,7 @@ export const CheckoutForm = observer(
                     >
                       <Trans i18nKey={"checkout.wait_time"} />
                       <span style={{ textAlign: "right" }}>
-                        {`${formatMinutes(currentWaitTime)} (± 20 ${t(
-                          "checkout.minutes"
-                        )})`}
+                        {`${formatMinutes(currentWaitTime)}`}
                       </span>
                     </S.Total>
                   )}
