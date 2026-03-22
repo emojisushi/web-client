@@ -157,14 +157,24 @@ export const ProductCard = (props: ProductCardProps) => {
         <S.Description>
           <SkeletonWrap loading={loading}>
             <InfoTooltip label={t("menu.weightComment")}>
-              <S.Weight>
-                {product?.weight !== 0 ? product?.weight + "г" : ""}
+              <S.Weight style={{ alignItems: "center" }}>
+                {product?.weight !== 0 ? product?.weight + " г" : ""}
                 {product?.weight !== 0 && (
-                  <S.WeightTooltipMarker>?</S.WeightTooltipMarker>
+                  <SvgIcon
+                    width="20px"
+                    color={"#999"}
+                    style={{ marginLeft: "2px", cursor: "pointer" }}
+                  >
+                    <InfoSvg />
+                  </SvgIcon>
                 )}
               </S.Weight>
             </InfoTooltip>
           </SkeletonWrap>
+        </S.Description>
+      </EqualHeightElement>
+      <EqualHeightElement name={"ingredients"}>
+        <S.Description>
           <SkeletonWrap borderRadius="100%" loading={loading}>
             <AnimatedTooltip
               placement={"bottom-start"}
@@ -174,14 +184,20 @@ export const ProductCard = (props: ProductCardProps) => {
                 />
               }
             >
-              <SvgIcon width="25px" color={"#999"}>
-                <InfoSvg />
-              </SvgIcon>
+              <Button
+                style={{
+                  height: "30px",
+                  minWidth: "50px",
+                  padding: "0 10px",
+                  fontSize: "12px",
+                }}
+              >
+                {t("menu.ingredients")}
+              </Button>
             </AnimatedTooltip>
           </SkeletonWrap>
         </S.Description>
       </EqualHeightElement>
-
       <S.Footer>
         <Price loading={loading} oldPrice={oldPrice} newPrice={newPrice} />
         {count ? (

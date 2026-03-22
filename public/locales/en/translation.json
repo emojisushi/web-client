@@ -215,7 +215,8 @@
     "onlineOrderText": "The order will be prepared and sent to the address you specified."
   },
   "menu": {
-    "weightComment": "Actual weight may vary by 5% from stated weight"
+    "weightComment": "Actual weight may vary by 5% from stated weight",
+    "ingredients": "Ingredients"
   },
   "products": {
     "loading": "Loading dishes..."
