@@ -141,10 +141,16 @@ export const CheckoutRecommendedItem = (props: ProductCardProps) => {
       <S.Description>
         <SkeletonWrap loading={loading}>
           <InfoTooltip label={t("menu.weightComment")}>
-            <S.Weight>
-              {product?.weight !== 0 ? product?.weight + "г" : ""}
+            <S.Weight style={{ alignItems: "center" }}>
+              {product?.weight !== 0 ? product?.weight + " г" : ""}
               {product?.weight !== 0 && (
-                <S.WeightTooltipMarker>?</S.WeightTooltipMarker>
+                <SvgIcon
+                  width="20px"
+                  color={"#999"}
+                  style={{ marginLeft: "2px", cursor: "pointer" }}
+                >
+                  <InfoSvg />
+                </SvgIcon>
               )}
             </S.Weight>
           </InfoTooltip>
@@ -158,9 +164,17 @@ export const CheckoutRecommendedItem = (props: ProductCardProps) => {
               />
             }
           >
-            <SvgIcon width="25px" color={"#999"}>
-              <InfoSvg />
-            </SvgIcon>
+            <Button
+              type="button"
+              style={{
+                height: "30px",
+                minWidth: "50px",
+                padding: "0 6px",
+                fontSize: "12px",
+              }}
+            >
+              {t("menu.ingredients")}
+            </Button>
           </AnimatedTooltip>
         </SkeletonWrap>
       </S.Description>
