@@ -57,7 +57,7 @@ export const ThankYouPage = () => {
               : t("thankYou.subtitleWithoutId")}
             <br />
             <br />
-            {wait_time > 0 && (
+            {!!wait_time && wait_time > 0 && (
               <span>
                 {t("checkout.wait_time")} {formatMinutes(wait_time)}
               </span>
