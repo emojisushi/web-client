@@ -324,7 +324,7 @@ export const CheckoutForm = observer(
       if (addressAutocomplete && !selectedAddress?.spotName) {
         formik.setFieldError("street", "Ваша адреса не обслуговується");
       }
-      if (formik.values[FormNames.DontCall] && !phoneConfirmed) {
+      if (isOnlinePaymentMethod && !phoneConfirmed) {
         setSmsError(t("phone.confirm"));
         return;
       }
@@ -1069,7 +1069,7 @@ export const CheckoutForm = observer(
                   </Checkbox>
                 </SkeletonWrap>
               </S.Control>
-              {formik.values[FormNames.DontCall] && (
+              {isOnlinePaymentMethod && (
                 <SkeletonWrap loading={loading}>
                   {phoneConfirmed ? (
                     <p style={{ marginTop: "10px" }}>
