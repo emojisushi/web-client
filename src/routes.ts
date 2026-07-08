@@ -87,6 +87,8 @@ export const ROUTES = {
     }
   ),
   REFUND: route("refund"),
+  APP_SUPPORT: route("app-support"),
+  PRIVACY_POLICY: route("privacy-policy"),
   REFUND_EXT: route("refund-policy-ext"),
 } as const;
 
