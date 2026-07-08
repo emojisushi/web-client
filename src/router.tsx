@@ -176,6 +176,18 @@ const routes = [
                 path: ROUTES.REFUND.path,
                 lazy: lazy(() => import("~domains/payment/pages/RefundPage")),
               },
+              {
+                path: ROUTES.APP_SUPPORT.path,
+                lazy: lazy(
+                  () => import("~pages/AppSupportPage/AppSupportPage")
+                ),
+              },
+              {
+                path: ROUTES.PRIVACY_POLICY.path,
+                lazy: lazy(
+                  () => import("~pages/PrivacyPolicyPage/PrivacyPolicyPage")
+                ),
+              },
             ],
           },
         ],
