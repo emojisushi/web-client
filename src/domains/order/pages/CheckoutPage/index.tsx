@@ -94,7 +94,7 @@ const CheckoutPage = () => {
         }}
         shippingMethods={checkoutForm.shipping_methods}
         paymentMethods={checkoutForm.payment_methods}
-        addressAutocomplete={addressOptions?.enable_address_system}
+        addressAutocomplete={true}
         user={user}
         spots={checkoutForm.spots}
         unavailableCategories={unavailableCategories}
