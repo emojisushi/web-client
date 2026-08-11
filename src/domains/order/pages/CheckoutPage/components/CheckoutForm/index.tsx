@@ -47,7 +47,7 @@ import {
   setToLocalStorage,
 } from "~utils/ls.utils";
 import { EmojisushiAgent } from "~lib/emojisushi-js-sdk";
-import { unformat, useMask } from "@react-input/mask";
+import { unformat, useMask, format } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
@@ -167,6 +167,7 @@ const phoneMaskOptions = {
   replacement: { _: /\d/ },
   showMask: true,
   track: ({ inputType, data }) => {
+    console.log(inputType, data);
     if (inputType === "insert") {
       if (data.startsWith("+38")) {
         data = data.slice(3);
@@ -280,7 +281,7 @@ export const CheckoutForm = observer(
 
     const initialValues: FormValues = {
       name: user && !user.is_call_center_admin ? getUserFullName(user) : "",
-      phone: user && !user.is_call_center_admin ? user.phone || "+38" : "+38",
+      //   phone: user && !user.is_call_center_admin ? user.phone || "+38" : "+38",
       street: "",
       house: "",
       apartment: "",
@@ -401,6 +402,11 @@ export const CheckoutForm = observer(
           payment_method_id: paymentMethod.id,
           shipping_method_id: shippingMethod.id,
           spot_id: resultant_spot_id,
+          house_type: values.house_type,
+          house: values.house,
+          floor: values.floor,
+          apartment: values.apartment,
+          entrance: values.entrance,
 
           change,
           sticks: +sticks,
@@ -651,10 +657,14 @@ export const CheckoutForm = observer(
       setFieldValue(FormNames.Street, value);
     }, []);
 
-    const selectedAddress = addressesMemo.find(
+    let selectedAddress = addressesMemo.find(
       (el) => el.id === formik.values[FormNames.Street]
     );
-
+    console.log(
+      "selectedAddress",
+      selectedAddress,
+      formik.values[FormNames.Street]
+    );
     useEffect(() => {
       if (!addresses?.addresses || !selectedAddress?.name) return;
 
@@ -715,7 +725,7 @@ export const CheckoutForm = observer(
       smsCooldown,
       isCheckCodeButtonDisabled,
     } = useSmsVerification({
-      phone: formik.values[FormNames.Phone],
+      phone: formik.values[FormNames.Phone] ?? "",
       city_slug: city?.slug,
     });
 
@@ -775,6 +785,28 @@ export const CheckoutForm = observer(
       }
       return result;
     }, []);
+
+    useEffect(() => {
+      if (loading) return;
+      formik.setFieldValue(FormNames.Name, user ? getUserFullName(user) : "");
+      formik.setFieldValue(FormNames.Apartment, user?.apartment ?? "");
+      formik.setFieldValue(FormNames.Entrance, user?.entrance ?? "");
+      formik.setFieldValue(FormNames.Floor, user?.floor ?? "");
+      if (user?.phone?.startsWith("+38")) {
+        let formattedPhone = format(
+          user?.phone.slice(3) ?? "",
+          phoneMaskOptions
+        );
+        formik.setFieldValue(FormNames.Phone, formattedPhone);
+      }
+      if (user?.house_type) {
+        formik.setFieldValue(FormNames.HouseType, user.house_type);
+      }
+      formik.setFieldValue(FormNames.House, user?.house ?? "");
+      if (user?.street) {
+        formik.setFieldValue(FormNames.Street, Number(user?.street) ?? "");
+      }
+    }, [formik.setFieldValue, loading, user]);
 
     return (
       <S.Container>

@@ -61,7 +61,7 @@ export function createEmojisushiAgent(options: { service: string }) {
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
     return client.get<IGetCatalogRes>("catalog", {
-      params,
+      params: { mobile: false },
       ...axiosConfig,
     });
   }
@@ -197,7 +197,11 @@ export function createEmojisushiAgent(options: { service: string }) {
       spot_id: number;
       address?: string;
       address_details?: string;
-
+      house_type: string;
+      house: string;
+      floor: string;
+      apartment: string;
+      entrance: string;
       comment?: string;
       sticks?: number;
       change?: string;
@@ -342,14 +346,36 @@ export function createEmojisushiAgent(options: { service: string }) {
   ) {
     return client.post<RegisterResData>("auth/register", data, axiosConfig);
   }
-
+  function registerWithPhone(
+    data: {
+      phone: string;
+      code: string;
+      password: string;
+      password_confirmation: string;
+      agree: boolean;
+      activate: boolean;
+      auto_login: boolean;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post<RegisterResData>(
+      "auth/register-with-phone",
+      data,
+      axiosConfig
+    );
+  }
   function login(
     data: { email: string; password: string },
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
     return client.post<LoginResData>("auth/login", data, axiosConfig);
   }
-
+  function loginWithSms(
+    data: { phone: string; code: string },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post<LoginResData>("auth/login-with-sms", data, axiosConfig);
+  }
   function restorePassword(
     data: {
       email: string;
@@ -556,5 +582,7 @@ export function createEmojisushiAgent(options: { service: string }) {
     getPhoneStatus,
     generateCode,
     verifyCode,
+    loginWithSms,
+    registerWithPhone,
   };
 }
