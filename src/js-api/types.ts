@@ -624,6 +624,13 @@ export type IUser = IRainLabUser & {
   phone: string | null;
   customer: ICustomer | null;
   is_call_center_admin: boolean;
+  bonus_amount: number;
+  street: string | null;
+  house_type: string | null;
+  house: string | null;
+  floor: string | null;
+  apartment: string | null;
+  entrance: string | null;
 };
 
 export type RegisterResData = {

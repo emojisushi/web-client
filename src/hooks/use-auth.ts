@@ -16,32 +16,30 @@ export const { useUser, useLogin, useRegister, useLogout, AuthLoader } =
           }
           return null;
         }),
-    loginFn: async ({ email, password }) => {
-      const res = await EmojisushiAgent.login({
-        email,
-        password,
+    loginFn: async ({ phone, code }) => {
+      const res = await EmojisushiAgent.loginWithSms({
+        phone,
+        code,
       });
       const { token } = res.data.data;
       Cookies.set("jwt", token);
       return res.data.data.user;
     },
     registerFn: async ({
-      email,
+      phone,
+      code,
       password,
       password_confirmation,
-      name,
-      surname,
       agree,
     }) => {
-      const res = await EmojisushiAgent.register({
-        email,
+      const res = await EmojisushiAgent.registerWithPhone({
+        phone,
+        code,
         password,
         password_confirmation,
-        name,
-        surname,
-        agree,
-        auto_login: true,
         activate: true,
+        auto_login: true,
+        agree: true,
       });
       const { token } = res.data.data;
       Cookies.set("jwt", token);
