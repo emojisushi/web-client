@@ -170,7 +170,7 @@ export const RegisterModal = NiceModal.create(
 
       registerWithSms.mutate(
         {
-          phone: unformat(phone, phoneMaskOptions),
+          phone: `+38${unformat(phone, phoneMaskOptions)}`,
           password,
           password_confirmation: password,
           code,
