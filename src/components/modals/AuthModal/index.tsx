@@ -129,7 +129,7 @@ export const AuthModal = NiceModal.create(
 
       loginWithSms.mutate(
         {
-          phone: unformat(phone, phoneMaskOptions),
+          phone: `+38${unformat(phone, phoneMaskOptions)}`,
           code,
         },
         {
