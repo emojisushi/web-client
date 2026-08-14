@@ -802,7 +802,10 @@ export const CheckoutForm = observer(
       if (user?.phone?.startsWith("+38")) {
         userValues.phone = format(user.phone.slice(3), phoneMaskOptions);
       }
-
+      setToLocalStorage(localStorageKeys.draftOrder, {
+        ...formik.values,
+        ...userValues,
+      });
       formik.setValues({
         ...formik.values,
         ...userValues,
