@@ -788,6 +788,10 @@ export const CheckoutForm = observer(
 
     useEffect(() => {
       if (loading) return;
+      let draftOrder = getFromLocalStorage(localStorageKeys.draftOrder);
+      if (draftOrder && Object.keys(draftOrder).length > 0) {
+        return;
+      }
       formik.setFieldValue(FormNames.Name, user ? getUserFullName(user) : "");
       formik.setFieldValue(FormNames.Apartment, user?.apartment ?? "");
       formik.setFieldValue(FormNames.Entrance, user?.entrance ?? "");
