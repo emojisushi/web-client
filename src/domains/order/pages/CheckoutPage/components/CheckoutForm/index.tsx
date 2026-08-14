@@ -806,7 +806,7 @@ export const CheckoutForm = observer(
       if (user?.street) {
         formik.setFieldValue(FormNames.Street, Number(user?.street) ?? "");
       }
-    }, [formik.setFieldValue, loading, user]);
+    }, [loading]);
 
     return (
       <S.Container>
