@@ -792,23 +792,23 @@ export const CheckoutForm = observer(
       if (draftOrder && Object.keys(draftOrder).length > 0) {
         return;
       }
-      formik.setFieldValue(FormNames.Name, user ? getUserFullName(user) : "");
-      formik.setFieldValue(FormNames.Apartment, user?.apartment ?? "");
-      formik.setFieldValue(FormNames.Entrance, user?.entrance ?? "");
-      formik.setFieldValue(FormNames.Floor, user?.floor ?? "");
+      setFieldValue(FormNames.Name, user ? getUserFullName(user) : "");
+      setFieldValue(FormNames.Apartment, user?.apartment ?? "");
+      setFieldValue(FormNames.Entrance, user?.entrance ?? "");
+      setFieldValue(FormNames.Floor, user?.floor ?? "");
       if (user?.phone?.startsWith("+38")) {
         let formattedPhone = format(
           user?.phone.slice(3) ?? "",
           phoneMaskOptions
         );
-        formik.setFieldValue(FormNames.Phone, formattedPhone);
+        setFieldValue(FormNames.Phone, formattedPhone);
       }
       if (user?.house_type) {
-        formik.setFieldValue(FormNames.HouseType, user.house_type);
+        setFieldValue(FormNames.HouseType, user.house_type);
       }
-      formik.setFieldValue(FormNames.House, user?.house ?? "");
+      setFieldValue(FormNames.House, user?.house ?? "");
       if (user?.street) {
-        formik.setFieldValue(FormNames.Street, Number(user?.street) ?? "");
+        setFieldValue(FormNames.Street, Number(user?.street) ?? "");
       }
     }, [loading]);
 
