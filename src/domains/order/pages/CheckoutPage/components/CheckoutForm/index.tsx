@@ -167,7 +167,6 @@ const phoneMaskOptions = {
   replacement: { _: /\d/ },
   showMask: true,
   track: ({ inputType, data }) => {
-    console.log(inputType, data);
     if (inputType === "insert") {
       if (data.startsWith("+38")) {
         data = data.slice(3);
@@ -660,11 +659,6 @@ export const CheckoutForm = observer(
     let selectedAddress = addressesMemo.find(
       (el) => el.id === formik.values[FormNames.Street]
     );
-    console.log(
-      "selectedAddress",
-      selectedAddress,
-      formik.values[FormNames.Street]
-    );
     useEffect(() => {
       if (!addresses?.addresses || !selectedAddress?.name) return;
 
@@ -788,29 +782,32 @@ export const CheckoutForm = observer(
 
     useEffect(() => {
       if (loading) return;
-      let draftOrder = getFromLocalStorage(localStorageKeys.draftOrder);
+
+      const draftOrder = getFromLocalStorage(localStorageKeys.draftOrder);
+
       if (draftOrder && Object.keys(draftOrder).length > 0) {
         return;
       }
-      setFieldValue(FormNames.Name, user ? getUserFullName(user) : "");
-      setFieldValue(FormNames.Apartment, user?.apartment ?? "");
-      setFieldValue(FormNames.Entrance, user?.entrance ?? "");
-      setFieldValue(FormNames.Floor, user?.floor ?? "");
+
+      const userValues: Partial<FormValues> = {
+        name: user ? getUserFullName(user) : "",
+        apartment: user?.apartment ?? "",
+        entrance: user?.entrance ?? "",
+        floor: user?.floor ?? "",
+        // house_type: user?.house_type as HouseType | HouseType.PrivateHouse,
+        house: user?.house ?? "",
+        street: user?.street ? Number(user.street) : "",
+      };
+
       if (user?.phone?.startsWith("+38")) {
-        let formattedPhone = format(
-          user?.phone.slice(3) ?? "",
-          phoneMaskOptions
-        );
-        setFieldValue(FormNames.Phone, formattedPhone);
+        userValues.phone = format(user.phone.slice(3), phoneMaskOptions);
       }
-      if (user?.house_type) {
-        setFieldValue(FormNames.HouseType, user.house_type);
-      }
-      setFieldValue(FormNames.House, user?.house ?? "");
-      if (user?.street) {
-        setFieldValue(FormNames.Street, Number(user?.street) ?? "");
-      }
-    }, [loading]);
+
+      formik.setValues({
+        ...formik.values,
+        ...userValues,
+      });
+    }, [loading, user]);
 
     return (
       <S.Container>
