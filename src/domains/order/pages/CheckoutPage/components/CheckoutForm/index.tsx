@@ -351,12 +351,17 @@ export const CheckoutForm = observer(
       let addressDetails;
       if (addressAutocomplete) {
         address = street;
-        addressDetails = [
-          ["Будинок", house],
-          ["Квартира", apartment],
-          ["Під'їзд", entrance],
-          ["Поверх", floor],
-        ]
+        addressDetails = [["Будинок", house]];
+        if (values.house_type === HouseType.HighRiseBuilding) {
+          addressDetails = [
+            ...addressDetails,
+            ["Квартира", apartment],
+            ["Під'їзд", entrance],
+            ["Поверх", floor],
+          ];
+        }
+
+        addressDetails = addressDetails
           .filter(([label, value]) => !!value)
           .map(([label, value]) => `${label}: ${value}`)
           .join(", ");
