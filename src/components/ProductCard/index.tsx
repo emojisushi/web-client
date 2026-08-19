@@ -145,15 +145,26 @@ export const ProductCard = (props: ProductCardProps) => {
       </SkeletonWrap>
       <EqualHeightElement name={"product-name"}>
         <S.Name onClick={openDetailedProductModal}>
-          {loading ? <Skeleton /> : product.name}
-          {!!product?.spicy && (
-            <SvgIcon
-              width="17px"
-              color={"#999"}
-              style={{ marginLeft: "4px", cursor: "pointer" }}
-            >
-              <SpicySvg />
-            </SvgIcon>
+          {loading ? (
+            <Skeleton />
+          ) : (
+            <>
+              {product.name}
+              {!!product?.spicy && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    marginLeft: "4px",
+                    verticalAlign: "middle",
+                    cursor: "pointer",
+                  }}
+                >
+                  <SvgIcon width="17px" style={{ cursor: "pointer" }}>
+                    <SpicySvg />
+                  </SvgIcon>
+                </span>
+              )}
+            </>
           )}
         </S.Name>
         <Modificators

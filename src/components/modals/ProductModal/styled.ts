@@ -53,7 +53,6 @@ const ProductName = styled.div`
   line-height: 27px;
   text-align: left;
   text-transform: uppercase;
-  display: flex;
 
   ${media.lessThan("tablet")`
     padding-top: 30px;

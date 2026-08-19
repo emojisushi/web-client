@@ -120,13 +120,18 @@ export const ProductModal = NiceModal.create(() => {
               <S.ProductName>
                 {product?.name || <Skeleton />}
                 {!!product?.spicy && (
-                  <SvgIcon
-                    width="20px"
-                    color={"#999"}
-                    style={{ marginLeft: "6px", cursor: "pointer" }}
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      marginLeft: "4px",
+                      verticalAlign: "middle",
+                      cursor: "pointer",
+                    }}
                   >
-                    <SpicySvg />
-                  </SvgIcon>
+                    <SvgIcon width="24px">
+                      <SpicySvg />
+                    </SvgIcon>
+                  </span>
                 )}
               </S.ProductName>
               <S.Description>
