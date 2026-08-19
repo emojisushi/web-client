@@ -188,6 +188,7 @@ export type IProduct = {
   prices: IPrice[];
   categories: ICategory[];
   hide_products_in_spot: ISpot[];
+  spicy: Nullable<boolean>;
 };
 
 export type IFilter = {

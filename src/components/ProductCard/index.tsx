@@ -39,6 +39,7 @@ import {
 import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { Cart } from "~domains/cart/cart.query";
+import { SpicySvg } from "~components/svg/SpicySvg";
 
 type ProductCardProps = {
   product?: IProduct;
@@ -144,7 +145,27 @@ export const ProductCard = (props: ProductCardProps) => {
       </SkeletonWrap>
       <EqualHeightElement name={"product-name"}>
         <S.Name onClick={openDetailedProductModal}>
-          {loading ? <Skeleton /> : product.name}
+          {loading ? (
+            <Skeleton />
+          ) : (
+            <>
+              {product.name}
+              {!!product?.spicy && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    marginLeft: "4px",
+                    verticalAlign: "middle",
+                    cursor: "pointer",
+                  }}
+                >
+                  <SvgIcon width="17px" style={{ cursor: "pointer" }}>
+                    <SpicySvg />
+                  </SvgIcon>
+                </span>
+              )}
+            </>
+          )}
         </S.Name>
         <Modificators
           loading={loading}
