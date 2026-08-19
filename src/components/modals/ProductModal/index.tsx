@@ -29,6 +29,7 @@ import {
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 import { catalogQuery } from "~domains/catalog/catalog.query";
+import { SpicySvg } from "~components/svg/SpicySvg";
 
 export const ProductModal = NiceModal.create(() => {
   const modal = useNiceModal();
@@ -116,7 +117,18 @@ export const ProductModal = NiceModal.create(() => {
               />
             </SkeletonWrap>
             <S.DescriptionWrapper>
-              <S.ProductName>{product?.name || <Skeleton />}</S.ProductName>
+              <S.ProductName>
+                {product?.name || <Skeleton />}
+                {!!product?.spicy && (
+                  <SvgIcon
+                    width="20px"
+                    color={"#999"}
+                    style={{ marginLeft: "6px", cursor: "pointer" }}
+                  >
+                    <SpicySvg />
+                  </SvgIcon>
+                )}
+              </S.ProductName>
               <S.Description>
                 {product?.description_short != null ? (
                   product.description_short

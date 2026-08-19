@@ -34,7 +34,7 @@ const Footer = styled.div`
 const Name = styled.div`
   margin-top: 20px;
   font-size: 15px;
-  cursor: pointer;
+  display: flex;
 `;
 
 const Image = styled.div<{
