@@ -794,6 +794,10 @@ export const CheckoutForm = observer(
         return;
       }
 
+      if (user?.is_call_center_admin) {
+        return;
+      }
+
       const userValues: Partial<FormValues> = {
         name: user ? getUserFullName(user) : "",
         apartment: user?.apartment ?? "",
