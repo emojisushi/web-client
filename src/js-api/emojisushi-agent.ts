@@ -204,6 +204,8 @@ export function createEmojisushiAgent(options: { service: string }) {
       entrance: string;
       comment?: string;
       sticks?: number;
+      training_sticks?: number;
+      no_cutlery?: boolean;
       change?: string;
 
       cart: {

@@ -132,6 +132,8 @@
       "address": "Адреса доставки",
       "comment": "Коментар до замовлення",
       "persons": "Кількість персон",
+      "training_sticks": "Кількість тренувальних паличок",
+      "no_cutlery": "Без приборів",
       "change": "Приготувати решту з",
       "privateHouse": "Приватний будинок",
       "highRiseBuilding": "Квартира",
@@ -217,7 +219,8 @@
   },
   "menu": {
     "weightComment": "Фактична вага може відрізнятися на 5% від вказанної",
-    "ingredients": "Склад"
+    "ingredients": "Склад",
+    "nutrition": "К: {{calories}} ккал (Б:{{proteins}} Ж:{{fats}} В:{{carbs}})"
   },
   "products": {
     "loading": "Загрузка товарів..."

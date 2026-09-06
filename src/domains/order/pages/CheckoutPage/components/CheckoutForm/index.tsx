@@ -90,6 +90,8 @@ enum FormNames {
   Name = "name",
   Phone = "phone",
   Sticks = "sticks",
+  TrainingSticks = "training_sticks",
+  NoCutlery = "no_cutlery",
   Comment = "comment",
   DontCall = "dont_call",
 }
@@ -106,11 +108,13 @@ const fieldSortOrderMap: Record<keyof FormValues, number> = {
   floor: 8,
   name: 9,
   phone: 10,
-  sticks: 11,
-  comment: 12,
-  payment_method_code: 13,
-  change: 14,
-  dont_call: 15,
+  no_cutlery: 11,
+  sticks: 12,
+  training_sticks: 13,
+  comment: 14,
+  payment_method_code: 15,
+  change: 16,
+  dont_call: 17,
 };
 
 const localStorageKeys = {
@@ -139,6 +143,8 @@ type FormValues = {
   floor: string;
   comment: string;
   sticks: string;
+  training_sticks: string;
+  no_cutlery: boolean;
   change: string;
   payment_method_code: PaymentMethodCodeEnum;
   shipping_method_code: ShippingMethodCodeEnum;
@@ -288,6 +294,8 @@ export const CheckoutForm = observer(
       floor: "",
       comment: "",
       sticks: "",
+      training_sticks: "",
+      no_cutlery: false,
       change: "",
       payment_method_code: PaymentMethodCodeEnum.Cash,
       shipping_method_code: ShippingMethodCodeEnum.Takeaway,
@@ -312,6 +320,8 @@ export const CheckoutForm = observer(
       name: null,
       spot_id: null,
       sticks: null,
+      training_sticks: null,
+      no_cutlery: null,
       change: null,
       payment_method_code: null,
       house_type: null,
@@ -337,6 +347,8 @@ export const CheckoutForm = observer(
         change,
         comment,
         sticks,
+        training_sticks,
+        no_cutlery,
         spot_id,
         district_id,
         street,
@@ -414,6 +426,8 @@ export const CheckoutForm = observer(
 
           change,
           sticks: +sticks,
+          training_sticks: +training_sticks,
+          no_cutlery,
           comment: _comment,
           cart: {
             items: cart.items.map((item) => ({
@@ -1053,18 +1067,48 @@ export const CheckoutForm = observer(
             />
           </S.Control>
           <S.Control>
-            <Input
-              loading={loading}
-              name={FormNames.Sticks}
-              type={"number"}
-              min={"0"}
-              placeholder={t("checkout.form.persons")}
-              onChange={handleChange}
-              onBlur={formik.handleBlur}
-              value={formik.values[FormNames.Sticks]}
-              ref={setFieldRef(FormNames.Sticks)}
-            />
+            <SkeletonWrap loading={loading}>
+              <Checkbox
+                name={FormNames.NoCutlery}
+                checked={formik.values[FormNames.NoCutlery]}
+                onChange={(e) => {
+                  setFieldValue(FormNames.NoCutlery, e.target.checked);
+                }}
+              >
+                {t("checkout.form.no_cutlery")}
+              </Checkbox>
+            </SkeletonWrap>
           </S.Control>
+          {!formik.values[FormNames.NoCutlery] && (
+            <>
+              <S.Control>
+                <Input
+                  loading={loading}
+                  name={FormNames.Sticks}
+                  type={"number"}
+                  min={"0"}
+                  placeholder={t("checkout.form.persons")}
+                  onChange={handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values[FormNames.Sticks]}
+                  ref={setFieldRef(FormNames.Sticks)}
+                />
+              </S.Control>
+              <S.Control>
+                <Input
+                  loading={loading}
+                  name={FormNames.TrainingSticks}
+                  type={"number"}
+                  min={"0"}
+                  placeholder={t("checkout.form.training_sticks")}
+                  onChange={handleChange}
+                  onBlur={formik.handleBlur}
+                  value={formik.values[FormNames.TrainingSticks]}
+                  ref={setFieldRef(FormNames.TrainingSticks)}
+                />
+              </S.Control>
+            </>
+          )}
           <S.Control>
             <Input
               loading={loading}

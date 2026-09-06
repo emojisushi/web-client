@@ -40,6 +40,7 @@ import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { Cart } from "~domains/cart/cart.query";
 import { SpicySvg } from "~components/svg/SpicySvg";
+import { SlightlySpicySvg } from "~components/svg/SlightlySpicySvg";
 
 type ProductCardProps = {
   product?: IProduct;
@@ -164,6 +165,20 @@ export const ProductCard = (props: ProductCardProps) => {
                   </SvgIcon>
                 </span>
               )}
+              {!!product?.slightly_spicy && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    marginLeft: "4px",
+                    verticalAlign: "middle",
+                    cursor: "pointer",
+                  }}
+                >
+                  <SvgIcon width="17px" style={{ cursor: "pointer" }}>
+                    <SlightlySpicySvg />
+                  </SvgIcon>
+                </span>
+              )}
             </>
           )}
         </S.Name>
@@ -202,6 +217,16 @@ export const ProductCard = (props: ProductCardProps) => {
               label={
                 <IngredientsTooltipContent
                   items={(product && getProductIngredients(product)) || []}
+                  nutrition={
+                    product?.calories
+                      ? t("menu.nutrition", {
+                          calories: Math.floor(product.calories),
+                          proteins: Math.floor(product.proteins),
+                          fats: Math.floor(product.fats),
+                          carbs: Math.floor(product.carbs),
+                        })
+                      : undefined
+                  }
                 />
               }
             >

@@ -132,6 +132,8 @@
       "address": "Delivery address",
       "comment": "Comments on the order",
       "persons": "Number of persons",
+      "training_sticks": "Number of training chopsticks",
+      "no_cutlery": "No cutlery",
       "change": "Prepare change from",
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",
@@ -216,7 +218,8 @@
   },
   "menu": {
     "weightComment": "Actual weight may vary by 5% from stated weight",
-    "ingredients": "Ingredients"
+    "ingredients": "Ingredients",
+    "nutrition": "Cal: {{calories}} kcal (P:{{proteins}} F:{{fats}} C:{{carbs}})"
   },
   "products": {
     "loading": "Loading dishes..."

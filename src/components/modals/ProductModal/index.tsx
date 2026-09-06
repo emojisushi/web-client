@@ -30,6 +30,7 @@ import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart
 import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 import { catalogQuery } from "~domains/catalog/catalog.query";
 import { SpicySvg } from "~components/svg/SpicySvg";
+import { SlightlySpicySvg } from "~components/svg/SlightlySpicySvg";
 
 export const ProductModal = NiceModal.create(() => {
   const modal = useNiceModal();
@@ -133,6 +134,20 @@ export const ProductModal = NiceModal.create(() => {
                     </SvgIcon>
                   </span>
                 )}
+                {!!product?.slightly_spicy && (
+                  <span
+                    style={{
+                      display: "inline-flex",
+                      marginLeft: "4px",
+                      verticalAlign: "middle",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <SvgIcon width="24px">
+                      <SlightlySpicySvg />
+                    </SvgIcon>
+                  </span>
+                )}
               </S.ProductName>
               <S.Description>
                 {product?.description_short != null ? (
@@ -141,6 +156,16 @@ export const ProductModal = NiceModal.create(() => {
                   <Skeleton />
                 )}
               </S.Description>
+              {!!product?.calories && (
+                <S.Description style={{ paddingTop: "4px" }}>
+                  {t("menu.nutrition", {
+                    calories: Math.floor(product.calories),
+                    proteins: Math.floor(product.proteins),
+                    fats: Math.floor(product.fats),
+                    carbs: Math.floor(product.carbs),
+                  })}
+                </S.Description>
+              )}
               <S.ProductPrice>
                 {isLoading ? (
                   <Skeleton />
