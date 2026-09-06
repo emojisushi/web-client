@@ -21,6 +21,10 @@ import {
   IGetCitiesRes,
   IGetCatalogRes,
   IGetCheckoutFormRes,
+  IGetAddressesRes,
+  IGetAddressOptionsRes,
+  IGetOrderStatusRes,
+  IGetPhoneRes,
 } from "./types";
 
 export function createEmojisushiAgent(options: { service: string }) {
@@ -57,7 +61,7 @@ export function createEmojisushiAgent(options: { service: string }) {
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
     return client.get<IGetCatalogRes>("catalog", {
-      params,
+      params: { mobile: false },
       ...axiosConfig,
     });
   }
@@ -67,6 +71,72 @@ export function createEmojisushiAgent(options: { service: string }) {
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
     return client.get<IGetCheckoutFormRes>("checkout", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function getAddresses(
+    params: {
+      city_slug: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetAddressesRes>("addresses", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function getPhoneStatus(
+    params: {
+      phone: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetPhoneRes>("/sms/check-phone", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function generateCode(
+    data: {
+      phone: string;
+      city_slug: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post("/sms/generate-code", data, axiosConfig);
+  }
+
+  function verifyCode(
+    data: {
+      phone: string;
+      code: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post("/sms/check-code", data, axiosConfig);
+  }
+
+  function getOrderStatus(
+    params: {
+      order_id: string;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetOrderStatusRes>("order/status", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function getAddressOptions(
+    params: any,
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetAddressOptionsRes>("address/options", {
       params,
       ...axiosConfig,
     });
@@ -126,9 +196,16 @@ export function createEmojisushiAgent(options: { service: string }) {
       payment_method_id: number;
       spot_id: number;
       address?: string;
-
+      address_details?: string;
+      house_type: string;
+      house: string;
+      floor: string;
+      apartment: string;
+      entrance: string;
       comment?: string;
       sticks?: number;
+      training_sticks?: number;
+      no_cutlery?: boolean;
       change?: string;
 
       cart: {
@@ -271,14 +348,36 @@ export function createEmojisushiAgent(options: { service: string }) {
   ) {
     return client.post<RegisterResData>("auth/register", data, axiosConfig);
   }
-
+  function registerWithPhone(
+    data: {
+      phone: string;
+      code: string;
+      password: string;
+      password_confirmation: string;
+      agree: boolean;
+      activate: boolean;
+      auto_login: boolean;
+    },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post<RegisterResData>(
+      "auth/register-with-phone",
+      data,
+      axiosConfig
+    );
+  }
   function login(
     data: { email: string; password: string },
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
     return client.post<LoginResData>("auth/login", data, axiosConfig);
   }
-
+  function loginWithSms(
+    data: { phone: string; code: string },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.post<LoginResData>("auth/login-with-sms", data, axiosConfig);
+  }
   function restorePassword(
     data: {
       email: string;
@@ -479,5 +578,13 @@ export function createEmojisushiAgent(options: { service: string }) {
     getSpot,
     getSpots,
     log,
+    getAddresses,
+    getAddressOptions,
+    getOrderStatus,
+    getPhoneStatus,
+    generateCode,
+    verifyCode,
+    loginWithSms,
+    registerWithPhone,
   };
 }

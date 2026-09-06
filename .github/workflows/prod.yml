@@ -28,6 +28,8 @@ jobs:
           CI: false
           REACT_APP_VERSION: ${{ steps.version.outputs.VERSION }}
           REACT_APP_API_BASE_URL: ${{ vars.REACT_APP_API_BASE_URL }}
+          REACT_APP_ODESA: ${{ vars.REACT_APP_ODESA }}
+          REACT_APP_CHORNOMORSK: ${{ vars.REACT_APP_CHORNOMORSK }}
           REACT_APP_TRANSLATIONS_VERSION: ${{ github.run_id }}
 
       - name: Archive production artifact

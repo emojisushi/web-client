@@ -27,7 +27,16 @@ const routes = [
                 lazy: lazy(
                   () => import("~pages/PublicOfferPage/PublicOfferPage")
                 ),
+                children: [
+                  {
+                    path: ROUTES.PUBLIC_OFFER.OFFER.path,
+                    lazy: lazy(
+                      () => import("~pages/PublicOfferPage/PublicOfferPage")
+                    ),
+                  },
+                ],
               },
+
               {
                 path: ROUTES.CATEGORY.path,
                 id: "categories",
@@ -62,6 +71,12 @@ const routes = [
               {
                 path: ROUTES.THANKYOU.path,
                 lazy: lazy(() => import("~domains/order/pages/ThankYouPage")),
+              },
+              {
+                path: ROUTES.ORDER_STATUS.path,
+                lazy: lazy(
+                  () => import("~domains/order/pages/OrderStatusPage")
+                ),
               },
               {
                 path: ROUTES.DELIVERYANDPAYMENT.path,
@@ -160,6 +175,18 @@ const routes = [
               {
                 path: ROUTES.REFUND.path,
                 lazy: lazy(() => import("~domains/payment/pages/RefundPage")),
+              },
+              {
+                path: ROUTES.APP_SUPPORT.path,
+                lazy: lazy(
+                  () => import("~pages/AppSupportPage/AppSupportPage")
+                ),
+              },
+              {
+                path: ROUTES.PRIVACY_POLICY.path,
+                lazy: lazy(
+                  () => import("~pages/PrivacyPolicyPage/PrivacyPolicyPage")
+                ),
               },
             ],
           },
