@@ -190,6 +190,10 @@ export type IProduct = {
   hide_products_in_spot: ISpot[];
   spicy: Nullable<boolean>;
   slightly_spicy: Nullable<boolean>;
+  calories: Nullable<number>;
+  proteins: Nullable<number>;
+  fats: Nullable<number>;
+  carbs: Nullable<number>;
 };
 
 export type IFilter = {

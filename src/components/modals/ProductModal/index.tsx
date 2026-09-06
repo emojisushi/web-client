@@ -156,6 +156,16 @@ export const ProductModal = NiceModal.create(() => {
                   <Skeleton />
                 )}
               </S.Description>
+              {!!product?.calories && (
+                <S.Description style={{ paddingTop: "4px" }}>
+                  {t("menu.nutrition", {
+                    calories: Math.floor(product.calories),
+                    proteins: Math.floor(product.proteins),
+                    fats: Math.floor(product.fats),
+                    carbs: Math.floor(product.carbs),
+                  })}
+                </S.Description>
+              )}
               <S.ProductPrice>
                 {isLoading ? (
                   <Skeleton />

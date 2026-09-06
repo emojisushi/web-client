@@ -218,7 +218,8 @@
   },
   "menu": {
     "weightComment": "Actual weight may vary by 5% from stated weight",
-    "ingredients": "Ingredients"
+    "ingredients": "Ingredients",
+    "nutrition": "Cal: {{calories}} kcal (P:{{proteins}} F:{{fats}} C:{{carbs}})"
   },
   "products": {
     "loading": "Loading dishes..."

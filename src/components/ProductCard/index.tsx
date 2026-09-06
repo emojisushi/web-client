@@ -217,6 +217,16 @@ export const ProductCard = (props: ProductCardProps) => {
               label={
                 <IngredientsTooltipContent
                   items={(product && getProductIngredients(product)) || []}
+                  nutrition={
+                    product?.calories
+                      ? t("menu.nutrition", {
+                          calories: Math.floor(product.calories),
+                          proteins: Math.floor(product.proteins),
+                          fats: Math.floor(product.fats),
+                          carbs: Math.floor(product.carbs),
+                        })
+                      : undefined
+                  }
                 />
               }
             >
