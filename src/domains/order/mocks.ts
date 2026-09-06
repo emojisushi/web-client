@@ -12,6 +12,7 @@ export const dummyCartProduct: ICartProduct = {
   variant: null,
   product: {
     spicy: false,
+    slightly_spicy: false,
     is_favorite_: false,
     categories: [],
     hide_products_in_spot: [],

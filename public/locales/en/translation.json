@@ -132,6 +132,8 @@
       "address": "Delivery address",
       "comment": "Comments on the order",
       "persons": "Number of persons",
+      "training_sticks": "Number of training chopsticks",
+      "no_cutlery": "No cutlery",
       "change": "Prepare change from",
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",

@@ -189,6 +189,7 @@ export type IProduct = {
   categories: ICategory[];
   hide_products_in_spot: ISpot[];
   spicy: Nullable<boolean>;
+  slightly_spicy: Nullable<boolean>;
 };
 
 export type IFilter = {
