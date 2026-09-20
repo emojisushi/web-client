@@ -38,14 +38,11 @@ const CabinetLayout = () => {
                   <NavLink to={ROUTES.ACCOUNT.PROFILE.path}>
                     {t("account.profile.title")}
                   </NavLink>
-                  <NavLink to={ROUTES.ACCOUNT.ORDER.path}>
-                    {t("account.orders.title")}
+                  <NavLink to={ROUTES.ACCOUNT.BONUS_HISTORY.path}>
+                    {t("account.bonusHistory.title")}
                   </NavLink>
                   <NavLink to={ROUTES.ACCOUNT.PASSWORD_RECOVERY.path}>
                     {t("account.changePassword.title")}
-                  </NavLink>
-                  <NavLink to={ROUTES.ACCOUNT.SAVED_ADDRESSES.path}>
-                    {t("account.addresses.title")}
                   </NavLink>
                   <div style={{ marginTop: "10px" }}>
                     <Button

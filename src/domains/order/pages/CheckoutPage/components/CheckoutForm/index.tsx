@@ -6,6 +6,9 @@ import {
   SkeletonWrap,
   Trans,
   Checkbox,
+  InfoSvg,
+  SvgIcon,
+  AnimatedTooltip,
 } from "~components";
 import { useTranslation } from "react-i18next";
 import { useFormik } from "formik";
@@ -37,6 +40,7 @@ import { Cart } from "~domains/cart/cart.query";
 import axios, { AxiosError } from "axios";
 import { observer } from "mobx-react";
 import { ModalIDEnum } from "~common/modal.constants";
+import { DRAFT_ORDER_LS_KEY } from "~common/constants";
 import { ROUTES } from "~routes";
 import { isValidUkrainianPhone, getUserFullName } from "~domains/order/utils";
 import { useShowModal } from "~modal";
@@ -51,11 +55,15 @@ import { unformat, useMask, format } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
-import { useQuery } from "@tanstack/react-query";
+import { bonusOptionsQuery, userBonusQuery } from "~domains/order/bonus.query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isClosed } from "~utils/time.utils";
 import { appConfig } from "~config/app";
 import { useSmsVerification } from "~hooks/useSmsVerification";
 import { CheckoutRecommended } from "../CheckoutRecommended";
+import { getNewProductPrice } from "~domains/product/product.utils";
+import { BonusAmountInput } from "./components/BonusAmountInput";
+import { BonusInfoTooltipContent } from "./components/BonusInfoTooltipContent";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -118,10 +126,7 @@ const fieldSortOrderMap: Record<keyof FormValues, number> = {
 };
 
 const localStorageKeys = {
-  draftOrder: {
-    name: "draftOrder",
-    version: "1",
-  },
+  draftOrder: DRAFT_ORDER_LS_KEY,
 };
 
 enum HouseType {
@@ -164,6 +169,7 @@ type ErrorResponse = {
     payment_method_id: string[];
     spot_id: string[];
     address: string[];
+    bonusesToUse: string[];
   };
   message: string;
 };
@@ -213,6 +219,87 @@ export const CheckoutForm = observer(
       enabled: !!addressAutocomplete,
     });
     const isAddressLoading = addressAutocomplete ? _isAddressLoading : false;
+
+    const queryClient = useQueryClient();
+    const canUseBonuses = !!user && !user.is_call_center_admin;
+
+    const { data: bonusOptions } = useQuery({
+      ...bonusOptionsQuery,
+      enabled: canUseBonuses,
+    });
+    const { data: userBonus } = useQuery({
+      ...userBonusQuery,
+      enabled: canUseBonuses,
+      staleTime: 0,
+    });
+
+    const usableBonuses = useMemo(() => {
+      if (!bonusOptions?.bonus_enabled || !userBonus?.enabled || !cart) {
+        return 0;
+      }
+      const eligibleTotal = cart.items
+        .filter(
+          (item) =>
+            !item.product.categories.some((category) =>
+              bonusOptions.excluded_category_ids.includes(category.id)
+            )
+        )
+        .reduce(
+          (sum, item) =>
+            sum +
+            (getNewProductPrice(item.product, item.variant)?.price ?? 0) *
+              item.quantity,
+          0
+        );
+      const maxSpendable = Math.floor(
+        (eligibleTotal * bonusOptions.max_bonus) / 100
+      );
+      return Math.min(maxSpendable, userBonus.available);
+    }, [bonusOptions, userBonus, cart]);
+
+    const usableBonusesUAH = Math.floor(usableBonuses / 100);
+
+    const [useBonuses, setUseBonuses] = useState(false);
+    const [bonusAmount, setBonusAmount] = useState("");
+    const [bonusError, setBonusError] = useState("");
+
+    useEffect(() => {
+      if (usableBonusesUAH <= 0) {
+        setUseBonuses(false);
+        setBonusAmount("");
+        return;
+      }
+      // clamp a previously entered amount if the cap shrinks (e.g. cart changed)
+      setBonusAmount((prev) => {
+        if (prev === "") {
+          return prev;
+        }
+        return Math.min(+prev, usableBonusesUAH) + "";
+      });
+    }, [usableBonuses, usableBonusesUAH]);
+
+    const handleUseBonusesChange = (checked: boolean) => {
+      setUseBonuses(checked);
+      setBonusError("");
+      if (checked) {
+        setBonusAmount(usableBonusesUAH + "");
+      } else {
+        setBonusAmount("");
+      }
+    };
+
+    const handleBonusAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (value === "") {
+        setBonusAmount("");
+        return;
+      }
+      const clamped = Math.max(0, Math.min(+value, usableBonusesUAH));
+      setBonusAmount(clamped + "");
+    };
+
+    const showBonuses = canUseBonuses && usableBonusesUAH > 0;
+
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
         // todo: show more user friendly validation errors
@@ -331,6 +418,7 @@ export const CheckoutForm = observer(
     });
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
+      setBonusError("");
       if (addressAutocomplete && !selectedAddress?.spotName) {
         formik.setFieldError("street", "Ваша адреса не обслуговується");
       }
@@ -406,6 +494,17 @@ export const CheckoutForm = observer(
       if (isOnlinePaymentMethod && formik.values[FormNames.DontCall]) {
         _comment = "Не передзвонювати " + comment;
       }
+      const bonusesToUse =
+        useBonuses && showBonuses
+          ? Math.max(
+              0,
+              Math.min(
+                Math.floor((+bonusAmount || 0) * 100),
+                usableBonuses,
+                userBonus?.available ?? 0
+              )
+            )
+          : 0;
       try {
         const res = await EmojisushiAgent.placeOrderV2({
           phone: unformat(phone, phoneMaskOptions),
@@ -429,6 +528,7 @@ export const CheckoutForm = observer(
           training_sticks: +training_sticks,
           no_cutlery,
           comment: _comment,
+          bonuses_to_use: bonusesToUse > 0 ? bonusesToUse : undefined,
           cart: {
             items: cart.items.map((item) => ({
               id: item.product.id + "",
@@ -438,6 +538,9 @@ export const CheckoutForm = observer(
           },
         });
         removeFromLocalStorage(localStorageKeys.draftOrder);
+        if (bonusesToUse > 0) {
+          queryClient.invalidateQueries({ queryKey: ["userBonus"] });
+        }
         if (res.data?.form) {
           wayforpayFormContainer.current.innerHTML = res.data.form;
           //   onRedirectToThankYouPage();
@@ -460,10 +563,21 @@ export const CheckoutForm = observer(
         if (!axios.isAxiosError(e)) {
           return;
         }
-        const { data } = (e as AxiosError<ErrorResponse>).response;
+        const { data } = (e as AxiosError<ErrorResponse | string>).response;
+
+        // the bonuses endpoint can respond with a bare string body instead of { message, errors }
+        if (typeof data === "string") {
+          setBonusError(data);
+          return;
+        }
 
         const errors = data?.errors;
         const message = data?.message;
+
+        if (errors?.bonusesToUse) {
+          setBonusError(errors.bonusesToUse[0]);
+        }
+
         if (!errors) {
           return;
         }
@@ -712,6 +826,9 @@ export const CheckoutForm = observer(
       deliveryFee = selectedAddress?.delivery_price;
       total += deliveryFee;
     }
+    const bonusDiscount =
+      showBonuses && useBonuses ? Number(bonusAmount) || 0 : 0;
+    const totalToPay = Math.max(0, total - bonusDiscount);
     const unavailableItems = cart?.items
       .filter(
         (item) =>
@@ -1245,6 +1362,70 @@ export const CheckoutForm = observer(
               unavailableProducts={unavailableProducts}
             />
           </div>
+          {showBonuses && (
+            <div
+              style={{
+                marginTop: 20,
+              }}
+            >
+              <S.Control>
+                <SkeletonWrap loading={loading}>
+                  <Checkbox
+                    name={"use_bonus"}
+                    checked={useBonuses}
+                    error={!useBonuses ? bonusError : undefined}
+                    onChange={(e) => {
+                      handleUseBonusesChange(e.target.checked);
+                    }}
+                  >
+                    {t("checkout.form.use_bonus", {
+                      amount: usableBonusesUAH,
+                    })}
+                    <AnimatedTooltip
+                      placement={"top-start"}
+                      label={
+                        <BonusInfoTooltipContent
+                          maxBonus={bonusOptions?.max_bonus ?? 0}
+                        />
+                      }
+                    >
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          marginLeft: "4px",
+                          verticalAlign: "middle",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <SvgIcon
+                          width="20px"
+                          color={"#999"}
+                          style={{ cursor: "pointer" }}
+                        >
+                          <InfoSvg />
+                        </SvgIcon>
+                      </span>
+                    </AnimatedTooltip>
+                  </Checkbox>
+                </SkeletonWrap>
+              </S.Control>
+              {useBonuses && (
+                <S.Control>
+                  <SkeletonWrap loading={loading}>
+                    <BonusAmountInput
+                      value={bonusAmount}
+                      max={usableBonusesUAH}
+                      suffix={t("checkout.form.bonus_suffix")}
+                      maxLabel={t("checkout.form.bonus_max")}
+                      error={bonusError}
+                      onChange={handleBonusAmountChange}
+                      onMax={() => setBonusAmount(usableBonusesUAH + "")}
+                    />
+                  </SkeletonWrap>
+                </S.Control>
+              )}
+            </div>
+          )}
           <div
             style={{
               marginTop: 20,
@@ -1311,6 +1492,12 @@ export const CheckoutForm = observer(
                       )}
                     </>
                   )}
+                  {bonusDiscount > 0 && (
+                    <FlexBox justifyContent="space-between">
+                      <Trans i18nKey="checkout.bonus_discount" />
+                      <span>-{bonusDiscount} грн.</span>
+                    </FlexBox>
+                  )}
                   <S.Total
                     style={{
                       marginTop: "20px",
@@ -1320,7 +1507,7 @@ export const CheckoutForm = observer(
                   >
                     <Trans i18nKey={"checkout.to_pay"} />
                     {/* &nbsp; */}
-                    <span>{cart?.total ? `${total} грн.` : "🤪🤪🤪"}</span>
+                    <span>{cart?.total ? `${totalToPay} грн.` : "🤪🤪🤪"}</span>
                   </S.Total>
                   {currentWaitTime > 0 && (
                     <S.Total

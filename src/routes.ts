@@ -62,6 +62,7 @@ export const ROUTES = {
     }
   ),
   DELIVERYANDPAYMENT: route("dostavka-i-oplata"),
+  PROMOTIONS: route("promotions"),
   CHECKOUT: route("checkout"),
   ACCOUNT: route(
     "account",
@@ -77,6 +78,7 @@ export const ROUTES = {
       PASSWORD_RECOVERY: route("recover-password"),
       SAVED_ADDRESSES: route("saved-addresses"),
       ORDER: route("orders"),
+      BONUS_HISTORY: route("bonus-history"),
     }
   ),
   RESET_PASSWORD: route(

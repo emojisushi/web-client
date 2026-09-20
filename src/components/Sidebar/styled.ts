@@ -59,5 +59,6 @@ export const Root = styled.aside`
 `;
 
 export const SearchBarContainer = styled.div`
+  margin-top: 25px;
   margin-bottom: 0;
 `;
