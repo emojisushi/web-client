@@ -7,6 +7,7 @@
     "address": "Адреса",
     "shippingAddress": "Адреса доставки",
     "favorite": "Улюблені",
+    "promotions": "Акції",
     "login": "Увійти",
     "logout": "Вийти",
     "first_name": "Ім'я",
@@ -138,6 +139,15 @@
       "privateHouse": "Приватний будинок",
       "highRiseBuilding": "Квартира",
       "dont_call": "Не передзвонювати",
+      "use_bonus": "Використати бонуси (доступно {{amount}} ₴)",
+      "bonus_suffix": "бонусів",
+      "bonus_max": "МАКС",
+      "bonus_info": {
+        "limit_title": "До {{amount}}% замовлення",
+        "limit_description": "Можна списати максимум {{amount}}% вартості товарів без акції.",
+        "excluded_title": "Не на акційні позиції",
+        "excluded_description": "Акції, комбо та спеціальні сети не враховуються при розрахунку ліміту"
+      },
       "district": {
         "placeholder": "Оберіть найближчий район"
       },
@@ -178,13 +188,14 @@
     "order_price" : "Замовлення:",
     "delivery_price" : "Доставка:",
     "not_enough_for_free_delivery" : "До безкоштовної доставки:",
+    "bonus_discount": "Оплата бонусами:",
     "wait_time" : "Приблизний час очікування:",
     "minutes" : "хвилин",
     "hour" : "година",
     "hours" : "години"
   },
   "shippingMethods": {
-    "courier": "Кур'єр",
+    "courier": "Доставка",
     "pickup": "Самовивіз"
   },
   "paymentMethods": {
@@ -222,6 +233,10 @@
     "ingredients": "Склад",
     "nutrition": "К: {{calories}} ккал (Б:{{proteins}} Ж:{{fats}} В:{{carbs}})"
   },
+  "promotions": {
+    "title": "Акції",
+    "empty": "Наразі активних акцій немає"
+  },
   "products": {
     "loading": "Загрузка товарів..."
   },
@@ -246,14 +261,22 @@
     "profile": {
       "title": "Особисті дані",
       "editProfile": "Редагувати особисті дані",
-      "changePassword": "Змінити пароль"
+      "changePassword": "Змінити пароль",
+      "bonusBalance": "Бонусний рахунок"
     },
     "orders": {
       "title": "Мої замовлення",
       "order": {
         "status": "Статус замовлення"
       },
-      "noOrders": "У Вас немає замовлень"
+      "noOrders": "У Вас немає замовлень",
+      "completed": "Виконано",
+      "unknownProduct": "Невідомий товар",
+      "address": "Адреса доставки",
+      "deliveryPrice": "Доставка",
+      "pricePerItem": "Ціна за шт",
+      "itemsTotal": "Разом ({{qty}} шт)",
+      "orderTotal": "Сума замовлення"
     },
     "changePassword": {
       "title": "Змінити пароль",
@@ -264,6 +287,19 @@
       "title": "Збережені адреси",
       "typeAddress": "Введіть адресу",
       "addAddress": "Додати адресу"
+    },
+    "bonusHistory": {
+      "title": "Історія бонусів",
+      "noHistory": "Історія нарахувань порожня",
+      "order": "Замовлення №{{id}}",
+      "balanceAfter": "Залишок: {{amount}} ₴",
+      "refunded": "Повернено",
+      "status": {
+        "applied": "В обробці",
+        "settled": "Списано",
+        "refunded": "Повернено",
+        "external": "Нарахування за замовлення"
+      }
     }
   },
   "passwordReset": {

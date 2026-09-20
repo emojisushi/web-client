@@ -196,6 +196,73 @@ export type IProduct = {
   carbs: Nullable<number>;
 };
 
+export type IGetBonusOptionsRes = {
+  bonus_enabled: boolean;
+  max_bonus: number;
+  excluded_category_ids: number[];
+};
+
+export type IGetUserBonusRes = {
+  enabled: boolean;
+  balance: number;
+  reserved: number;
+  available: number;
+};
+
+export type BonusHistoryStatus =
+  | "applied"
+  | "settled"
+  | "refunded"
+  | "external";
+
+export type IBonusHistoryItem = {
+  id: number;
+  date: string;
+  order_id: number;
+  delta: number;
+  balance_after: number;
+  status: BonusHistoryStatus;
+  refunded: boolean;
+};
+
+export type IGetUserBonusHistoryRes = IBonusHistoryItem[];
+
+export type IProductHistoryItem = {
+  product_id: number;
+  name?: string;
+  product_sum?: number;
+  num: number;
+};
+
+export type IOrderHistoryItem = {
+  transaction_id: number;
+  order_id: number;
+  status: boolean;
+  user_id: number;
+  pay_type: number;
+  products: IProductHistoryItem[];
+  sum: number;
+  date_start_new: string;
+  address: string;
+  delivery_price: number;
+};
+
+export type IGetOrderHistoryRes = IOrderHistoryItem[];
+
+export type IPromotion = {
+  id: number;
+  header: string;
+  text: Nullable<string>;
+  published: 0 | 1;
+  image: Nullable<IImage>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type IGetPromotionsRes = {
+  data: IPromotion[];
+};
+
 export type IFilter = {
   id: number;
   name: string;

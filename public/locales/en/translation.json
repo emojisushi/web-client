@@ -7,6 +7,7 @@
     "address": "Address",
     "shippingAddress": "Delivery address",
     "favorite": "Favorites",
+    "promotions": "Promotions",
     "login": "Log in",
     "logout": "Log out",
     "email": "E-mail",
@@ -138,6 +139,15 @@
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",
       "dont_call": "Do not callback",
+      "use_bonus": "Use bonus points (available: {{amount}} UAH)",
+      "bonus_suffix": "bonuses",
+      "bonus_max": "MAX",
+      "bonus_info": {
+        "limit_title": "Up to {{amount}}% of the order",
+        "limit_description": "You can redeem at most {{amount}}% of the price of non-discounted items.",
+        "excluded_title": "Not on promotional items",
+        "excluded_description": "Promotions, combos and special sets are not included in the limit calculation"
+      },
       "street": {
         "placeholder": "Street",
         "typeMore": "Search from three letters",
@@ -176,6 +186,7 @@
     "order_price" : "Order:",
     "delivery_price" : "Delivery:",
     "not_enough_for_free_delivery" : "Order more for free delivery:",
+    "bonus_discount": "Paid with bonuses:",
     "wait_time" : "Estimated wait time:",
     "minutes" : "minutes",
     "hour" : "hour",
@@ -221,6 +232,10 @@
     "ingredients": "Ingredients",
     "nutrition": "Cal: {{calories}} kcal (P:{{proteins}} F:{{fats}} C:{{carbs}})"
   },
+  "promotions": {
+    "title": "Promotions",
+    "empty": "There are no active promotions right now"
+  },
   "products": {
     "loading": "Loading dishes..."
   },
@@ -245,14 +260,22 @@
     "profile": {
       "title": "Personal data",
       "editProfile": "Edit personal data",
-      "changePassword": "Change password"
+      "changePassword": "Change password",
+      "bonusBalance": "Bonus balance"
     },
     "orders": {
       "title": "My orders",
       "order": {
         "status": "Order status"
       },
-      "noOrders": "No orders"
+      "noOrders": "No orders",
+      "completed": "Completed",
+      "unknownProduct": "Unknown product",
+      "address": "Delivery address",
+      "deliveryPrice": "Delivery",
+      "pricePerItem": "Price per item",
+      "itemsTotal": "Total ({{qty}} pcs)",
+      "orderTotal": "Order total"
     },
     "changePassword": {
       "title": "Change password",
@@ -263,6 +286,19 @@
       "title": "Saved addresses",
       "typeAddress": "Enter address",
       "addAddress": "Add address"
+    },
+    "bonusHistory": {
+      "title": "Bonus history",
+      "noHistory": "No bonus history yet",
+      "order": "Order #{{id}}",
+      "balanceAfter": "Balance: {{amount}} UAH",
+      "refunded": "Refunded",
+      "status": {
+        "applied": "In progress",
+        "settled": "Settled",
+        "refunded": "Refunded",
+        "external": "External adjustment"
+      }
     }
   },
   "passwordReset": {

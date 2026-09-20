@@ -25,6 +25,12 @@ import {
   IGetAddressOptionsRes,
   IGetOrderStatusRes,
   IGetPhoneRes,
+  IGetBonusOptionsRes,
+  IGetUserBonusRes,
+  IGetUserBonusHistoryRes,
+  IGetOrderHistoryRes,
+  IOrderHistoryItem,
+  IGetPromotionsRes,
 } from "./types";
 
 export function createEmojisushiAgent(options: { service: string }) {
@@ -142,6 +148,70 @@ export function createEmojisushiAgent(options: { service: string }) {
     });
   }
 
+  function getBonusOptions(
+    params: any = {},
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetBonusOptionsRes>("bonuses/options", {
+      params,
+      skipAuthRefresh: true,
+      ...axiosConfig,
+    } as AxiosAuthRefreshRequestConfig);
+  }
+
+  function getUserBonus(
+    params: any = {},
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetUserBonusRes>("user/bonus", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function getUserBonusHistory(
+    params: any = {},
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetUserBonusHistoryRes>("user/bonus/history", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function getOrderHistory(
+    params: any = {},
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetOrderHistoryRes>("user/orders", {
+      params,
+      skipAuthRefresh: true,
+      ...axiosConfig,
+    } as AxiosAuthRefreshRequestConfig);
+  }
+
+  function getPromotions(
+    params: any = {},
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetPromotionsRes>("promotions", {
+      params,
+      skipAuthRefresh: true,
+      ...axiosConfig,
+    } as AxiosAuthRefreshRequestConfig);
+  }
+
+  function getOrderHistoryItem(
+    params: { order_id: string },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IOrderHistoryItem>(`user/order/${params.order_id}`, {
+      params,
+      skipAuthRefresh: true,
+      ...axiosConfig,
+    } as AxiosAuthRefreshRequestConfig);
+  }
+
   function getCategories(
     params: IGetCategoriesParams,
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
@@ -207,6 +277,7 @@ export function createEmojisushiAgent(options: { service: string }) {
       training_sticks?: number;
       no_cutlery?: boolean;
       change?: string;
+      bonuses_to_use?: number;
 
       cart: {
         items: {
@@ -580,6 +651,12 @@ export function createEmojisushiAgent(options: { service: string }) {
     log,
     getAddresses,
     getAddressOptions,
+    getBonusOptions,
+    getUserBonus,
+    getUserBonusHistory,
+    getOrderHistory,
+    getOrderHistoryItem,
+    getPromotions,
     getOrderStatus,
     getPhoneStatus,
     generateCode,

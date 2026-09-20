@@ -27,6 +27,8 @@ import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
 import { useMask, unformat } from "@react-input/mask";
 
 import { useLogin } from "~hooks/use-auth";
+import { removeFromLocalStorage } from "~utils/ls.utils";
+import { DRAFT_ORDER_LS_KEY } from "~common/constants";
 
 const phoneMaskOptions = {
   mask: "+38(___) ___-__-__",
@@ -136,6 +138,7 @@ export const AuthModal = NiceModal.create(
           onSuccess: () => {
             queryClient.invalidateQueries(catalogQuery.queryKey);
             queryClient.invalidateQueries(cartQuery.queryKey);
+            removeFromLocalStorage(DRAFT_ORDER_LS_KEY);
 
             navigate(redirect_to || ROUTES.ACCOUNT.PROFILE.path);
 

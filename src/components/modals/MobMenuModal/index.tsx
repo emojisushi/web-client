@@ -148,6 +148,21 @@ export const MobMenuModal = NiceModal.create(() => {
           </NavLink>
         </S.Item>
         <S.Item>
+          <NavLink
+            style={{ color: "white", textDecoration: "none" }}
+            to={ROUTES.PROMOTIONS.path}
+            onClick={() => {
+              modal.remove();
+            }}
+          >
+            {({ isActive }) => (
+              <HightlightText isActive={isActive}>
+                <div>{t("common.promotions")}</div>
+              </HightlightText>
+            )}
+          </NavLink>
+        </S.Item>
+        <S.Item>
           <a
             style={{ color: "white", textDecoration: "none" }}
             href={LEAVE_REVIEW_LINK}

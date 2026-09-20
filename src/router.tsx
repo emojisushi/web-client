@@ -83,6 +83,12 @@ const routes = [
                 lazy: lazy(() => import("~domains/spot/pages/DeliveryPage")),
               },
               {
+                path: ROUTES.PROMOTIONS.path,
+                lazy: lazy(
+                  () => import("~pages/PromotionsPage/PromotionsPage")
+                ),
+              },
+              {
                 path: ROUTES.CHECKOUT.path,
                 lazy: lazy(() => import("~domains/order/pages/CheckoutPage")),
               },
@@ -133,23 +139,14 @@ const routes = [
                     },
                   },
                   {
-                    path: ROUTES.ACCOUNT.SAVED_ADDRESSES.path,
+                    path: ROUTES.ACCOUNT.BONUS_HISTORY.path,
                     lazy: lazy(
-                      () => import("~domains/cabinet/pages/SavedAddressesPage")
+                      () => import("~domains/cabinet/pages/BonusHistoryPage")
                     ),
                     handle: {
                       title: () => (
-                        <Trans i18nKey={"account.addresses.title"} />
+                        <Trans i18nKey={"account.bonusHistory.title"} />
                       ),
-                    },
-                  },
-                  {
-                    path: ROUTES.ACCOUNT.ORDER.path,
-                    lazy: lazy(
-                      () => import("~domains/cabinet/pages/MyOrdersPage")
-                    ),
-                    handle: {
-                      title: () => <Trans i18nKey={"account.orders.title"} />,
                     },
                   },
                 ],
