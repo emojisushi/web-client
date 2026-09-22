@@ -50,7 +50,8 @@ const Image = styled.img`
   object-fit: cover;
 
   ${media.lessThan("pc")`
-    height: 260px;
+    height: auto;
+    object-fit: contain;
   `}
 `;
 
