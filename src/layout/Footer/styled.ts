@@ -80,6 +80,18 @@ const InstagramLink = styled.a`
   color: ${({ theme }) => theme.colors.fg.default};
 `;
 
+const ExternalLink = styled.a`
+  font-size: 15px;
+  line-height: 18px;
+  margin-top: 10px;
+  color: ${({ theme }) => theme.colors.fg.default};
+  text-decoration: none;
+
+  :hover {
+    color: ${({ theme }) => theme.colors.brand};
+  }
+`;
+
 const PhoneLabel = styled.div`
   margin-left: 10px;
 `;
@@ -122,4 +134,5 @@ export {
   StaticMap,
   LinkContainer,
   AppVersion,
+  ExternalLink,
 };

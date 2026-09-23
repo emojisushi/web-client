@@ -86,30 +86,6 @@ export const Sidebar = ({ loading = false, categories = [] }: SidebarProps) => {
   return (
     <S.Root ref={rootRef}>
       <S.StickyContainer ref={stickyContainerRef}>
-        <NavLink
-          style={{
-            textDecoration: "none",
-          }}
-          end
-          preventScrollReset
-          to={ROUTES.PROMOTIONS.path}
-        >
-          {({ isActive }) => (
-            <S.Favorite
-              style={{
-                color: isActive ? theme.colors.brand : "white",
-                marginTop: 0,
-                borderTop: "none",
-              }}
-            >
-              {loading ? (
-                <Skeleton height={26} width={120} />
-              ) : (
-                t("common.promotions")
-              )}
-            </S.Favorite>
-          )}
-        </NavLink>
         <S.SearchBarContainer>
           <Form role="search" action={location.pathname}>
             {searchParamsInputs}

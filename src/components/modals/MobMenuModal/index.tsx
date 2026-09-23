@@ -5,7 +5,6 @@ import {
   Modal,
   HeartSvg,
   UserSvg,
-  LanguageSelector,
   DropdownPopoverOption,
   DropdownPopover,
 } from "~components";
@@ -17,7 +16,7 @@ import NiceModal from "@ebay/nice-modal-react";
 import { ModalIDEnum } from "~common/modal.constants";
 import { useQuery } from "@tanstack/react-query";
 import { citiesQuery } from "~domains/city/cities.query";
-import { LEAVE_REVIEW_LINK, ROUTES } from "~routes";
+import { ROUTES } from "~routes";
 import { useModal } from "~modal";
 import { useTheme } from "styled-components";
 import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
@@ -86,9 +85,6 @@ export const MobMenuModal = NiceModal.create(() => {
       overlayStyles={overlayStyles}
     >
       <S.Wrapper>
-        <S.Item>
-          <LanguageSelector />
-        </S.Item>
         <S.Item style={{ height: "25px" }}>{renderCitiesDropdown()}</S.Item>
         <S.Item>
           {user ? (
@@ -161,17 +157,6 @@ export const MobMenuModal = NiceModal.create(() => {
               </HightlightText>
             )}
           </NavLink>
-        </S.Item>
-        <S.Item>
-          <a
-            style={{ color: "white", textDecoration: "none" }}
-            href={LEAVE_REVIEW_LINK}
-            target={"_blank"}
-          >
-            <HightlightText>
-              <div>{t("menu-title.leave-review")}</div>
-            </HightlightText>
-          </a>
         </S.Item>
         <S.Item>
           <FlexBox justifyContent={"space-between"} alignItems={"center"}>

@@ -14,7 +14,7 @@ import Skeleton from "react-loading-skeleton";
 import { ModalIDEnum } from "~common/modal.constants";
 import { useShowModal } from "~modal";
 import { useTheme } from "styled-components";
-import { ROUTES } from "~routes";
+import { LEAVE_REVIEW_LINK, ROUTES } from "~routes";
 import { ICity } from "@layerok/emojisushi-js-sdk";
 import { Fragment } from "react";
 import { useClientAppVersion } from "~hooks/use-client-app-version";
@@ -174,6 +174,15 @@ export const Footer = ({ loading = false, city }: FooterProps) => {
       </FlexBox>
     );
   };
+  const renderLeaveReview = () => {
+    return (
+      <FlexBox flexDirection={"column"}>
+        <S.ExternalLink href={LEAVE_REVIEW_LINK} target={"_blank"}>
+          {t("menu-title.leave-review")}
+        </S.ExternalLink>
+      </FlexBox>
+    );
+  };
   const renderLogo = () => {
     return (
       <SkeletonWrap loading={loading}>
@@ -202,6 +211,7 @@ export const Footer = ({ loading = false, city }: FooterProps) => {
             {renderTelegram()}
             {renderPublicOffer()}
             {renderRefundPolicy()}
+            {renderLeaveReview()}
           </S.List>
         </S.Left>
         <S.Right>{renderMap()}</S.Right>

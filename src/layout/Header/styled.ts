@@ -51,16 +51,6 @@ const UserBtn = styled.div`
   `}
 `;
 
-const LanguageSelectorContainer = styled.div`
-  margin-right: 20px;
-  ${media.lessThan("pc")`
-    margin-right: 30px;
-  `}
-  ${media.lessThan("tablet")`
-    display: none;
-  `}
-`;
-
 const LogoContainer = styled.div`
   margin-right: 75px;
   flex-shrink: 0;
@@ -73,6 +63,5 @@ export {
   CartBtn,
   TinyCartBtn,
   UserBtn,
-  LanguageSelectorContainer,
   LogoContainer,
 };
