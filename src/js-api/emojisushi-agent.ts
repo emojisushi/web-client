@@ -267,11 +267,11 @@ export function createEmojisushiAgent(options: { service: string }) {
       spot_id: number;
       address?: string;
       address_details?: string;
-      house_type: string;
-      house: string;
-      floor: string;
-      apartment: string;
-      entrance: string;
+      house_type?: string;
+      house?: string;
+      floor?: string;
+      apartment?: string;
+      entrance?: string;
       comment?: string;
       sticks?: number;
       training_sticks?: number;

@@ -512,16 +512,18 @@ export const CheckoutForm = observer(
           lastname,
           email: user ? user.email : "",
 
-          address,
-          address_details: addressDetails,
+          address: isTakeawayShipmentMethod ? undefined : address,
+          address_details: isTakeawayShipmentMethod
+            ? undefined
+            : addressDetails,
           payment_method_id: paymentMethod.id,
           shipping_method_id: shippingMethod.id,
           spot_id: resultant_spot_id,
-          house_type: values.house_type,
-          house: values.house,
-          floor: values.floor,
-          apartment: values.apartment,
-          entrance: values.entrance,
+          house_type: isTakeawayShipmentMethod ? undefined : values.house_type,
+          house: isTakeawayShipmentMethod ? undefined : values.house,
+          floor: isTakeawayShipmentMethod ? undefined : values.floor,
+          apartment: isTakeawayShipmentMethod ? undefined : values.apartment,
+          entrance: isTakeawayShipmentMethod ? undefined : values.entrance,
 
           change,
           sticks: +sticks,
