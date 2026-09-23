@@ -197,7 +197,7 @@ export type IProduct = {
 };
 
 export type IGetBonusOptionsRes = {
-  bonus_enabled: boolean;
+  bonus_enabled_web: boolean;
   max_bonus: number;
   excluded_category_ids: number[];
 };
