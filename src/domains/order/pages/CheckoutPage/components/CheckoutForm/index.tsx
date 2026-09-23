@@ -234,7 +234,7 @@ export const CheckoutForm = observer(
     });
 
     const usableBonuses = useMemo(() => {
-      if (!bonusOptions?.bonus_enabled || !userBonus?.enabled || !cart) {
+      if (!bonusOptions?.bonus_enabled_web || !userBonus?.enabled || !cart) {
         return 0;
       }
       const eligibleTotal = cart.items
