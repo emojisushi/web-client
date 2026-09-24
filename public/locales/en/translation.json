@@ -7,6 +7,7 @@
     "address": "Address",
     "shippingAddress": "Delivery address",
     "favorite": "Favorites",
+    "promotions": "Promotions",
     "login": "Log in",
     "logout": "Log out",
     "email": "E-mail",
@@ -115,17 +116,49 @@
     "contacts": "Contacts",
     "delivery": "Delivery and payment"
   },
+  "phone": {
+    "confirm": "Confirm phone",
+    "confirm_first": "Confirm your phone with sms verification",
+    "confirmed": "Telefon confirmed",
+    "enter_code": "Enter received code",
+    "code_sent": "Code sent",
+    "send_code": "Receive sms",
+    "confirm_code": "Send code",
+    "code_error": "Incorrect code"
+  },
   "checkout": {
     "title": "Checkout",
     "form": {
+      "unavailable_item": "Sorry, some items are temporarily not available:",
       "address": "Delivery address",
       "comment": "Comments on the order",
       "persons": "Number of persons",
+      "training_sticks": "Number of training chopsticks",
+      "no_cutlery": "No cutlery",
       "change": "Prepare change from",
       "privateHouse": "Private house",
       "highRiseBuilding": "Apartments",
+      "dont_call": "Do not callback",
+      "use_bonus": "Use bonus points (available: {{amount}} UAH)",
+      "bonus_suffix": "bonuses",
+      "bonus_max": "MAX",
+      "use_bonus_guest": "Use bonus points",
+      "bonus_info": {
+        "login_title": "Login required",
+        "login_description": "Log in to your account to use bonus points.",
+        "no_balance_title": "No bonus points available",
+        "no_balance_description": "Your bonus balance doesn't have any points to spend yet.",
+        "not_applicable_title": "Bonus points unavailable for this order",
+        "not_applicable_description": "Your cart has no items that bonus points can be applied to.",
+        "limit_title": "Up to {{amount}}% of the order",
+        "limit_description": "You can redeem at most {{amount}}% of the price of non-discounted items.",
+        "excluded_title": "Not on promotional items",
+        "excluded_description": "Promotions, combos and special sets are not included in the limit calculation"
+      },
       "street": {
-        "placeholder": "Street"
+        "placeholder": "Street",
+        "typeMore": "Search from three letters",
+        "noResults": "Not found"
       },
       "house": {
         "placeholder": "House"
@@ -156,7 +189,15 @@
     "selectSavedAddress": "Select saved address",
     "alreadyHaveAccount": "Already have an account?",
     "order": "Checkout",
-    "to_pay": "To pay:"
+    "to_pay": "To pay:",
+    "order_price" : "Order:",
+    "delivery_price" : "Delivery:",
+    "not_enough_for_free_delivery" : "Order more for free delivery:",
+    "bonus_discount": "Paid with bonuses:",
+    "wait_time" : "Estimated wait time:",
+    "minutes" : "minutes",
+    "hour" : "hour",
+    "hours" : "hours"
   },
   "shippingMethods": {
     "courier": "Courier",
@@ -167,14 +208,40 @@
     "card": "Card",
     "cash": "Cash"
   },
+  "orderStatus": {
+    "title": "Order status #{{id}}",
+    "notFound": "Order not found.",
+    "cancelled": {
+        "text": "Payment failed - order canceled. If you wish to try again, click the button below."
+    },
+    "pending": {
+        "text": "We’ve received your order and are waiting for confirmation from payment provider. This may take a few minutes."
+    },
+    "waiting": {
+        "text": "Please complete your payment to confirm your order."
+    },
+    "expired": {
+        "text": "This order has expired because payment was not made on time or the payment provider was unable to process the payment. Please check that your card details are correct, check your internet limit, and place a new order if you still wish to proceed."
+    },
+    "tryAgain": {
+        "text": "Back to checkout"
+    }
+  },
   "thankYou": {
     "title": "Thank you for your order!",
     "subtitle": "Your order #{{id}} has been successfully accepted and sent to work!",
     "subtitleWithoutId": "Your order has been successfully accepted and sent to work!",
-    "text": "A manager will call you back shortly to confirm your order. Then the order will be prepared and sent to the address you specified."
+    "text": "A manager will call you back shortly to confirm your order. Then the order will be prepared and sent to the address you specified.",
+    "onlineOrderText": "The order will be prepared and sent to the address you specified."
   },
   "menu": {
-    "weightComment": "Actual weight may vary by 5% from stated weight"
+    "weightComment": "Actual weight may vary by 5% from stated weight",
+    "ingredients": "Ingredients",
+    "nutrition": "Cal: {{calories}} kcal (P:{{proteins}} F:{{fats}} C:{{carbs}})"
+  },
+  "promotions": {
+    "title": "Promotions",
+    "empty": "There are no active promotions right now"
   },
   "products": {
     "loading": "Loading dishes..."
@@ -200,14 +267,22 @@
     "profile": {
       "title": "Personal data",
       "editProfile": "Edit personal data",
-      "changePassword": "Change password"
+      "changePassword": "Change password",
+      "bonusBalance": "Bonus balance"
     },
     "orders": {
       "title": "My orders",
       "order": {
         "status": "Order status"
       },
-      "noOrders": "No orders"
+      "noOrders": "No orders",
+      "completed": "Completed",
+      "unknownProduct": "Unknown product",
+      "address": "Delivery address",
+      "deliveryPrice": "Delivery",
+      "pricePerItem": "Price per item",
+      "itemsTotal": "Total ({{qty}} pcs)",
+      "orderTotal": "Order total"
     },
     "changePassword": {
       "title": "Change password",
@@ -218,6 +293,19 @@
       "title": "Saved addresses",
       "typeAddress": "Enter address",
       "addAddress": "Add address"
+    },
+    "bonusHistory": {
+      "title": "Bonus history",
+      "noHistory": "No bonus history yet",
+      "order": "Order #{{id}}",
+      "balanceAfter": "Balance: {{amount}} UAH",
+      "refunded": "Refunded",
+      "status": {
+        "applied": "In progress",
+        "settled": "Settled",
+        "refunded": "Refunded",
+        "external": "External adjustment"
+      }
     }
   },
   "passwordReset": {

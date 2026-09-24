@@ -33,4 +33,10 @@ const ListItem = styled.li`
   }
 `;
 
-export { Wrapper, Title, List, ListItem };
+const Nutrition = styled.div`
+  margin-top: 10px;
+  font-size: 13px;
+  line-height: 16px;
+`;
+
+export { Wrapper, Title, List, ListItem, Nutrition };

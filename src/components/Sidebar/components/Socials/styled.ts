@@ -10,7 +10,11 @@ const Text = styled.p`
 
 const OneSvg = styled.a`
   margin-right: 10px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
 `;
 
 const SvgContainer = styled.div`

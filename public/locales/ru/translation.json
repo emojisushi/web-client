@@ -7,6 +7,7 @@
     "address": "Адресс",
     "shippingAddress": "Адресс доставки",
     "favorite": "Любимые",
+    "promotions": "Акции",
     "login": "Войти",
     "logout": "Выйти",
     "email": "E-mail",
@@ -112,6 +113,24 @@
       "address": "Адрес доставки",
       "comment": "Комментарий к заказу",
       "persons": "Количество персон",
+      "training_sticks": "Количество тренировочных палочек",
+      "no_cutlery": "Без приборов",
+      "use_bonus": "Использовать бонусы (доступно {{amount}} ₴)",
+      "bonus_suffix": "бонусов",
+      "bonus_max": "MAX",
+      "use_bonus_guest": "Использовать бонусы",
+      "bonus_info": {
+        "login_title": "Нужна авторизация",
+        "login_description": "Войдите в аккаунт, чтобы использовать бонусы.",
+        "no_balance_title": "Нет доступных бонусов",
+        "no_balance_description": "На вашем бонусном счёте пока нет средств для списания.",
+        "not_applicable_title": "Бонусы недоступны для этого заказа",
+        "not_applicable_description": "В корзине нет товаров, на которые можно списать бонусы.",
+        "limit_title": "До {{amount}}% заказа",
+        "limit_description": "Можно списать максимум {{amount}}% стоимости товаров без акции.",
+        "excluded_title": "Не на акционные позиции",
+        "excluded_description": "Акции, комбо и специальные сеты не участвуют в расчёте лимита"
+      },
       "change": "Приготовить сдачу с",
       "validation": {
         "phone": {
@@ -124,10 +143,13 @@
     "selectSavedAddress": "Выбрать сохранненый адрес",
     "alreadyHaveAccount": "Уже есть аккаунт?",
     "order": "Заказать",
-    "to_pay": "К оплате:"
+    "to_pay": "К оплате:",
+    "order_price" : "Заказ:",
+    "delivery_price" : "Доставка:",
+    "bonus_discount": "Оплата бонусами:"
   },
   "shippingMethods": {
-    "courier": "Курьер",
+    "courier": "Доставка",
     "pickup": "Самовывоз"
   },
   "paymentMethods": {
@@ -141,7 +163,12 @@
     "text": "В ближайшее время Вам перезвонит менеджер для подтверждения заказа. Затем заказ будет подготовлен и отправлен на указанный Вами адрес."
   },
   "menu": {
-    "weightComment": "Фактический вес может отличаться на 5% от указанного"
+    "weightComment": "Фактический вес может отличаться на 5% от указанного",
+    "nutrition": "К: {{calories}} ккал (Б:{{proteins}} Ж:{{fats}} У:{{carbs}})"
+  },
+  "promotions": {
+    "title": "Акции",
+    "empty": "Сейчас нет активных акций"
   },
   "products": {
     "loading": "Загрузка товаров..."
@@ -167,14 +194,22 @@
     "profile": {
       "title": "Личные данные",
       "editProfile": "Редактировать личные данные",
-      "changePassword": "Изменить пароль"
+      "changePassword": "Изменить пароль",
+      "bonusBalance": "Бонусный счёт"
     },
     "orders": {
       "title": "Мои заказы",
       "order": {
         "status": "Статус заказа"
       },
-      "noOrders": "У Вас нет заказов"
+      "noOrders": "У Вас нет заказов",
+      "completed": "Выполнено",
+      "unknownProduct": "Неизвестный товар",
+      "address": "Адрес доставки",
+      "deliveryPrice": "Доставка",
+      "pricePerItem": "Цена за шт",
+      "itemsTotal": "Итого ({{qty}} шт)",
+      "orderTotal": "Сумма заказа"
     },
     "changePassword": {
       "title": "Изменить пароль",
@@ -185,6 +220,19 @@
       "title": "Сохраненные адреса",
       "typeAddress": "Введите адрес",
       "addAddress": "Добавить адрес"
+    },
+    "bonusHistory": {
+      "title": "История бонусов",
+      "noHistory": "История начислений пуста",
+      "order": "Заказ №{{id}}",
+      "balanceAfter": "Остаток: {{amount}} ₴",
+      "refunded": "Возвращено",
+      "status": {
+        "applied": "В обработке",
+        "settled": "Списано",
+        "refunded": "Возвращено",
+        "external": "Внешнее начисление"
+      }
     }
   },
   "passwordReset": {

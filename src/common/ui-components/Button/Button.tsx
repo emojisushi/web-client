@@ -225,4 +225,10 @@ const BaseButton = styled.button<{
     box-shadow: ${getHoverShadow};
     color: ${getHoverColor};
   }
+  :disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    filter: brightness(0.85);
+    box-shadow: none;
+  }
 `;

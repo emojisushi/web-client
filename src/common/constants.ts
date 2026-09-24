@@ -1,11 +1,12 @@
 import { SortKey } from "@layerok/emojisushi-js-sdk";
 
 export const AUTHENTICATED_USER_QUERY_KEY = ["authenticated-user"];
-
-export enum CitySlug {
-  Odesa = "odesa",
-  Chornomorsk = "chorno",
-}
+export const DRAFT_ORDER_LS_KEY = { name: "draftOrder", version: "1" };
+export const CitySlug = {
+  Odesa: process.env.REACT_APP_ODESA,
+  Chornomorsk: process.env.REACT_APP_CHORNOMORSK,
+};
+console.log(process.env.REACT_APP_ODESA);
 
 export const LOCATION_CONFIRMED_SEARCH_PARAM = "location_confirmed";
 

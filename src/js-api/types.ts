@@ -188,6 +188,79 @@ export type IProduct = {
   prices: IPrice[];
   categories: ICategory[];
   hide_products_in_spot: ISpot[];
+  spicy: Nullable<boolean>;
+  slightly_spicy: Nullable<boolean>;
+  calories: Nullable<number>;
+  proteins: Nullable<number>;
+  fats: Nullable<number>;
+  carbs: Nullable<number>;
+};
+
+export type IGetBonusOptionsRes = {
+  bonus_enabled_web: boolean;
+  max_bonus: number;
+  excluded_category_ids: number[];
+};
+
+export type IGetUserBonusRes = {
+  enabled: boolean;
+  balance: number;
+  reserved: number;
+  available: number;
+};
+
+export type BonusHistoryStatus =
+  | "applied"
+  | "settled"
+  | "refunded"
+  | "external";
+
+export type IBonusHistoryItem = {
+  id: number;
+  date: string;
+  order_id: number;
+  delta: number;
+  balance_after: number;
+  status: BonusHistoryStatus;
+  refunded: boolean;
+};
+
+export type IGetUserBonusHistoryRes = IBonusHistoryItem[];
+
+export type IProductHistoryItem = {
+  product_id: number;
+  name?: string;
+  product_sum?: number;
+  num: number;
+};
+
+export type IOrderHistoryItem = {
+  transaction_id: number;
+  order_id: number;
+  status: boolean;
+  user_id: number;
+  pay_type: number;
+  products: IProductHistoryItem[];
+  sum: number;
+  date_start_new: string;
+  address: string;
+  delivery_price: number;
+};
+
+export type IGetOrderHistoryRes = IOrderHistoryItem[];
+
+export type IPromotion = {
+  id: number;
+  header: string;
+  text: Nullable<string>;
+  published: 0 | 1;
+  image: Nullable<IImage>;
+  created_at: string;
+  updated_at: string;
+};
+
+export type IGetPromotionsRes = {
+  data: IPromotion[];
 };
 
 export type IFilter = {
@@ -265,6 +338,41 @@ export type IGetCheckoutFormRes = {
   spots: ISpot[];
 };
 
+export type Address = {
+  id: number;
+  name_ua: string;
+  name_ru: string;
+  suburb_ua: string;
+  suburb_ru: string;
+  spot_name: string;
+  min_amount: number;
+  delivery_price: number;
+  buildings: string[];
+  min: number;
+  unavailable_categories: number[];
+  unavailable_products: number[];
+  recommended_products: number[];
+  wait_minutes_delivery: number;
+};
+
+export type IGetAddressesRes = {
+  addresses: Address[];
+};
+
+export type IGetOrderStatusRes = {
+  status: number;
+  online_payment_id: string;
+  poster_id: string;
+};
+
+export type IGetPhoneRes = {
+  confirmed: boolean;
+};
+
+export type IGetAddressOptionsRes = {
+  enable_address_system: boolean;
+};
+
 export type ICartProduct = {
   quantity: number;
   product: IProduct;
@@ -320,7 +428,7 @@ export type IWishlist = {
   created_at: string;
   updated_at: string;
   shipping_method_id: null | number;
-  spot_id: null | number; // todo: remove this field from database, we don't need it anymore, session already knows about right spot_id
+  spot_id: null | number; // todo: remove this field from database, we dont need it anymore, session already knows about right spot_id
   items: IWishlistItem[];
   shipping_method: null | IShippingMethod;
 };
@@ -372,6 +480,7 @@ export enum ShippingMethodCodeEnum {
 
 export enum PaymentMethodCodeEnum {
   Cash = "cash",
+  Wayforpay = "wayforpay",
 }
 
 export type Banner = {
@@ -588,6 +697,13 @@ export type IUser = IRainLabUser & {
   phone: string | null;
   customer: ICustomer | null;
   is_call_center_admin: boolean;
+  bonus_amount: number;
+  street: string | null;
+  house_type: string | null;
+  house: string | null;
+  floor: string | null;
+  apartment: string | null;
+  entrance: string | null;
 };
 
 export type RegisterResData = {
@@ -630,6 +746,14 @@ export type ISpot = {
   is_main: boolean;
   district: IDistrict;
   temporarily_unavailable: boolean;
+  unavailable_categories: unavailable_category[];
+  unavailable_products: number[];
+  recommended_products: IProduct[];
+  wait_minutes_spot: number;
+};
+
+export type unavailable_category = {
+  id: number;
 };
 
 export type IDistrict = {

@@ -1,7 +1,13 @@
 import * as S from "./styled";
 import { useTranslation } from "react-i18next";
 
-export const IngredientsTooltipContent = ({ items }: { items: string[] }) => {
+export const IngredientsTooltipContent = ({
+  items,
+  nutrition,
+}: {
+  items: string[];
+  nutrition?: string;
+}) => {
   const { t } = useTranslation();
   return (
     <S.Wrapper>
@@ -11,6 +17,7 @@ export const IngredientsTooltipContent = ({ items }: { items: string[] }) => {
           <S.ListItem key={i}>{item}</S.ListItem>
         ))}
       </S.List>
+      {!!nutrition && <S.Nutrition>{nutrition}</S.Nutrition>}
     </S.Wrapper>
   );
 };
