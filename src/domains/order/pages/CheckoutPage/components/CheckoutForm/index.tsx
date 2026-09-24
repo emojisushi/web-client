@@ -63,7 +63,10 @@ import { useSmsVerification } from "~hooks/useSmsVerification";
 import { CheckoutRecommended } from "../CheckoutRecommended";
 import { getNewProductPrice } from "~domains/product/product.utils";
 import { BonusAmountInput } from "./components/BonusAmountInput";
-import { BonusInfoTooltipContent } from "./components/BonusInfoTooltipContent";
+import {
+  BonusInfoTooltipContent,
+  BonusUnavailableReason,
+} from "./components/BonusInfoTooltipContent";
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -225,7 +228,7 @@ export const CheckoutForm = observer(
 
     const { data: bonusOptions } = useQuery({
       ...bonusOptionsQuery,
-      enabled: canUseBonuses,
+      enabled: !user?.is_call_center_admin,
     });
     const { data: userBonus } = useQuery({
       ...userBonusQuery,
@@ -299,6 +302,43 @@ export const CheckoutForm = observer(
     };
 
     const showBonuses = canUseBonuses && usableBonusesUAH > 0;
+
+    let bonusUnavailableReason: BonusUnavailableReason | undefined;
+    if (!loading && bonusOptions?.bonus_enabled_web) {
+      if (!user) {
+        bonusUnavailableReason = "login";
+      } else if (canUseBonuses && userBonus?.enabled && !showBonuses) {
+        bonusUnavailableReason =
+          Math.floor(userBonus.available / 100) <= 0
+            ? "no_balance"
+            : "not_applicable";
+      }
+    }
+
+    const renderBonusInfoIcon = (reason?: BonusUnavailableReason) => (
+      <AnimatedTooltip
+        placement={"top-start"}
+        label={
+          <BonusInfoTooltipContent
+            maxBonus={bonusOptions?.max_bonus ?? 0}
+            unavailableReason={reason}
+          />
+        }
+      >
+        <span
+          style={{
+            display: "inline-flex",
+            marginLeft: "4px",
+            verticalAlign: "middle",
+            cursor: "pointer",
+          }}
+        >
+          <SvgIcon width="20px" color={"#999"} style={{ cursor: "pointer" }}>
+            <InfoSvg />
+          </SvgIcon>
+        </span>
+      </AnimatedTooltip>
+    );
 
     const TakeAwaySchema = Yup.object().shape({
       phone: Yup.string()
@@ -1383,31 +1423,7 @@ export const CheckoutForm = observer(
                     {t("checkout.form.use_bonus", {
                       amount: usableBonusesUAH,
                     })}
-                    <AnimatedTooltip
-                      placement={"top-start"}
-                      label={
-                        <BonusInfoTooltipContent
-                          maxBonus={bonusOptions?.max_bonus ?? 0}
-                        />
-                      }
-                    >
-                      <span
-                        style={{
-                          display: "inline-flex",
-                          marginLeft: "4px",
-                          verticalAlign: "middle",
-                          cursor: "pointer",
-                        }}
-                      >
-                        <SvgIcon
-                          width="20px"
-                          color={"#999"}
-                          style={{ cursor: "pointer" }}
-                        >
-                          <InfoSvg />
-                        </SvgIcon>
-                      </span>
-                    </AnimatedTooltip>
+                    {renderBonusInfoIcon()}
                   </Checkbox>
                 </SkeletonWrap>
               </S.Control>
@@ -1426,6 +1442,28 @@ export const CheckoutForm = observer(
                   </SkeletonWrap>
                 </S.Control>
               )}
+            </div>
+          )}
+          {!!bonusUnavailableReason && (
+            <div
+              style={{
+                marginTop: 20,
+              }}
+            >
+              <S.Control>
+                <FlexBox alignItems={"center"}>
+                  <div style={{ opacity: 0.4, pointerEvents: "none" }}>
+                    <Checkbox
+                      name={"use_bonus"}
+                      checked={false}
+                      onChange={() => {}}
+                    >
+                      {t("checkout.form.use_bonus_guest")}
+                    </Checkbox>
+                  </div>
+                  {renderBonusInfoIcon(bonusUnavailableReason)}
+                </FlexBox>
+              </S.Control>
             </div>
           )}
           <div
