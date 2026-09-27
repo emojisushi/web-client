@@ -1,7 +1,12 @@
 import * as S from "./styled";
 import { useTranslation } from "react-i18next";
 
-export type BonusUnavailableReason = "login" | "no_balance" | "not_applicable";
+export type BonusUnavailableReason =
+  | "login"
+  | "no_balance"
+  | "not_applicable"
+  | "enter_phone"
+  | "client_not_found";
 
 export const BonusInfoTooltipContent = ({
   maxBonus,

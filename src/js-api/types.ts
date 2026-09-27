@@ -209,6 +209,14 @@ export type IGetUserBonusRes = {
   available: number;
 };
 
+export type IGetClientBonusRes = {
+  found: boolean;
+  client_id: Nullable<number>;
+  balance: number;
+  max_bonus: number;
+  excluded_category_ids: number[];
+};
+
 export type BonusHistoryStatus =
   | "applied"
   | "settled"

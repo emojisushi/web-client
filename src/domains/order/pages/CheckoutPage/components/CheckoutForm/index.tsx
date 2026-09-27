@@ -29,6 +29,7 @@ import {
 import {
   ChangeEvent,
   Dispatch,
+  ReactElement,
   SetStateAction,
   useCallback,
   useEffect,
@@ -55,7 +56,11 @@ import { unformat, useMask, format } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
-import { bonusOptionsQuery, userBonusQuery } from "~domains/order/bonus.query";
+import {
+  bonusOptionsQuery,
+  clientBonusQuery,
+  userBonusQuery,
+} from "~domains/order/bonus.query";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { isClosed } from "~utils/time.utils";
 import { appConfig } from "~config/app";
@@ -224,27 +229,57 @@ export const CheckoutForm = observer(
     const isAddressLoading = addressAutocomplete ? _isAddressLoading : false;
 
     const queryClient = useQueryClient();
-    const canUseBonuses = !!user && !user.is_call_center_admin;
+    const isCallCenterAdmin = !!user?.is_call_center_admin;
+    const canUseOwnBonuses = !!user && !isCallCenterAdmin;
 
-    const { data: bonusOptions } = useQuery({
-      ...bonusOptionsQuery,
-      enabled: !user?.is_call_center_admin,
-    });
+    const { data: bonusOptions } = useQuery(bonusOptionsQuery);
     const { data: userBonus } = useQuery({
       ...userBonusQuery,
-      enabled: canUseBonuses,
+      enabled: canUseOwnBonuses,
       staleTime: 0,
     });
 
+    // call-center admins spend the bonuses of the client whose phone is entered in the form
+    const [clientPhone, setClientPhone] = useState("");
+    const { data: clientBonus, isFetching: isClientBonusFetching } = useQuery({
+      ...clientBonusQuery(clientPhone),
+      enabled: isCallCenterAdmin && !!clientPhone,
+      staleTime: 0,
+    });
+
+    const bonusSource = useMemo(() => {
+      if (!bonusOptions?.bonus_enabled_web) {
+        return null;
+      }
+      if (isCallCenterAdmin) {
+        if (!clientPhone || !clientBonus?.found) {
+          return null;
+        }
+        return {
+          available: clientBonus.balance,
+          maxBonus: clientBonus.max_bonus,
+          excludedCategoryIds: clientBonus.excluded_category_ids,
+        };
+      }
+      if (!userBonus?.enabled) {
+        return null;
+      }
+      return {
+        available: userBonus.available,
+        maxBonus: bonusOptions.max_bonus,
+        excludedCategoryIds: bonusOptions.excluded_category_ids,
+      };
+    }, [bonusOptions, userBonus, clientBonus, clientPhone, isCallCenterAdmin]);
+
     const usableBonuses = useMemo(() => {
-      if (!bonusOptions?.bonus_enabled_web || !userBonus?.enabled || !cart) {
+      if (!bonusSource || !cart) {
         return 0;
       }
       const eligibleTotal = cart.items
         .filter(
           (item) =>
             !item.product.categories.some((category) =>
-              bonusOptions.excluded_category_ids.includes(category.id)
+              bonusSource.excludedCategoryIds.includes(category.id)
             )
         )
         .reduce(
@@ -255,10 +290,10 @@ export const CheckoutForm = observer(
           0
         );
       const maxSpendable = Math.floor(
-        (eligibleTotal * bonusOptions.max_bonus) / 100
+        (eligibleTotal * bonusSource.maxBonus) / 100
       );
-      return Math.min(maxSpendable, userBonus.available);
-    }, [bonusOptions, userBonus, cart]);
+      return Math.min(maxSpendable, bonusSource.available);
+    }, [bonusSource, cart]);
 
     const usableBonusesUAH = Math.floor(usableBonuses / 100);
 
@@ -301,13 +336,26 @@ export const CheckoutForm = observer(
       setBonusAmount(clamped + "");
     };
 
-    const showBonuses = canUseBonuses && usableBonusesUAH > 0;
+    const showBonuses = !!bonusSource && usableBonusesUAH > 0;
 
     let bonusUnavailableReason: BonusUnavailableReason | undefined;
-    if (!loading && bonusOptions?.bonus_enabled_web) {
+    if (!loading && bonusOptions?.bonus_enabled_web && !showBonuses) {
       if (!user) {
         bonusUnavailableReason = "login";
-      } else if (canUseBonuses && userBonus?.enabled && !showBonuses) {
+      } else if (isCallCenterAdmin) {
+        if (!clientPhone) {
+          bonusUnavailableReason = "enter_phone";
+        } else if (!isClientBonusFetching) {
+          if (!clientBonus?.found) {
+            bonusUnavailableReason = "client_not_found";
+          } else {
+            bonusUnavailableReason =
+              Math.floor(clientBonus.balance / 100) <= 0
+                ? "no_balance"
+                : "not_applicable";
+          }
+        }
+      } else if (userBonus?.enabled) {
         bonusUnavailableReason =
           Math.floor(userBonus.available / 100) <= 0
             ? "no_balance"
@@ -315,28 +363,37 @@ export const CheckoutForm = observer(
       }
     }
 
-    const renderBonusInfoIcon = (reason?: BonusUnavailableReason) => (
+    const bonusInfoIcon = (
+      <span
+        style={{
+          display: "inline-flex",
+          marginLeft: "4px",
+          verticalAlign: "middle",
+          cursor: "pointer",
+        }}
+      >
+        <SvgIcon width="20px" color={"#999"} style={{ cursor: "pointer" }}>
+          <InfoSvg />
+        </SvgIcon>
+      </span>
+    );
+
+    const renderBonusTooltip = (
+      trigger: ReactElement,
+      reason?: BonusUnavailableReason,
+      openOnClick = false
+    ) => (
       <AnimatedTooltip
         placement={"top-start"}
+        openOnClick={openOnClick}
         label={
           <BonusInfoTooltipContent
-            maxBonus={bonusOptions?.max_bonus ?? 0}
+            maxBonus={bonusSource?.maxBonus ?? bonusOptions?.max_bonus ?? 0}
             unavailableReason={reason}
           />
         }
       >
-        <span
-          style={{
-            display: "inline-flex",
-            marginLeft: "4px",
-            verticalAlign: "middle",
-            cursor: "pointer",
-          }}
-        >
-          <SvgIcon width="20px" color={"#999"} style={{ cursor: "pointer" }}>
-            <InfoSvg />
-          </SvgIcon>
-        </span>
+        {trigger}
       </AnimatedTooltip>
     );
 
@@ -541,7 +598,7 @@ export const CheckoutForm = observer(
               Math.min(
                 Math.floor((+bonusAmount || 0) * 100),
                 usableBonuses,
-                userBonus?.available ?? 0
+                bonusSource?.available ?? 0
               )
             )
           : 0;
@@ -582,6 +639,7 @@ export const CheckoutForm = observer(
         removeFromLocalStorage(localStorageKeys.draftOrder);
         if (bonusesToUse > 0) {
           queryClient.invalidateQueries({ queryKey: ["userBonus"] });
+          queryClient.invalidateQueries({ queryKey: ["clientBonus"] });
         }
         if (res.data?.form) {
           wayforpayFormContainer.current.innerHTML = res.data.form;
@@ -663,6 +721,16 @@ export const CheckoutForm = observer(
       validationSchema,
       onSubmit: handleSubmit,
     });
+
+    useEffect(() => {
+      if (!isCallCenterAdmin) {
+        return;
+      }
+      const phone = formik.values[FormNames.Phone] ?? "";
+      setClientPhone(
+        isValidUkrainianPhone(phone) ? unformat(phone, phoneMaskOptions) : ""
+      );
+    }, [formik.values[FormNames.Phone], isCallCenterAdmin]);
 
     useEffect(
       () => {
@@ -1404,6 +1472,13 @@ export const CheckoutForm = observer(
               unavailableProducts={unavailableProducts}
             />
           </div>
+          {isCallCenterAdmin && !!clientBonus?.found && (
+            <p style={{ marginTop: 20 }}>
+              {t("checkout.form.client_bonus_balance", {
+                amount: Math.floor(clientBonus.balance / 100),
+              })}
+            </p>
+          )}
           {showBonuses && (
             <div
               style={{
@@ -1423,7 +1498,7 @@ export const CheckoutForm = observer(
                     {t("checkout.form.use_bonus", {
                       amount: usableBonusesUAH,
                     })}
-                    {renderBonusInfoIcon()}
+                    {renderBonusTooltip(bonusInfoIcon)}
                   </Checkbox>
                 </SkeletonWrap>
               </S.Control>
@@ -1451,18 +1526,29 @@ export const CheckoutForm = observer(
               }}
             >
               <S.Control>
-                <FlexBox alignItems={"center"}>
-                  <div style={{ opacity: 0.4, pointerEvents: "none" }}>
-                    <Checkbox
-                      name={"use_bonus"}
-                      checked={false}
-                      onChange={() => {}}
-                    >
-                      {t("checkout.form.use_bonus_guest")}
-                    </Checkbox>
-                  </div>
-                  {renderBonusInfoIcon(bonusUnavailableReason)}
-                </FlexBox>
+                {renderBonusTooltip(
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      width: "fit-content",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <div style={{ opacity: 0.4, pointerEvents: "none" }}>
+                      <Checkbox
+                        name={"use_bonus"}
+                        checked={false}
+                        onChange={() => {}}
+                      >
+                        {t("checkout.form.use_bonus_guest")}
+                      </Checkbox>
+                    </div>
+                    {bonusInfoIcon}
+                  </div>,
+                  bonusUnavailableReason,
+                  true
+                )}
               </S.Control>
             </div>
           )}
