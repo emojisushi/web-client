@@ -28,6 +28,7 @@ import {
   IGetBonusOptionsRes,
   IGetUserBonusRes,
   IGetUserBonusHistoryRes,
+  IGetClientBonusRes,
   IGetOrderHistoryRes,
   IOrderHistoryItem,
   IGetPromotionsRes,
@@ -164,6 +165,16 @@ export function createEmojisushiAgent(options: { service: string }) {
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
   ) {
     return client.get<IGetUserBonusRes>("user/bonus", {
+      params,
+      ...axiosConfig,
+    });
+  }
+
+  function getClientBonus(
+    params: { phone: string },
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetClientBonusRes>("bonuses/client", {
       params,
       ...axiosConfig,
     });
@@ -654,6 +665,7 @@ export function createEmojisushiAgent(options: { service: string }) {
     getBonusOptions,
     getUserBonus,
     getUserBonusHistory,
+    getClientBonus,
     getOrderHistory,
     getOrderHistoryItem,
     getPromotions,
