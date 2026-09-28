@@ -367,6 +367,7 @@ export const CheckoutForm = observer(
       <span
         style={{
           display: "inline-flex",
+          flexShrink: 0,
           marginLeft: "4px",
           verticalAlign: "middle",
           cursor: "pointer",
@@ -1495,10 +1496,14 @@ export const CheckoutForm = observer(
                       handleUseBonusesChange(e.target.checked);
                     }}
                   >
-                    {t("checkout.form.use_bonus", {
-                      amount: usableBonusesUAH,
-                    })}
-                    {renderBonusTooltip(bonusInfoIcon)}
+                    <span style={{ display: "flex", alignItems: "center" }}>
+                      <span>
+                        {t("checkout.form.use_bonus", {
+                          amount: usableBonusesUAH,
+                        })}
+                      </span>
+                      {renderBonusTooltip(bonusInfoIcon)}
+                    </span>
                   </Checkbox>
                 </SkeletonWrap>
               </S.Control>
