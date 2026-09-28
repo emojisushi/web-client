@@ -1,26 +1,35 @@
 import { useTranslation } from "react-i18next";
-import { AccordionItem } from "~components";
-import { useUser } from "~hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
+import { orderHistoryQuery } from "~domains/order/orderHistory.query";
+import { OrderHistoryItem } from "./components/OrderHistoryItem";
 
 export const MyOrdersPage = () => {
   const { t } = useTranslation();
-  const { data: user } = useUser();
 
-  const orders = user.customer.orders;
+  const { data: orders, isLoading } = useQuery({
+    ...orderHistoryQuery,
+    staleTime: 0,
+  });
+
+  if (isLoading) {
+    return null;
+  }
+
   return (
     <div
       style={{
         marginTop: 20,
       }}
     >
-      {!!orders.length ? (
+      {!!orders?.length ? (
         orders.map((order, index) => (
           <div
+            key={order.transaction_id}
             style={{
               marginTop: index ? "16px" : 0,
             }}
           >
-            <AccordionItem key={order.id} order={order} />
+            <OrderHistoryItem order={order} />
           </div>
         ))
       ) : (

@@ -7,6 +7,7 @@ import {
   useInteractions,
   useHover,
   useFocus,
+  useClick,
   useRole,
   useDismiss,
   Placement,
@@ -18,10 +19,12 @@ export const AnimatedTooltip = ({
   children,
   label,
   placement = "top",
+  openOnClick = false,
 }: {
   label: ReactElement;
   placement: Placement;
   children: ReactElement;
+  openOnClick?: boolean;
 }) => {
   const [open, setOpen] = useState(false);
   const theme = useTheme();
@@ -36,6 +39,7 @@ export const AnimatedTooltip = ({
   const { getReferenceProps, getFloatingProps } = useInteractions([
     useHover(context, { restMs: 40 }),
     useFocus(context),
+    useClick(context, { enabled: openOnClick, toggle: false }),
     useRole(context, { role: "tooltip" }),
     useDismiss(context),
   ]);

@@ -16,6 +16,7 @@ i18n
   .use(HttpBackend)
   .init({
     lng: "uk",
+    fallbackLng: "uk",
     defaultNS: "translation",
     interpolation: {
       escapeValue: false, // react already safes from xss

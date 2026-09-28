@@ -21,7 +21,6 @@ const Cabinet = styled.div``;
 
 const Navbar = styled.div`
   width: 350px;
-  height: 220px;
   background: ${({ theme }) => theme.colors.canvas.inset2};
   box-shadow: ${({ theme }) => theme.shadows.canvasInset2Shadow};
   border-radius: ${({ theme }) => theme.borderRadius.default};

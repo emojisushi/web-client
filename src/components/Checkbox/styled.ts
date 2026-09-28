@@ -5,6 +5,7 @@ const LabelCheck = styled.label`
   user-select: none;
   cursor: pointer;
   position: relative;
+  align-items: center;
 `;
 
 const LabelCheckbox = styled.div`

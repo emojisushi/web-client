@@ -27,7 +27,16 @@ const routes = [
                 lazy: lazy(
                   () => import("~pages/PublicOfferPage/PublicOfferPage")
                 ),
+                children: [
+                  {
+                    path: ROUTES.PUBLIC_OFFER.OFFER.path,
+                    lazy: lazy(
+                      () => import("~pages/PublicOfferPage/PublicOfferPage")
+                    ),
+                  },
+                ],
               },
+
               {
                 path: ROUTES.CATEGORY.path,
                 id: "categories",
@@ -64,8 +73,20 @@ const routes = [
                 lazy: lazy(() => import("~domains/order/pages/ThankYouPage")),
               },
               {
+                path: ROUTES.ORDER_STATUS.path,
+                lazy: lazy(
+                  () => import("~domains/order/pages/OrderStatusPage")
+                ),
+              },
+              {
                 path: ROUTES.DELIVERYANDPAYMENT.path,
                 lazy: lazy(() => import("~domains/spot/pages/DeliveryPage")),
+              },
+              {
+                path: ROUTES.PROMOTIONS.path,
+                lazy: lazy(
+                  () => import("~pages/PromotionsPage/PromotionsPage")
+                ),
               },
               {
                 path: ROUTES.CHECKOUT.path,
@@ -118,23 +139,14 @@ const routes = [
                     },
                   },
                   {
-                    path: ROUTES.ACCOUNT.SAVED_ADDRESSES.path,
+                    path: ROUTES.ACCOUNT.BONUS_HISTORY.path,
                     lazy: lazy(
-                      () => import("~domains/cabinet/pages/SavedAddressesPage")
+                      () => import("~domains/cabinet/pages/BonusHistoryPage")
                     ),
                     handle: {
                       title: () => (
-                        <Trans i18nKey={"account.addresses.title"} />
+                        <Trans i18nKey={"account.bonusHistory.title"} />
                       ),
-                    },
-                  },
-                  {
-                    path: ROUTES.ACCOUNT.ORDER.path,
-                    lazy: lazy(
-                      () => import("~domains/cabinet/pages/MyOrdersPage")
-                    ),
-                    handle: {
-                      title: () => <Trans i18nKey={"account.orders.title"} />,
                     },
                   },
                 ],
@@ -160,6 +172,18 @@ const routes = [
               {
                 path: ROUTES.REFUND.path,
                 lazy: lazy(() => import("~domains/payment/pages/RefundPage")),
+              },
+              {
+                path: ROUTES.APP_SUPPORT.path,
+                lazy: lazy(
+                  () => import("~pages/AppSupportPage/AppSupportPage")
+                ),
+              },
+              {
+                path: ROUTES.PRIVACY_POLICY.path,
+                lazy: lazy(
+                  () => import("~pages/PrivacyPolicyPage/PrivacyPolicyPage")
+                ),
               },
             ],
           },

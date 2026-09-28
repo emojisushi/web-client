@@ -42,7 +42,7 @@ export const TelegramModal = NiceModal.create(() => {
               filled
               // @ts-ignore
               as={"a"}
-              href={"https://t.me/Emojisushibot"}
+              href={"https://t.me/Emoji_sushi"}
               target={"_blank"}
               style={{
                 width: 250,
