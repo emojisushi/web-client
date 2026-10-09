@@ -189,6 +189,15 @@ const toDateTimeLocalValue = (date: Date) => {
   )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 };
 
+const DELIVERY_TIME_STEP_MINUTES = 15;
+
+const pad2 = (n: number) => String(n).padStart(2, "0");
+
+const roundUpToStep = (date: Date) => {
+  const stepMs = DELIVERY_TIME_STEP_MINUTES * 60 * 1000;
+  return new Date(Math.ceil(date.getTime() / stepMs) * stepMs);
+};
+
 const phoneMaskOptions = {
   mask: "+38(___) ___-__-__",
   replacement: { _: /\d/ },
@@ -248,8 +257,46 @@ export const CheckoutForm = observer(
 
     // call-center admins spend the bonuses of the client whose phone is entered in the form
     const [clientPhone, setClientPhone] = useState("");
-    // datetime-local value ("YYYY-MM-DDTHH:mm"); overrides the backend-computed delivery time
-    const [deliveryTime, setDeliveryTime] = useState("");
+    // admin override of the backend-computed delivery time
+    const [deliveryDate, setDeliveryDate] = useState("");
+    const [deliveryHour, setDeliveryHour] = useState("");
+    const [deliveryMinute, setDeliveryMinute] = useState("");
+    const earliestDeliverySlot = toDateTimeLocalValue(
+      roundUpToStep(new Date())
+    );
+    const isSlotTooEarly = (date: string, hour: string, minute: string) =>
+      !!date && `${date}T${hour}:${minute}` < earliestDeliverySlot;
+    const lastMinuteSlot = pad2(60 - DELIVERY_TIME_STEP_MINUTES);
+    const deliveryHourOptions = [];
+    for (let h = 0; h < 24; h++) {
+      const hour = pad2(h);
+      // hide hours whose last slot has already passed
+      if (!isSlotTooEarly(deliveryDate, hour, lastMinuteSlot)) {
+        deliveryHourOptions.push({ label: hour, value: hour });
+      }
+    }
+    const deliveryMinuteOptions = [];
+    for (let m = 0; m < 60; m += DELIVERY_TIME_STEP_MINUTES) {
+      const minute = pad2(m);
+      if (
+        !deliveryHour ||
+        !isSlotTooEarly(deliveryDate, deliveryHour, minute)
+      ) {
+        deliveryMinuteOptions.push({ label: minute, value: minute });
+      }
+    }
+    const resetDeliveryTimeIfPast = (
+      date: string,
+      hour: string,
+      minute: string
+    ) => {
+      if (hour && isSlotTooEarly(date, hour, lastMinuteSlot)) {
+        setDeliveryHour("");
+        setDeliveryMinute("");
+      } else if (hour && minute && isSlotTooEarly(date, hour, minute)) {
+        setDeliveryMinute("");
+      }
+    };
     const { data: clientBonus, isFetching: isClientBonusFetching } = useQuery({
       ...clientBonusQuery(clientPhone),
       enabled: isCallCenterAdmin && !!clientPhone,
@@ -639,8 +686,8 @@ export const CheckoutForm = observer(
           comment: _comment,
           bonuses_to_use: bonusesToUse > 0 ? bonusesToUse : undefined,
           delivery_time:
-            isCallCenterAdmin && deliveryTime
-              ? deliveryTime.replace("T", " ") + ":00"
+            isCallCenterAdmin && deliveryDate && deliveryHour && deliveryMinute
+              ? `${deliveryDate} ${deliveryHour}:${deliveryMinute}:00`
               : undefined,
           cart: {
             items: cart.items.map((item) => ({
@@ -1379,13 +1426,46 @@ export const CheckoutForm = observer(
             <S.Control>
               <Input
                 loading={loading}
-                type={"datetime-local"}
+                type={"date"}
                 label={t("checkout.form.delivery_time")}
-                min={toDateTimeLocalValue(new Date())}
-                value={deliveryTime}
-                onChange={(e) => setDeliveryTime(e.currentTarget.value)}
+                min={earliestDeliverySlot.slice(0, 10)}
+                value={deliveryDate}
+                onChange={(e) => {
+                  const date = e.currentTarget.value;
+                  setDeliveryDate(date);
+                  if (!date) {
+                    setDeliveryHour("");
+                    setDeliveryMinute("");
+                  } else {
+                    resetDeliveryTimeIfPast(date, deliveryHour, deliveryMinute);
+                  }
+                }}
                 style={{ colorScheme: "dark" }}
               />
+              <FlexBox style={{ gap: 10, marginTop: 10 }}>
+                <Dropdown
+                  showSkeleton={loading}
+                  width={"170px"}
+                  placeholder={t("checkout.form.delivery_hour")}
+                  options={deliveryHourOptions}
+                  value={deliveryHour || null}
+                  onChange={(value) => {
+                    const hour = value ? value + "" : "";
+                    setDeliveryHour(hour);
+                    resetDeliveryTimeIfPast(deliveryDate, hour, deliveryMinute);
+                  }}
+                />
+                <Dropdown
+                  showSkeleton={loading}
+                  width={"170px"}
+                  placeholder={t("checkout.form.delivery_minute")}
+                  options={deliveryMinuteOptions}
+                  value={deliveryMinute || null}
+                  onChange={(value) =>
+                    setDeliveryMinute(value ? value + "" : "")
+                  }
+                />
+              </FlexBox>
             </S.Control>
           )}
           <S.Control>

@@ -11,6 +11,7 @@ import {
   useClick,
   useDismiss,
   useRole,
+  size,
 } from "@floating-ui/react";
 import React, {
   ForwardedRef,
@@ -53,6 +54,8 @@ const Option = styled.div<IOptionProps>`
   user-select: none;
   padding: 10px 15px;
 `;
+
+const DROPDOWN_MAX_HEIGHT = 300;
 
 type IDropdownProps = {
   options: {
@@ -111,7 +114,20 @@ export const Dropdown = forwardRef(
       onOpenChange: setOpen,
       // We don't want flipping to occur while searching, as the floating element
       // will resize and cause disorientation.
-      middleware: [offset(0), flip(), shift()],
+      middleware: [
+        offset(0),
+        flip(),
+        shift(),
+        size({
+          padding: 10,
+          apply({ availableHeight, elements }) {
+            elements.floating.style.maxHeight = `${Math.min(
+              availableHeight,
+              DROPDOWN_MAX_HEIGHT
+            )}px`;
+          },
+        }),
+      ],
     });
 
     useEffect(() => {
