@@ -758,6 +758,9 @@ export type ISpot = {
   unavailable_products: number[];
   recommended_products: IProduct[];
   wait_minutes_spot: number;
+  extra_wait_enabled: 0 | 1;
+  extra_wait_minutes: number;
+  extra_wait_categories: number[];
 };
 
 export type unavailable_category = {

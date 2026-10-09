@@ -182,6 +182,13 @@ type ErrorResponse = {
   message: string;
 };
 
+const toDateTimeLocalValue = (date: Date) => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(
+    date.getDate()
+  )}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
 const phoneMaskOptions = {
   mask: "+38(___) ___-__-__",
   replacement: { _: /\d/ },
@@ -241,6 +248,8 @@ export const CheckoutForm = observer(
 
     // call-center admins spend the bonuses of the client whose phone is entered in the form
     const [clientPhone, setClientPhone] = useState("");
+    // datetime-local value ("YYYY-MM-DDTHH:mm"); overrides the backend-computed delivery time
+    const [deliveryTime, setDeliveryTime] = useState("");
     const { data: clientBonus, isFetching: isClientBonusFetching } = useQuery({
       ...clientBonusQuery(clientPhone),
       enabled: isCallCenterAdmin && !!clientPhone,
@@ -629,6 +638,10 @@ export const CheckoutForm = observer(
           no_cutlery,
           comment: _comment,
           bonuses_to_use: bonusesToUse > 0 ? bonusesToUse : undefined,
+          delivery_time:
+            isCallCenterAdmin && deliveryTime
+              ? deliveryTime.replace("T", " ") + ":00"
+              : undefined,
           cart: {
             items: cart.items.map((item) => ({
               id: item.product.id + "",
@@ -971,9 +984,23 @@ export const CheckoutForm = observer(
     });
 
     let currentSpot = spotsRes?.find((el) => el.id === formik.values.spot_id);
-    let currentWaitTime = isTakeawayShipmentMethod
+    const fulfillingSpot = isTakeawayShipmentMethod
+      ? currentSpot
+      : spotsRes?.find((el) => el.name === selectedAddress?.spotName);
+    const needsExtraWait =
+      !!fulfillingSpot?.extra_wait_enabled &&
+      (cart?.items || []).some((item) =>
+        item.product.categories.some((category) =>
+          (fulfillingSpot.extra_wait_categories || []).includes(category.id)
+        )
+      );
+    const baseWaitTime = isTakeawayShipmentMethod
       ? currentSpot?.wait_minutes_spot
       : selectedAddress?.wait_minutes;
+    let currentWaitTime =
+      baseWaitTime && needsExtraWait
+        ? baseWaitTime + (fulfillingSpot.extra_wait_minutes || 0)
+        : baseWaitTime;
 
     useEffect(() => {
       if (loading) return;
@@ -1348,6 +1375,19 @@ export const CheckoutForm = observer(
               ref={setFieldRef(FormNames.Comment)}
             />
           </S.Control>
+          {isCallCenterAdmin && (
+            <S.Control>
+              <Input
+                loading={loading}
+                type={"datetime-local"}
+                label={t("checkout.form.delivery_time")}
+                min={toDateTimeLocalValue(new Date())}
+                value={deliveryTime}
+                onChange={(e) => setDeliveryTime(e.currentTarget.value)}
+                style={{ colorScheme: "dark" }}
+              />
+            </S.Control>
+          )}
           <S.Control>
             <SegmentedControl
               showSkeleton={loading}

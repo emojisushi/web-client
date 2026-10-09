@@ -119,6 +119,7 @@
       "bonus_suffix": "бонусов",
       "bonus_max": "MAX",
       "use_bonus_guest": "Использовать бонусы",
+      "delivery_time": "Время доставки (необязательно)",
       "client_bonus_balance": "Бонусный счёт клиента: {{amount}} ₴",
       "bonus_info": {
         "login_title": "Нужна авторизация",
