@@ -289,6 +289,7 @@ export function createEmojisushiAgent(options: { service: string }) {
       no_cutlery?: boolean;
       change?: string;
       bonuses_to_use?: number;
+      delivery_time?: string;
 
       cart: {
         items: {
