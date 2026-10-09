@@ -4,12 +4,15 @@ import { useTranslation } from "react-i18next";
 import { useUser } from "~hooks/use-auth";
 import { ROUTES } from "~routes";
 import { Button } from "~common/ui-components/Button/Button";
+import { useQuery } from "@tanstack/react-query";
+import { userBonusQuery } from "~domains/order/bonus.query";
 
 export const ProfilePage = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const { data: user } = useUser();
+  const { data: userBonus } = useQuery(userBonusQuery);
 
   return (
     <S.Properties>
@@ -28,6 +31,14 @@ export const ProfilePage = () => {
         <S.PropertyLabel>{t("common.phone")}</S.PropertyLabel>
         <S.PropertyValue>{user.phone}</S.PropertyValue>
       </S.Property>
+      {userBonus?.enabled && (
+        <S.Property>
+          <S.PropertyLabel>{t("account.profile.bonusBalance")}</S.PropertyLabel>
+          <S.PropertyValue>
+            {Math.floor(userBonus.available / 100)} ₴
+          </S.PropertyValue>
+        </S.Property>
+      )}
 
       <S.BtnGroup>
         <Button
@@ -39,17 +50,6 @@ export const ProfilePage = () => {
         >
           {t("account.profile.editProfile")}
         </Button>
-        <S.BtnWrapper>
-          <Button
-            skin={"grey"}
-            onClick={() => {
-              navigate(ROUTES.ACCOUNT.PASSWORD_RECOVERY.path);
-            }}
-            style={{ minWidth: "202px" }}
-          >
-            {t("account.profile.changePassword")}
-          </Button>
-        </S.BtnWrapper>
       </S.BtnGroup>
     </S.Properties>
   );

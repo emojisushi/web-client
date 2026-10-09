@@ -4,7 +4,7 @@ import { PlusSvg } from "~components";
 import * as S from "./styled";
 import { Button } from "~common/ui-components/Button/Button";
 import { FlexBox } from "../FlexBox";
-import { MouseEventHandler } from "react";
+import { ButtonHTMLAttributes, MouseEventHandler } from "react";
 import { useTheme } from "styled-components";
 
 export const Counter = ({
@@ -12,16 +12,19 @@ export const Counter = ({
   handleIncrement,
   handleDecrement,
   width = "130px",
+  type,
 }: {
   count: number;
   handleIncrement: MouseEventHandler<HTMLSpanElement>;
   handleDecrement: MouseEventHandler<HTMLSpanElement>;
   width?: string;
+  type?: "button" | "submit" | "reset";
 }) => {
   const theme = useTheme();
 
   return (
     <Button
+      type={type ?? "submit"}
       filled
       style={{
         justifyContent: "space-around",

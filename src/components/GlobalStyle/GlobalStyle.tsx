@@ -17,6 +17,7 @@ export const GlobalStyle = createGlobalStyle`
   *:after,
   *:before {
     box-sizing: border-box;
+    scrollbar-color: #d1d1d1e8 #2C2C2C;
   }
 
   ul {
