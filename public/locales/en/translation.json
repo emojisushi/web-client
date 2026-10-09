@@ -144,6 +144,8 @@
       "bonus_max": "MAX",
       "use_bonus_guest": "Use bonus points",
       "delivery_time": "Delivery time (optional)",
+      "delivery_hour": "Hour",
+      "delivery_minute": "Minutes",
       "client_bonus_balance": "Client's bonus balance: {{amount}} UAH",
       "bonus_info": {
         "login_title": "Login required",
