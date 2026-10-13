@@ -600,7 +600,8 @@ export const CheckoutForm = observer(
         floor,
       } = values;
 
-      const [firstname, lastname] = name.split(" ");
+      const [firstname, ...restOfName] = name.trim().split(/\s+/);
+      const lastname = restOfName.join(" ") || undefined;
       let address;
       let addressDetails;
       if (addressAutocomplete) {
@@ -743,8 +744,13 @@ export const CheckoutForm = observer(
           return;
         }
 
-        if (errors.firstname) {
-          formik.setFieldError(FormNames.Name, errors.firstname[0]);
+        // the form has a single name field, so surname errors are shown there too
+        const nameError = errors.firstname?.[0] ?? errors.lastname?.[0];
+        if (nameError) {
+          formik.setFieldError(FormNames.Name, nameError);
+          fieldsRef.current.name?.scrollIntoView({
+            behavior: "smooth",
+          });
         }
 
         if (message.includes("phone")) {
