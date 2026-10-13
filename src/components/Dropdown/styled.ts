@@ -44,6 +44,7 @@ const Content = styled.div<{
 }>`
   background-color: ${({ theme }) => theme.colors.canvas.inset2};
   width: ${prop("width")};
+  overflow-y: auto;
   --border-radius: ${({ theme }) => theme.borderRadius.smooth};
   ${(props) =>
     ifProp(

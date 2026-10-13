@@ -39,6 +39,8 @@ import {
 import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { Cart } from "~domains/cart/cart.query";
+import { SpicySvg } from "~components/svg/SpicySvg";
+import { SlightlySpicySvg } from "~components/svg/SlightlySpicySvg";
 
 type ProductCardProps = {
   product?: IProduct;
@@ -144,7 +146,41 @@ export const ProductCard = (props: ProductCardProps) => {
       </SkeletonWrap>
       <EqualHeightElement name={"product-name"}>
         <S.Name onClick={openDetailedProductModal}>
-          {loading ? <Skeleton /> : product.name}
+          {loading ? (
+            <Skeleton />
+          ) : (
+            <>
+              {product.name}
+              {!!product?.spicy && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    marginLeft: "4px",
+                    verticalAlign: "middle",
+                    cursor: "pointer",
+                  }}
+                >
+                  <SvgIcon width="17px" style={{ cursor: "pointer" }}>
+                    <SpicySvg />
+                  </SvgIcon>
+                </span>
+              )}
+              {!!product?.slightly_spicy && (
+                <span
+                  style={{
+                    display: "inline-flex",
+                    marginLeft: "4px",
+                    verticalAlign: "middle",
+                    cursor: "pointer",
+                  }}
+                >
+                  <SvgIcon width="17px" style={{ cursor: "pointer" }}>
+                    <SlightlySpicySvg />
+                  </SvgIcon>
+                </span>
+              )}
+            </>
+          )}
         </S.Name>
         <Modificators
           loading={loading}
@@ -157,31 +193,57 @@ export const ProductCard = (props: ProductCardProps) => {
         <S.Description>
           <SkeletonWrap loading={loading}>
             <InfoTooltip label={t("menu.weightComment")}>
-              <S.Weight>
-                {product?.weight !== 0 ? product?.weight + "г" : ""}
+              <S.Weight style={{ alignItems: "center" }}>
+                {product?.weight !== 0 ? product?.weight + " г" : ""}
                 {product?.weight !== 0 && (
-                  <S.WeightTooltipMarker>?</S.WeightTooltipMarker>
+                  <SvgIcon
+                    width="20px"
+                    color={"#999"}
+                    style={{ marginLeft: "2px", cursor: "pointer" }}
+                  >
+                    <InfoSvg />
+                  </SvgIcon>
                 )}
               </S.Weight>
             </InfoTooltip>
           </SkeletonWrap>
+        </S.Description>
+      </EqualHeightElement>
+      <EqualHeightElement name={"ingredients"}>
+        <S.Description>
           <SkeletonWrap borderRadius="100%" loading={loading}>
             <AnimatedTooltip
               placement={"bottom-start"}
               label={
                 <IngredientsTooltipContent
                   items={(product && getProductIngredients(product)) || []}
+                  nutrition={
+                    product?.calories
+                      ? t("menu.nutrition", {
+                          calories: Math.floor(product.calories),
+                          proteins: Math.floor(product.proteins),
+                          fats: Math.floor(product.fats),
+                          carbs: Math.floor(product.carbs),
+                        })
+                      : undefined
+                  }
                 />
               }
             >
-              <SvgIcon width="25px" color={"#999"}>
-                <InfoSvg />
-              </SvgIcon>
+              <Button
+                style={{
+                  height: "30px",
+                  minWidth: "50px",
+                  padding: "0 10px",
+                  fontSize: "12px",
+                }}
+              >
+                {t("menu.ingredients")}
+              </Button>
             </AnimatedTooltip>
           </SkeletonWrap>
         </S.Description>
       </EqualHeightElement>
-
       <S.Footer>
         <Price loading={loading} oldPrice={oldPrice} newPrice={newPrice} />
         {count ? (

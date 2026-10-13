@@ -89,7 +89,7 @@ export const ContactsModal = NiceModal.create(() => {
                 style={{ cursor: "pointer" }}
                 alignItems={"center"}
                 onClick={() => {
-                  window.open("https://t.me/Emojisushibot", "_blank");
+                  window.open("https://t.me/Emoji_sushi", "_blank");
                 }}
               >
                 <SvgIcon

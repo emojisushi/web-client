@@ -4,7 +4,6 @@ import {
   CartButton,
   FlexBox,
   HightlightText,
-  LanguageSelector,
   LogoSvg,
   SvgButton,
   SvgIcon,
@@ -20,7 +19,7 @@ import { ICity, IUser } from "@layerok/emojisushi-js-sdk";
 import { ModalIDEnum } from "~common/modal.constants";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { Trans, useTranslation } from "react-i18next";
-import { LEAVE_REVIEW_LINK, ROUTES } from "~routes";
+import { ROUTES } from "~routes";
 import { useShowModal } from "~modal";
 import { useTheme } from "styled-components";
 import { useQuery } from "@tanstack/react-query";
@@ -143,26 +142,23 @@ export const Header = ({
           </S.HeaderItem>
           <S.HeaderItem>
             <SkeletonWrap loading={loading}>
-              <a
-                target={"_blank"}
-                href={LEAVE_REVIEW_LINK}
+              <NavLink
                 style={{
                   color: "white",
                   textDecoration: "none",
                 }}
+                to={ROUTES.PROMOTIONS.path}
               >
-                <HightlightText>
-                  <Trans i18nKey="menu-title.leave-review" />
-                </HightlightText>
-              </a>
+                {({ isActive }) => (
+                  <HightlightText isActive={isActive}>
+                    {t("common.promotions")}
+                  </HightlightText>
+                )}
+              </NavLink>
             </SkeletonWrap>
           </S.HeaderItem>
         </FlexBox>
         <FlexBox alignItems={"center"}>
-          <S.LanguageSelectorContainer>
-            <LanguageSelector loading={loading} />
-          </S.LanguageSelectorContainer>
-
           <S.CartBtn>
             <SkeletonWrap borderRadius={10} loading={loading}>
               <CartButton

@@ -18,15 +18,20 @@ export const Checkbox = ({
 }) => {
   return (
     <S.LabelCheck>
-      <S.Checkbox type="checkbox" name={name} onChange={onChange} />
+      <S.Checkbox
+        type="checkbox"
+        name={name}
+        onChange={onChange}
+        checked={checked}
+      />
       <S.LabelCheckbox>
         {checked && (
-          <SvgIcon width={"17px"} height={"12px"}>
+          <SvgIcon style={{ cursor: "pointer" }} width={"17px"} height={"12px"}>
             <CheckSvg />
           </SvgIcon>
         )}
       </S.LabelCheckbox>
-      <S.Text>{children}</S.Text>
+      <S.Text style={{ fontSize: "unset" }}>{children}</S.Text>
 
       {!!error && <S.Error>{error}</S.Error>}
     </S.LabelCheck>
