@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { ifProp } from "styled-tools";
 
 const Categories = styled.nav`
-  margin-top: 30px;
+  margin-top: 15px;
   display: flex;
   flex-direction: column;
 `;

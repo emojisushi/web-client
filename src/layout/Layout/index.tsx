@@ -14,7 +14,7 @@ import {
   MobMenuModal,
   AuthModal,
 } from "~components";
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { cartQuery } from "~domains/cart/cart.query";
 import { PRODUCT_ID_SEARCH_QUERY_PARAM } from "~domains/product/products.query";
@@ -35,6 +35,7 @@ import { ResetPasswordModal } from "~components/modals/ResetPasswordModal";
 import { ProductModal } from "~components/modals/ProductModal";
 import { useCurrentCitySlug } from "~domains/city/hooks/useCurrentCitySlug";
 import { SearchProductsModal } from "~components/modals/SearchProductsModal";
+import { MobileAppBanner } from "~layout/Header/MobileAppBanner";
 
 export const Layout = observer(
   ({ children, ...rest }: { children?: ReactNode }) => {
@@ -42,7 +43,7 @@ export const Layout = observer(
     const { x, y } = useWindowScroll();
     const appStore = useAppStore();
     const showStickyCart = y > 100;
-
+    const [isAppBannerOpen, setIsAppBannerOpen] = useState(false);
     const { isLoading: isCartLoading, data: cart } = useQuery(cartQuery);
     const { data: user, isLoading: isUserLoading } = useUser();
     const showModal = useShowModal();
@@ -91,14 +92,21 @@ export const Layout = observer(
         {isCartLoading || isUserLoading || isCitiesLoading ? (
           <Header loading />
         ) : (
-          <Header cart={cart} cities={cities.data} user={user} />
+          <>
+            <MobileAppBanner onVisibilityChange={setIsAppBannerOpen} />
+            <Header cart={cart} cities={cities.data} user={user} />
+          </>
         )}
         <S.Main>
           <Outlet />
         </S.Main>
         <Footer city={city} loading={isCitiesLoading} />
         {!isCartLoading && (
-          <Sticky top={"30px"} right={"30px"} show={showStickyCart}>
+          <Sticky
+            top={isAppBannerOpen ? "65px" : "30px"}
+            right={"30px"}
+            show={showStickyCart}
+          >
             <S.TinyCartButtonOverlay>
               <TinyCartButton
                 onClick={() => {
