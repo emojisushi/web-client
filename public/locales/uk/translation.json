@@ -143,9 +143,15 @@
       "bonus_suffix": "бонусів",
       "bonus_max": "МАКС",
       "use_bonus_guest": "Використати бонуси",
+      "limited_items": "Недостатньо товару в наявності:",
+      "limited_item": "{{name}} — доступно {{amount}} шт., у кошику {{ordered}}",
       "delivery_time": "Час доставки (необовʼязково)",
       "delivery_hour": "Година",
       "delivery_minute": "Хвилини",
+      "call_center": {
+        "title": "Кол Центр",
+        "mark_comment": "Додати «Кол Центр» на початок коментаря"
+      },
       "client_bonus_balance": "Бонусний рахунок клієнта: {{amount}} ₴",
       "bonus_info": {
         "login_title": "Потрібна авторизація",

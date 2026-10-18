@@ -56,6 +56,7 @@ import { unformat, useMask, format } from "@react-input/mask";
 import { composeRefs } from "~utils/ref";
 import { Autocomplete } from "~components/Autocomplete";
 import { addressQuery } from "~domains/order/address.query";
+import { checkoutFormQuery } from "~domains/order/order.query";
 import {
   bonusOptionsQuery,
   clientBonusQuery,
@@ -178,6 +179,8 @@ type ErrorResponse = {
     spot_id: string[];
     address: string[];
     bonusesToUse: string[];
+    out_of_stock: string[];
+    [key: string]: string[];
   };
   message: string;
 };
@@ -258,6 +261,8 @@ export const CheckoutForm = observer(
     // call-center admins spend the bonuses of the client whose phone is entered in the form
     const [clientPhone, setClientPhone] = useState("");
     // admin override of the backend-computed delivery time
+    const [markAsCallCenterOrder, setMarkAsCallCenterOrder] = useState(true);
+    const [orderError, setOrderError] = useState("");
     const [deliveryDate, setDeliveryDate] = useState("");
     const [deliveryHour, setDeliveryHour] = useState("");
     const [deliveryMinute, setDeliveryMinute] = useState("");
@@ -573,6 +578,7 @@ export const CheckoutForm = observer(
     const handleSubmit = async (values: typeof initialValues) => {
       formik.setErrors({});
       setBonusError("");
+      setOrderError("");
       if (addressAutocomplete && !selectedAddress?.spotName) {
         formik.setFieldError("street", "Ваша адреса не обслуговується");
       }
@@ -648,6 +654,9 @@ export const CheckoutForm = observer(
       let _comment = comment;
       if (isOnlinePaymentMethod && formik.values[FormNames.DontCall]) {
         _comment = "Не передзвонювати " + comment;
+      }
+      if (isCallCenterAdmin && markAsCallCenterOrder) {
+        _comment = "Кол Центр " + _comment;
       }
       const bonusesToUse =
         useBonuses && showBonuses
@@ -734,13 +743,22 @@ export const CheckoutForm = observer(
         }
 
         const errors = data?.errors;
-        const message = data?.message;
+        const message = data?.message ?? "";
+        let handled = false;
 
         if (errors?.bonusesToUse) {
           setBonusError(errors.bonusesToUse[0]);
+          handled = true;
+        }
+
+        if (errors?.out_of_stock) {
+          // someone may have bought the last items meanwhile: refresh the limits
+          queryClient.invalidateQueries(checkoutFormQuery.queryKey);
+          queryClient.invalidateQueries({ queryKey: ["addresses"] });
         }
 
         if (!errors) {
+          setOrderError(message);
           return;
         }
 
@@ -751,13 +769,16 @@ export const CheckoutForm = observer(
           fieldsRef.current.name?.scrollIntoView({
             behavior: "smooth",
           });
+          handled = true;
         }
 
         if (message.includes("phone")) {
           formik.setFieldError(FormNames.Phone, "Недійсний номер телефону");
+          handled = true;
         }
 
         if (message.includes("адрес")) {
+          handled = true;
           formik.setFieldError(
             FormNames.Street,
             "Обраний заклад або адрес доставки тимчасово недоступні"
@@ -770,8 +791,13 @@ export const CheckoutForm = observer(
             behavior: "smooth",
           });
         }
-        // todo: handle other server errors
-        // todo: there can be more errors than just firstname
+
+        if (!handled) {
+          const firstError = Object.values(errors).find(
+            (list) => Array.isArray(list) && list.length > 0
+          )?.[0];
+          setOrderError(firstError ?? message);
+        }
       }
     };
 
@@ -798,6 +824,16 @@ export const CheckoutForm = observer(
         isValidUkrainianPhone(phone) ? unformat(phone, phoneMaskOptions) : ""
       );
     }, [formik.values[FormNames.Phone], isCallCenterAdmin]);
+
+    // a submit error (e.g. "доступно лише N шт.") is stale once the order is edited
+    useEffect(() => {
+      setOrderError("");
+    }, [
+      cart,
+      formik.values[FormNames.ShippingMethodCode],
+      formik.values[FormNames.SpotId],
+      formik.values[FormNames.Street],
+    ]);
 
     useEffect(
       () => {
@@ -956,6 +992,7 @@ export const CheckoutForm = observer(
         unavailable_products: el.unavailable_products,
         recommended_products: el.recommended_products,
         wait_minutes: el.wait_minutes_delivery,
+        limited_products: el.limited_products ?? [],
       }));
     }, [addresses?.addresses]);
     const setFieldRef =
@@ -1006,15 +1043,54 @@ export const CheckoutForm = observer(
     const bonusDiscount =
       showBonuses && useBonuses ? Number(bonusAmount) || 0 : 0;
     const totalToPay = Math.max(0, total - bonusDiscount);
-    const unavailableItems = cart?.items
-      .filter(
-        (item) =>
-          unavailableProducts.includes(item.product.id) ||
-          item.product.categories.some((cat) =>
-            unavailableCategories.includes(cat.id)
+    const unavailableItems = Array.from(
+      new Set(
+        (cart?.items ?? [])
+          .filter(
+            (item) =>
+              unavailableProducts.includes(item.product.id) ||
+              item.product.categories.some((cat) =>
+                unavailableCategories.includes(cat.id)
+              )
           )
+          .map((item) => item.product.name)
       )
-      .map((item) => item.product.name);
+    );
+
+    // courier orders are fulfilled by the address's spot, takeaway by the selected spot
+    const limitedProducts =
+      (isTakeawayShipmentMethod
+        ? spotsRes?.find((el) => el.id === formik.values.spot_id)
+            ?.limited_products
+        : selectedAddress?.limited_products) ?? [];
+    // the limit is per product, so quantities of all variants are summed
+    const cartQuantityByProduct = new Map<
+      number,
+      { name: string; qty: number }
+    >();
+    (cart?.items ?? []).forEach((item) => {
+      const entry = cartQuantityByProduct.get(item.product.id);
+      cartQuantityByProduct.set(item.product.id, {
+        name: item.product.name,
+        qty: (entry?.qty ?? 0) + item.quantity,
+      });
+    });
+    const limitedItems = limitedProducts
+      .map((limit) => {
+        const entry = cartQuantityByProduct.get(limit.product_id);
+        // amount 0 is already reported via unavailable_products
+        if (!entry || limit.amount <= 0 || entry.qty <= limit.amount) {
+          return null;
+        }
+        return { name: entry.name, ordered: entry.qty, amount: limit.amount };
+      })
+      .filter(
+        (item): item is { name: string; ordered: number; amount: number } =>
+          !!item
+      );
+
+    const hasCartIssues =
+      unavailableItems.length > 0 || limitedItems.length > 0;
 
     const {
       phoneConfirmed,
@@ -1428,52 +1504,6 @@ export const CheckoutForm = observer(
               ref={setFieldRef(FormNames.Comment)}
             />
           </S.Control>
-          {isCallCenterAdmin && (
-            <S.Control>
-              <Input
-                loading={loading}
-                type={"date"}
-                label={t("checkout.form.delivery_time")}
-                min={earliestDeliverySlot.slice(0, 10)}
-                value={deliveryDate}
-                onChange={(e) => {
-                  const date = e.currentTarget.value;
-                  setDeliveryDate(date);
-                  if (!date) {
-                    setDeliveryHour("");
-                    setDeliveryMinute("");
-                  } else {
-                    resetDeliveryTimeIfPast(date, deliveryHour, deliveryMinute);
-                  }
-                }}
-                style={{ colorScheme: "dark" }}
-              />
-              <FlexBox style={{ gap: 10, marginTop: 10 }}>
-                <Dropdown
-                  showSkeleton={loading}
-                  width={"170px"}
-                  placeholder={t("checkout.form.delivery_hour")}
-                  options={deliveryHourOptions}
-                  value={deliveryHour || null}
-                  onChange={(value) => {
-                    const hour = value ? value + "" : "";
-                    setDeliveryHour(hour);
-                    resetDeliveryTimeIfPast(deliveryDate, hour, deliveryMinute);
-                  }}
-                />
-                <Dropdown
-                  showSkeleton={loading}
-                  width={"170px"}
-                  placeholder={t("checkout.form.delivery_minute")}
-                  options={deliveryMinuteOptions}
-                  value={deliveryMinute || null}
-                  onChange={(value) =>
-                    setDeliveryMinute(value ? value + "" : "")
-                  }
-                />
-              </FlexBox>
-            </S.Control>
-          )}
           <S.Control>
             <SegmentedControl
               showSkeleton={loading}
@@ -1599,13 +1629,6 @@ export const CheckoutForm = observer(
               unavailableProducts={unavailableProducts}
             />
           </div>
-          {isCallCenterAdmin && !!clientBonus?.found && (
-            <p style={{ marginTop: 20 }}>
-              {t("checkout.form.client_bonus_balance", {
-                amount: Math.floor(clientBonus.balance / 100),
-              })}
-            </p>
-          )}
           {showBonuses && (
             <div
               style={{
@@ -1683,27 +1706,121 @@ export const CheckoutForm = observer(
               </S.Control>
             </div>
           )}
+          {isCallCenterAdmin && (
+            <S.CallCenterSection>
+              <S.CallCenterSectionTitle>
+                {t("checkout.form.call_center.title")}
+              </S.CallCenterSectionTitle>
+              {!!clientBonus?.found && (
+                <p style={{ marginTop: 15 }}>
+                  {t("checkout.form.client_bonus_balance", {
+                    amount: Math.floor(clientBonus.balance / 100),
+                  })}
+                </p>
+              )}
+              <S.Control>
+                <SkeletonWrap loading={loading}>
+                  <Checkbox
+                    name={"call_center_order"}
+                    checked={markAsCallCenterOrder}
+                    onChange={(e) => setMarkAsCallCenterOrder(e.target.checked)}
+                  >
+                    {t("checkout.form.call_center.mark_comment")}
+                  </Checkbox>
+                </SkeletonWrap>
+              </S.Control>
+              <S.Control>
+                <Input
+                  loading={loading}
+                  type={"date"}
+                  label={t("checkout.form.delivery_time")}
+                  min={earliestDeliverySlot.slice(0, 10)}
+                  value={deliveryDate}
+                  onChange={(e) => {
+                    const date = e.currentTarget.value;
+                    setDeliveryDate(date);
+                    if (!date) {
+                      setDeliveryHour("");
+                      setDeliveryMinute("");
+                    } else {
+                      resetDeliveryTimeIfPast(
+                        date,
+                        deliveryHour,
+                        deliveryMinute
+                      );
+                    }
+                  }}
+                  style={{ colorScheme: "dark" }}
+                />
+                <FlexBox style={{ gap: 10, marginTop: 10 }}>
+                  <Dropdown
+                    showSkeleton={loading}
+                    width={"154px"}
+                    placeholder={t("checkout.form.delivery_hour")}
+                    options={deliveryHourOptions}
+                    value={deliveryHour || null}
+                    onChange={(value) => {
+                      const hour = value ? value + "" : "";
+                      setDeliveryHour(hour);
+                      resetDeliveryTimeIfPast(
+                        deliveryDate,
+                        hour,
+                        deliveryMinute
+                      );
+                    }}
+                  />
+                  <Dropdown
+                    showSkeleton={loading}
+                    width={"154px"}
+                    placeholder={t("checkout.form.delivery_minute")}
+                    options={deliveryMinuteOptions}
+                    value={deliveryMinute || null}
+                    onChange={(value) =>
+                      setDeliveryMinute(value ? value + "" : "")
+                    }
+                  />
+                </FlexBox>
+              </S.Control>
+            </S.CallCenterSection>
+          )}
           <div
             style={{
               marginTop: 20,
             }}
           >
-            {unavailableItems?.length > 0 ? (
-              <S.Total
-                style={{
-                  justifyContent: "space-between",
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "10px",
-                }}
-              >
-                <span style={{ color: "rgba(205, 56, 56, 1)" }}>
-                  <Trans i18nKey={"checkout.form.unavailable_item"} />
-                </span>
-                {unavailableItems.map((el) => (
-                  <span key={el}>— {el}</span>
-                ))}
-              </S.Total>
+            {hasCartIssues ? (
+              <FlexBox flexDirection={"column"} style={{ gap: 15 }}>
+                {unavailableItems.length > 0 && (
+                  <S.IssueBox $variant={"danger"}>
+                    <S.IssueTitle $variant={"danger"}>
+                      {t("checkout.form.unavailable_item")}
+                    </S.IssueTitle>
+                    <S.IssueList>
+                      {unavailableItems.map((name) => (
+                        <li key={name}>{name}</li>
+                      ))}
+                    </S.IssueList>
+                  </S.IssueBox>
+                )}
+                {limitedItems.length > 0 && (
+                  <S.IssueBox $variant={"warning"}>
+                    <S.IssueTitle $variant={"warning"}>
+                      {t("checkout.form.limited_items")}
+                    </S.IssueTitle>
+                    <S.IssueList>
+                      {limitedItems.map((item) => (
+                        <li key={item.name}>
+                          {t("checkout.form.limited_item", {
+                            name: item.name,
+                            amount: item.amount,
+                            ordered: item.ordered,
+                          })}
+                        </li>
+                      ))}
+                    </S.IssueList>
+                  </S.IssueBox>
+                )}
+              </FlexBox>
             ) : (
               <FlexBox flexDirection={"column"}>
                 <SkeletonWrap
@@ -1784,7 +1901,12 @@ export const CheckoutForm = observer(
               </FlexBox>
             )}
           </div>
-          {unavailableItems?.length > 0 ||
+          {!!orderError && (
+            <S.IssueBox $variant={"danger"} style={{ marginTop: 20 }}>
+              {orderError}
+            </S.IssueBox>
+          )}
+          {hasCartIssues ||
           (isCourierShipmentMethod &&
             cartTotal < selectedAddress?.min) ? null : (
             <div style={{ marginTop: "20px" }}>

@@ -119,9 +119,16 @@
       "bonus_suffix": "бонусов",
       "bonus_max": "MAX",
       "use_bonus_guest": "Использовать бонусы",
+      "unavailable_item": "Извините, некоторые товары временно недоступны:",
+      "limited_items": "Недостаточно товара в наличии:",
+      "limited_item": "{{name}} — доступно {{amount}} шт., в корзине {{ordered}}",
       "delivery_time": "Время доставки (необязательно)",
       "delivery_hour": "Час",
       "delivery_minute": "Минуты",
+      "call_center": {
+        "title": "Кол Центр",
+        "mark_comment": "Добавить «Кол Центр» в начало комментария"
+      },
       "client_bonus_balance": "Бонусный счёт клиента: {{amount}} ₴",
       "bonus_info": {
         "login_title": "Нужна авторизация",
