@@ -361,6 +361,12 @@ export type Address = {
   unavailable_products: number[];
   recommended_products: number[];
   wait_minutes_delivery: number;
+  limited_products?: ILimitedProduct[];
+};
+
+export type ILimitedProduct = {
+  product_id: number;
+  amount: number;
 };
 
 export type IGetAddressesRes = {
@@ -761,6 +767,7 @@ export type ISpot = {
   extra_wait_enabled: 0 | 1;
   extra_wait_minutes: number;
   extra_wait_categories: number[];
+  limited_products?: ILimitedProduct[];
 };
 
 export type unavailable_category = {
