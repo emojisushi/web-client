@@ -73,6 +73,9 @@
     "empty": "Your cart is empty",
     "cart": "Cart",
     "sum_order": "Order price",
+    "gift": "Gift",
+    "gift_hint": "Add {{count}} more from «{{category}}» to get {{product}} as a gift",
+    "gift_hint_no_category": "Add {{count}} more promotion item(s) to get {{product}} as a gift",
     "checkout": "Checkout",
     "confirmProductDeletionView": {
       "title": "Are you sure you want to remove this item from your cart?",

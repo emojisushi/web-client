@@ -35,6 +35,13 @@ import {
 } from "~domains/product/product.utils";
 
 import { Counter } from "~components/modals/CartModal/components/Counter";
+import { posterPromotionsQuery } from "~domains/promotions/poster-promotions.query";
+import {
+  CartGift,
+  getCartGiftHints,
+  getCartGifts,
+} from "~domains/promotions/cart-gifts";
+import { useKyivTime } from "~domains/promotions/promotion-window";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
 import { useRemoveItemFromCart } from "~domains/cart/hooks/use-remove-item-from-cart";
 
@@ -121,6 +128,35 @@ const CartItem = (props: { item: CartItemPayload }) => {
   );
 };
 
+// A free product from a promotion: no counter and no remove button, since it
+// comes and goes with the products that qualify for it.
+const GiftItem = (props: { gift: CartGift }) => {
+  const { gift } = props;
+  const { t } = useTranslation();
+  const mainImage = gift.gift.image ?? undefined;
+  const name = gift.gift.name;
+  const price = gift.gift.price_formatted ?? undefined;
+
+  return (
+    <S.Item>
+      <S.ItemImg src={mainImage}>
+        {!mainImage && (
+          <SvgIcon color={"white"} width={"80%"} style={{ opacity: 0.05 }}>
+            <LogoSvg />
+          </SvgIcon>
+        )}
+      </S.ItemImg>
+      <S.ItemInfo>
+        <S.ItemName title={name}>{name}</S.ItemName>
+        <FlexBox justifyContent={"space-between"} alignItems={"flex-end"}>
+          <span>{gift.quantity} шт</span>
+          <Price newPrice={t("cartModal.gift")} oldPrice={price} />
+        </FlexBox>
+      </S.ItemInfo>
+    </S.Item>
+  );
+};
+
 export const CartModal = NiceModal.create(() => {
   const navigate = useNavigate();
   const modal = useModal();
@@ -129,6 +165,13 @@ export const CartModal = NiceModal.create(() => {
   const { data: cart, isLoading: isCartLoading } = useQuery(cartQuery);
 
   const { items } = cart;
+
+  const { data: posterPromotions } = useQuery(posterPromotionsQuery);
+  const kyivNow = useKyivTime();
+  const gifts = getCartGifts(items, posterPromotions, { time: kyivNow });
+  const giftHints = getCartGiftHints(items, posterPromotions, {
+    time: kyivNow,
+  });
 
   const { isMobile } = useBreakpoint2();
 
@@ -199,8 +242,27 @@ export const CartModal = NiceModal.create(() => {
                 item={item}
               />
             ))}
+            {gifts.map((gift) => (
+              <GiftItem key={"gift-" + gift.promotion.id} gift={gift} />
+            ))}
           </S.Items>
         )}
+
+        {items.length !== 0 &&
+          giftHints.map((hint) => (
+            <S.GiftHint key={"gift-hint-" + hint.promotion.id}>
+              {t(
+                hint.promotion.category_name
+                  ? "cartModal.gift_hint"
+                  : "cartModal.gift_hint_no_category",
+                {
+                  count: hint.missing,
+                  category: hint.promotion.category_name,
+                  product: hint.promotion.gift.name,
+                }
+              )}
+            </S.GiftHint>
+          ))}
 
         {items.length !== 0 && (
           <S.Footer>

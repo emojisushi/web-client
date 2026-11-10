@@ -32,6 +32,7 @@ import {
   IGetOrderHistoryRes,
   IOrderHistoryItem,
   IGetPromotionsRes,
+  IGetPosterPromotionsRes,
 } from "./types";
 
 export function createEmojisushiAgent(options: { service: string }) {
@@ -212,6 +213,17 @@ export function createEmojisushiAgent(options: { service: string }) {
     } as AxiosAuthRefreshRequestConfig);
   }
 
+  function getPosterPromotions(
+    params: any = {},
+    axiosConfig: AxiosAuthRefreshRequestConfig = {}
+  ) {
+    return client.get<IGetPosterPromotionsRes>("poster-promotions", {
+      params,
+      skipAuthRefresh: true,
+      ...axiosConfig,
+    } as AxiosAuthRefreshRequestConfig);
+  }
+
   function getOrderHistoryItem(
     params: { order_id: string },
     axiosConfig: AxiosAuthRefreshRequestConfig = {}
@@ -290,6 +302,9 @@ export function createEmojisushiAgent(options: { service: string }) {
       change?: string;
       bonuses_to_use?: number;
       delivery_time?: string;
+      // Poster promotions whose gifts were shown; the order is refused if one
+      // no longer applies, e.g. its time window closed
+      expected_promotions?: number[];
 
       cart: {
         items: {
@@ -670,6 +685,7 @@ export function createEmojisushiAgent(options: { service: string }) {
     getOrderHistory,
     getOrderHistoryItem,
     getPromotions,
+    getPosterPromotions,
     getOrderStatus,
     getPhoneStatus,
     generateCode,

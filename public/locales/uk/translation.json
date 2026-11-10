@@ -73,6 +73,9 @@
     "empty": "Ваш кошик порожній",
     "cart": "Кошик",
     "sum_order": "Сума замовлення",
+    "gift": "Подарунок",
+    "gift_hint": "Додайте ще {{count}} шт. з категорії «{{category}}» — і {{product}} у подарунок",
+    "gift_hint_no_category": "Додайте ще {{count}} шт. за акцією — і {{product}} у подарунок",
     "checkout": "Оформити замовлення",
     "confirmProductDeletionView": {
       "title": "Ви впевнені що хочете видалити цей товар з кошика?",
