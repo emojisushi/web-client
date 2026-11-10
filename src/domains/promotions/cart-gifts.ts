@@ -18,27 +18,33 @@ export type CartGiftHint = {
 };
 
 const qualifyingCount = (items: CartItem[], promotion: IPosterPromotion) =>
-  items.reduce((acc, item) => {
-    const inCategory = (item.product.categories || []).some((category) =>
-      promotion.category_ids.includes(category.id)
-    );
-    return inCategory ? acc + item.quantity : acc;
-  }, 0);
+  items.reduce(
+    (acc, item) =>
+      promotion.product_ids.includes(item.product.id)
+        ? acc + item.quantity
+        : acc,
+    0
+  );
 
 type GiftOptions = {
   // our spot, when known
   spotId?: number;
-  // "HH:MM" Kyiv time, from useKyivTime() so every component agrees
+  // "N HH:MM" Kyiv week day and time, from useKyivTime() so every component agrees
   time?: string;
 };
 
-// at the spot, when it is known, and inside the promotion's time window
+// at the spot, when it is known, and on one of its days, inside its time window
 const availableAt = (
   promotion: IPosterPromotion,
   { spotId, time }: GiftOptions
 ) =>
   (spotId === undefined || promotion.spot_ids.includes(spotId)) &&
-  isWindowOpen(promotion.active_from, promotion.active_to, time);
+  isWindowOpen(
+    promotion.active_from,
+    promotion.active_to,
+    promotion.active_days,
+    time
+  );
 
 /**
  * The gifts the cart qualifies for. Mirrors the backend rule for display only —
