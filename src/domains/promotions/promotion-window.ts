@@ -1,15 +1,29 @@
 import { useSyncExternalStore } from "react";
 
 const TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
+const WEEKDAYS: Record<string, number> = {
+  Mon: 1,
+  Tue: 2,
+  Wed: 3,
+  Thu: 4,
+  Fri: 5,
+  Sat: 6,
+  Sun: 7,
+};
 
-// "HH:MM" now in Kyiv, the timezone promotion windows are set in
-export const kyivTime = (date = new Date()) =>
-  new Intl.DateTimeFormat("en-GB", {
+// "N HH:MM" now in Kyiv — ISO week day (1 = Monday) and time — the timezone
+// promotion schedules are set in. A string so it compares by value.
+export const kyivNow = (date = new Date()) => {
+  const parts = new Intl.DateTimeFormat("en-US", {
     timeZone: "Europe/Kyiv",
+    weekday: "short",
     hour: "2-digit",
     minute: "2-digit",
     hourCycle: "h23",
-  }).format(date);
+  }).formatToParts(date);
+  const get = (type: string) => parts.find((p) => p.type === type)?.value;
+  return `${WEEKDAYS[get("weekday") ?? "Mon"]} ${get("hour")}:${get("minute")}`;
+};
 
 // One clock for every component, so the cart, the cart modal and the checkout
 // form all re-render on the same tick and agree on which gifts are shown — the
@@ -31,20 +45,43 @@ const subscribe = (listener: () => void) => {
   };
 };
 
-// "HH:MM" in Kyiv, updated within 15 seconds of the minute changing
-export const useKyivTime = () => useSyncExternalStore(subscribe, kyivTime);
+// kyivNow(), updated within 15 seconds of the minute changing
+export const useKyivTime = () => useSyncExternalStore(subscribe, kyivNow);
 
 /**
- * Mirrors PromotionWindow on the backend: the end minute is excluded and a
- * window may pass midnight. Without a valid window the promotion runs all day.
+ * Mirrors PromotionWindow on the backend: the end minute is excluded, a window
+ * may pass midnight, and the hours after midnight belong to the day the window
+ * started ("Fri 22:00-02:00" still applies at 01:00 on Saturday). No days means
+ * every day, no valid window means all day.
  */
 export const isWindowOpen = (
   from: string | null | undefined,
   to: string | null | undefined,
-  time = kyivTime()
+  days: number[] | null | undefined,
+  now = kyivNow()
 ) => {
+  const [dayPart, time] = now.split(" ");
+  let day = Number(dayPart);
+  const activeDays = (days ?? []).filter((d) => d >= 1 && d <= 7);
+  const onDay = (d: number) =>
+    activeDays.length === 0 || activeDays.includes(d);
+
   if (!from || !to || !TIME.test(from) || !TIME.test(to) || from === to) {
-    return true;
+    return onDay(day);
   }
-  return from < to ? time >= from && time < to : time >= from || time < to;
+
+  let inside: boolean;
+  if (from < to) {
+    inside = time >= from && time < to;
+  } else if (time >= from) {
+    inside = true;
+  } else if (time < to) {
+    inside = true;
+    // after midnight: the window opened the day before
+    day = day === 1 ? 7 : day - 1;
+  } else {
+    inside = false;
+  }
+
+  return inside && onDay(day);
 };

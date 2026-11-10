@@ -280,12 +280,15 @@ export type IPosterPromotionGift = {
   price_formatted: string | null;
 };
 
-// A Poster promotion the backend applies to online orders: N items from one of
-// category_ids get the gift for free.
+// A Poster promotion the backend applies to online orders: N items of
+// product_ids get the gift for free.
 export type IPosterPromotion = {
   id: number;
   name: string;
-  category_ids: number[];
+  // the products that count: those in the promotion's category in Poster, not
+  // our own categories (a combo may be under «Піца» here but does not count)
+  product_ids: number[];
+  // the Poster category, for the hint
   category_name: string | null;
   required_count: number;
   gift_count: number;
@@ -294,6 +297,8 @@ export type IPosterPromotion = {
   // time of day it applies, "HH:MM" Kyiv time; null when it runs all day
   active_from: string | null;
   active_to: string | null;
+  // ISO week days it applies on (1 = Monday), Kyiv time; [] for every day
+  active_days: number[];
   // our spots it is available at
   spot_ids: number[];
   gift: IPosterPromotionGift;
