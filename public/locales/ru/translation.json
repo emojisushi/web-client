@@ -72,6 +72,9 @@
     "empty": "Ваша корзина пуста",
     "cart": "Корзина",
     "sum_order": "Сумма заказа",
+    "gift": "Подарок",
+    "gift_hint": "Добавьте ещё {{count}} шт. из категории «{{category}}» — и {{product}} в подарок",
+    "gift_hint_no_category": "Добавьте ещё {{count}} шт. по акции — и {{product}} в подарок",
     "checkout": "Оформить заказ"
   },
   "contactsModal": {

@@ -115,6 +115,15 @@ const Footer = styled.div`
   margin-top: 30px;
 `;
 
+const GiftHint = styled.div`
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px dashed ${({ theme }) => theme.colors.brand};
+  font-size: 14px;
+  line-height: 18px;
+`;
+
 const Sum = styled.div`
   font-weight: 500;
   font-size: 18px;
@@ -148,6 +157,7 @@ export {
   ItemInfo,
   ItemCounter,
   Footer,
+  GiftHint,
   Sum,
   Button,
   EmptyCartImgContainer,

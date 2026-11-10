@@ -2,11 +2,16 @@ import * as S from "./styled";
 import { SkeletonWrap, SvgIcon } from "~components";
 import { UIButton } from "~common/ui-components/UIButton/UIButton";
 import { CheckoutCartItem } from "./components/CheckoutCartItem";
+import { CheckoutGiftItem } from "./components/CheckoutGiftItem";
 import { ModalIDEnum } from "~common/modal.constants";
 import { PencilSvg } from "~components/svg/PencilSvg";
 import { useTranslation } from "react-i18next";
 import { useShowModal } from "~modal";
 import { Cart } from "~domains/cart/cart.query";
+import { useQuery } from "@tanstack/react-query";
+import { posterPromotionsQuery } from "~domains/promotions/poster-promotions.query";
+import { getCartGifts } from "~domains/promotions/cart-gifts";
+import { useKyivTime } from "~domains/promotions/promotion-window";
 
 type CheckoutCartProps = {
   cart?: Cart;
@@ -31,6 +36,12 @@ export const CheckoutCart = ({
 
   const showModal = useShowModal();
 
+  const { data: posterPromotions } = useQuery(posterPromotionsQuery);
+  const kyivNow = useKyivTime();
+  const gifts = loading
+    ? []
+    : getCartGifts(cart?.items, posterPromotions, { time: kyivNow });
+
   return (
     <S.Wrapper>
       <S.Inner>
@@ -50,6 +61,9 @@ export const CheckoutCart = ({
               />
             );
           })}
+          {gifts.map((gift) => (
+            <CheckoutGiftItem key={"gift-" + gift.promotion.id} gift={gift} />
+          ))}
         </S.Items>
 
         <S.EditButton>

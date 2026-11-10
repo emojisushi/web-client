@@ -10,7 +10,7 @@ export const appConfig = {
   ] as WorkingHours,
 
   onlinePaymentHours: [
-    [10, 0],
+    [1, 0],
     [21, 20],
   ] as WorkingHours,
 

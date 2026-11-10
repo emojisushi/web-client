@@ -69,6 +69,9 @@ import { useSmsVerification } from "~hooks/useSmsVerification";
 import { CheckoutRecommended } from "../CheckoutRecommended";
 import { getNewProductPrice } from "~domains/product/product.utils";
 import { BonusAmountInput } from "./components/BonusAmountInput";
+import { posterPromotionsQuery } from "~domains/promotions/poster-promotions.query";
+import { getCartGifts } from "~domains/promotions/cart-gifts";
+import { useKyivTime } from "~domains/promotions/promotion-window";
 import {
   BonusInfoTooltipContent,
   BonusUnavailableReason,
@@ -252,6 +255,13 @@ export const CheckoutForm = observer(
     const canUseOwnBonuses = !!user && !isCallCenterAdmin;
 
     const { data: bonusOptions } = useQuery(bonusOptionsQuery);
+    // The gifts shown in the cart are sent with the order (expected_promotions).
+    // The shared clock keeps this in step with what CheckoutCart shows.
+    const { data: posterPromotions } = useQuery(posterPromotionsQuery);
+    const kyivNow = useKyivTime();
+    const expectedPromotions = getCartGifts(cart?.items, posterPromotions, {
+      time: kyivNow,
+    }).map((gift) => gift.promotion.id);
     const { data: userBonus } = useQuery({
       ...userBonusQuery,
       enabled: canUseOwnBonuses,
@@ -699,6 +709,7 @@ export const CheckoutForm = observer(
             isCallCenterAdmin && deliveryDate && deliveryHour && deliveryMinute
               ? `${deliveryDate} ${deliveryHour}:${deliveryMinute}:00`
               : undefined,
+          expected_promotions: expectedPromotions,
           cart: {
             items: cart.items.map((item) => ({
               id: item.product.id + "",
@@ -749,6 +760,12 @@ export const CheckoutForm = observer(
         if (errors?.bonusesToUse) {
           setBonusError(errors.bonusesToUse[0]);
           handled = true;
+        }
+
+        if (errors?.promotion_unavailable) {
+          // e.g. the promotion's time window closed: reload so the gift
+          // disappears from the cart, then the client can place the order again
+          queryClient.invalidateQueries(posterPromotionsQuery.queryKey);
         }
 
         if (errors?.out_of_stock) {

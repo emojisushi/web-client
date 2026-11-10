@@ -271,6 +271,38 @@ export type IGetPromotionsRes = {
   data: IPromotion[];
 };
 
+// The free product of a Poster promotion. Gift products are kept out of the menu,
+// so this is not a full IProduct.
+export type IPosterPromotionGift = {
+  name: string;
+  image: string | null;
+  // regular price, shown crossed out
+  price_formatted: string | null;
+};
+
+// A Poster promotion the backend applies to online orders: N items from one of
+// category_ids get the gift for free.
+export type IPosterPromotion = {
+  id: number;
+  name: string;
+  category_ids: number[];
+  category_name: string | null;
+  required_count: number;
+  gift_count: number;
+  // false: one gift per order however many items; true: gift_count for every required_count
+  accumulate: boolean;
+  // time of day it applies, "HH:MM" Kyiv time; null when it runs all day
+  active_from: string | null;
+  active_to: string | null;
+  // our spots it is available at
+  spot_ids: number[];
+  gift: IPosterPromotionGift;
+};
+
+export type IGetPosterPromotionsRes = {
+  data: IPosterPromotion[];
+};
+
 export type IFilter = {
   id: number;
   name: string;
