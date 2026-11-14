@@ -71,6 +71,7 @@ import { getNewProductPrice } from "~domains/product/product.utils";
 import { BonusAmountInput } from "./components/BonusAmountInput";
 import { posterPromotionsQuery } from "~domains/promotions/poster-promotions.query";
 import {
+  getAvailableDiscount,
   getCartDiscount,
   getCartGifts,
   getPromotionConflict,
@@ -894,10 +895,30 @@ export const CheckoutForm = observer(
       });
       formik.setFieldValue(name, value);
     };
+    // Same rules as the order's discount (order type, days, time window) but
+    // regardless of the cart, so the tab advertises it before anything is added.
+    const discountBadge = (code: string): string | undefined => {
+      const orderType: OrderType | undefined =
+        code === ShippingMethodCodeEnum.Takeaway
+          ? "takeaway"
+          : code === ShippingMethodCodeEnum.Courier
+          ? "courier"
+          : undefined;
+      if (!orderType) {
+        return undefined;
+      }
+      const discount = getAvailableDiscount(posterPromotions, {
+        time: kyivNow,
+        orderType,
+      });
+      return discount ? `−${discount.percent}%` : undefined;
+    };
     const shippingMethodOptions = (shippingMethods || []).map((item) => ({
       value: item.code,
       // todo: don't use dynamic translation keys
       label: t("shippingMethods." + item.code, item.name),
+      // "−10%" on the tab whose orders get a discount promotion right now
+      badge: discountBadge(item.code),
     }));
 
     const paymentMethodOptions = (paymentMethods || []).map((item) => ({
