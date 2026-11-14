@@ -10,7 +10,7 @@ import { useShowModal } from "~modal";
 import { Cart } from "~domains/cart/cart.query";
 import { useQuery } from "@tanstack/react-query";
 import { posterPromotionsQuery } from "~domains/promotions/poster-promotions.query";
-import { getCartGifts } from "~domains/promotions/cart-gifts";
+import { getCartGifts, OrderType } from "~domains/promotions/cart-gifts";
 import { useKyivTime } from "~domains/promotions/promotion-window";
 
 type CheckoutCartProps = {
@@ -18,6 +18,8 @@ type CheckoutCartProps = {
   loading?: boolean;
   unavailableCategories?: number[];
   unavailableProducts?: number[];
+  // takeaway / courier as chosen in the checkout form
+  orderType?: OrderType;
 };
 
 export const CheckoutCart = ({
@@ -25,6 +27,7 @@ export const CheckoutCart = ({
   loading = false,
   unavailableCategories = [],
   unavailableProducts = [],
+  orderType,
 }: CheckoutCartProps) => {
   const { t } = useTranslation();
   const items = loading
@@ -40,7 +43,10 @@ export const CheckoutCart = ({
   const kyivNow = useKyivTime();
   const gifts = loading
     ? []
-    : getCartGifts(cart?.items, posterPromotions, { time: kyivNow });
+    : getCartGifts(cart?.items, posterPromotions, {
+        time: kyivNow,
+        orderType,
+      });
 
   return (
     <S.Wrapper>

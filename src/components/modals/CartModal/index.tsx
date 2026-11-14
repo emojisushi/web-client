@@ -40,6 +40,8 @@ import {
   CartGift,
   getCartGiftHints,
   getCartGifts,
+  getPromotionConflict,
+  OrderType,
 } from "~domains/promotions/cart-gifts";
 import { useKyivTime } from "~domains/promotions/promotion-window";
 import { useAddProductToCart } from "~domains/cart/hooks/use-add-product-to-cart";
@@ -172,6 +174,24 @@ export const CartModal = NiceModal.create(() => {
   const giftHints = getCartGiftHints(items, posterPromotions, {
     time: kyivNow,
   });
+  // The order type is chosen at checkout, so warn here that promotions do not
+  // combine: e.g. on takeaway the 2+1 gift comes instead of the 10% discount.
+  const conflictsByType = (["takeaway", "courier"] as OrderType[])
+    .map((orderType) => ({
+      orderType: orderType as OrderType | "all",
+      conflict: getPromotionConflict(items, posterPromotions, {
+        time: kyivNow,
+        orderType,
+      }),
+    }))
+    .filter(({ conflict }) => !!conflict);
+  // the same discount for both kinds of order: one note for all orders
+  const promotionConflicts =
+    conflictsByType.length === 2 &&
+    conflictsByType[0].conflict.discount.promotion.id ===
+      conflictsByType[1].conflict.discount.promotion.id
+      ? [{ ...conflictsByType[0], orderType: "all" as const }]
+      : conflictsByType;
 
   const { isMobile } = useBreakpoint2();
 
@@ -261,6 +281,17 @@ export const CartModal = NiceModal.create(() => {
                   product: hint.promotion.gift.name,
                 }
               )}
+            </S.GiftHint>
+          ))}
+
+        {items.length !== 0 &&
+          promotionConflicts.map(({ orderType, conflict }) => (
+            <S.GiftHint key={"promotion-conflict-" + orderType}>
+              {t(`cartModal.promotion_conflict_${orderType}`, {
+                discount: conflict.discount.promotion.name.trim(),
+                percent: conflict.discount.percent,
+                gift: conflict.gifts.map((gift) => gift.gift.name).join(", "),
+              })}
             </S.GiftHint>
           ))}
 
