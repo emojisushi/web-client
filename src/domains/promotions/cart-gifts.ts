@@ -147,6 +147,20 @@ export const getCartDiscount = (
     ? null
     : qualifyingDiscount(items, promotions, options);
 
+/**
+ * The discount promotion running now for this kind of order, whatever is in the
+ * cart — to advertise it, e.g. "−10%" on the takeaway tab. What the order really
+ * gets is getCartDiscount (the cart may be under min_sum or get a gift instead).
+ */
+export const getAvailableDiscount = (
+  promotions: IPosterPromotion[] = [],
+  options: PromotionOptions = {}
+): IPosterDiscountPromotion | null =>
+  promotions.find(
+    (promotion): promotion is IPosterDiscountPromotion =>
+      promotion.kind === "discount" && availableAt(promotion, options)
+  ) ?? null;
+
 // the discount the order qualifies for, before gifts take precedence
 // (the backend allows only one discount per order type)
 const qualifyingDiscount = (

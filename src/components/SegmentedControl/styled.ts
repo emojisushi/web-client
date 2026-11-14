@@ -48,4 +48,12 @@ const Input = styled.input<{
   }
 `;
 
-export { Wrapper, Label, Input };
+// a short accent next to the label, e.g. "−10%" on a tab with a discount
+const Badge = styled.span`
+  margin-left: 6px;
+  color: ${({ theme }) => theme.colors.brand};
+  font-weight: 600;
+  white-space: nowrap;
+`;
+
+export { Wrapper, Label, Input, Badge };

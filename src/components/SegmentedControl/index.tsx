@@ -55,6 +55,8 @@ export const SegmentedControl = forwardRef<
 type Item = {
   value: number | string;
   label: string;
+  // shown after the label in the brand colour, e.g. "−10%"
+  badge?: string;
 };
 
 const Segment = (props: {
@@ -104,6 +106,7 @@ const Segment = (props: {
         htmlFor={internal_id}
       >
         {item.label}
+        {item.badge && <S.Badge>{item.badge}</S.Badge>}
       </S.Label>
     </>
   );
