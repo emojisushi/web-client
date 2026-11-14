@@ -280,11 +280,25 @@ export type IPosterPromotionGift = {
   price_formatted: string | null;
 };
 
-// A Poster promotion the backend applies to online orders: N items of
-// product_ids get the gift for free.
-export type IPosterPromotion = {
+export type IPosterPromotionOrderTypes = "all" | "takeaway" | "courier";
+
+type IPosterPromotionBase = {
   id: number;
   name: string;
+  // which orders it applies to; Poster has no such condition, it is set in the backend
+  order_types: IPosterPromotionOrderTypes;
+  // time of day it applies, "HH:MM" Kyiv time; null when it runs all day
+  active_from: string | null;
+  active_to: string | null;
+  // ISO week days it applies on (1 = Monday), Kyiv time; [] for every day
+  active_days: number[];
+  // our spots it is available at
+  spot_ids: number[];
+};
+
+// N items of product_ids get the gift for free.
+export type IPosterGiftPromotion = IPosterPromotionBase & {
+  kind: "gift";
   // the products that count: those in the promotion's category in Poster, not
   // our own categories (a combo may be under «Піца» here but does not count)
   product_ids: number[];
@@ -294,15 +308,20 @@ export type IPosterPromotion = {
   gift_count: number;
   // false: one gift per order however many items; true: gift_count for every required_count
   accumulate: boolean;
-  // time of day it applies, "HH:MM" Kyiv time; null when it runs all day
-  active_from: string | null;
-  active_to: string | null;
-  // ISO week days it applies on (1 = Monday), Kyiv time; [] for every day
-  active_days: number[];
-  // our spots it is available at
-  spot_ids: number[];
   gift: IPosterPromotionGift;
 };
+
+// percent off the order, except nodiscount_product_ids («без скидок» in Poster)
+export type IPosterDiscountPromotion = IPosterPromotionBase & {
+  kind: "discount";
+  percent: number;
+  // the order sum (kopecks) it starts from, 0 for any order
+  min_sum: number;
+  nodiscount_product_ids: number[];
+};
+
+// A Poster promotion the backend applies to online orders.
+export type IPosterPromotion = IPosterGiftPromotion | IPosterDiscountPromotion;
 
 export type IGetPosterPromotionsRes = {
   data: IPosterPromotion[];

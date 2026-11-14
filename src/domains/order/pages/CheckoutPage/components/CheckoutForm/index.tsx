@@ -70,12 +70,23 @@ import { CheckoutRecommended } from "../CheckoutRecommended";
 import { getNewProductPrice } from "~domains/product/product.utils";
 import { BonusAmountInput } from "./components/BonusAmountInput";
 import { posterPromotionsQuery } from "~domains/promotions/poster-promotions.query";
-import { getCartGifts } from "~domains/promotions/cart-gifts";
+import {
+  getCartDiscount,
+  getCartGifts,
+  getPromotionConflict,
+  OrderType,
+} from "~domains/promotions/cart-gifts";
 import { useKyivTime } from "~domains/promotions/promotion-window";
 import {
   BonusInfoTooltipContent,
   BonusUnavailableReason,
 } from "./components/BonusInfoTooltipContent";
+
+// 1021.2 -> "1021.20", 406 -> "406": two decimals only when there are kopecks
+const formatUAH = (amount: number) => {
+  const rounded = Math.round(amount * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2);
+};
 
 type TCheckoutFormProps = {
   loading?: boolean | undefined;
@@ -91,6 +102,9 @@ type TCheckoutFormProps = {
   setUnavailableCategories?: Dispatch<SetStateAction<number[]>> | undefined;
   unavailableProducts?: number[] | undefined;
   setUnavailableProducts?: Dispatch<SetStateAction<number[]>> | undefined;
+  // takeaway / courier as chosen in the form, so the cart can show the gifts
+  // of promotions that apply only to one of them
+  onOrderTypeChange?: (orderType: OrderType | undefined) => void;
 };
 
 // todo: mark optional fields instead of marking required fields
@@ -233,6 +247,7 @@ export const CheckoutForm = observer(
     setUnavailableCategories,
     unavailableProducts,
     setUnavailableProducts,
+    onOrderTypeChange,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -255,13 +270,13 @@ export const CheckoutForm = observer(
     const canUseOwnBonuses = !!user && !isCallCenterAdmin;
 
     const { data: bonusOptions } = useQuery(bonusOptionsQuery);
-    // The gifts shown in the cart are sent with the order (expected_promotions).
+    // Poster promotions: the gifts and the discount shown are sent with the order
+    // (expected_promotions, worked out below once the shipping method is known).
     // The shared clock keeps this in step with what CheckoutCart shows.
     const { data: posterPromotions } = useQuery(posterPromotionsQuery);
     const kyivNow = useKyivTime();
-    const expectedPromotions = getCartGifts(cart?.items, posterPromotions, {
-      time: kyivNow,
-    }).map((gift) => gift.promotion.id);
+    // set during render below, read by the bonus handlers
+    const bonusLimitRef = useRef(0);
     const { data: userBonus } = useQuery({
       ...userBonusQuery,
       enabled: canUseOwnBonuses,
@@ -372,26 +387,13 @@ export const CheckoutForm = observer(
     const [bonusAmount, setBonusAmount] = useState("");
     const [bonusError, setBonusError] = useState("");
 
-    useEffect(() => {
-      if (usableBonusesUAH <= 0) {
-        setUseBonuses(false);
-        setBonusAmount("");
-        return;
-      }
-      // clamp a previously entered amount if the cap shrinks (e.g. cart changed)
-      setBonusAmount((prev) => {
-        if (prev === "") {
-          return prev;
-        }
-        return Math.min(+prev, usableBonusesUAH) + "";
-      });
-    }, [usableBonuses, usableBonusesUAH]);
-
+    // The handlers read the full limit (bonusLimitUAH, worked out further down
+    // once the shipping method, address and discount are known) through a ref.
     const handleUseBonusesChange = (checked: boolean) => {
       setUseBonuses(checked);
       setBonusError("");
       if (checked) {
-        setBonusAmount(usableBonusesUAH + "");
+        setBonusAmount(bonusLimitRef.current + "");
       } else {
         setBonusAmount("");
       }
@@ -403,7 +405,7 @@ export const CheckoutForm = observer(
         setBonusAmount("");
         return;
       }
-      const clamped = Math.max(0, Math.min(+value, usableBonusesUAH));
+      const clamped = Math.max(0, Math.min(+value, bonusLimitRef.current));
       setBonusAmount(clamped + "");
     };
 
@@ -669,12 +671,13 @@ export const CheckoutForm = observer(
         _comment = "Кол Центр " + _comment;
       }
       const bonusesToUse =
-        useBonuses && showBonuses
+        useBonuses && bonusesUsable
           ? Math.max(
               0,
               Math.min(
                 Math.floor((+bonusAmount || 0) * 100),
                 usableBonuses,
+                bonusLimitUAH * 100,
                 bonusSource?.available ?? 0
               )
             )
@@ -1057,9 +1060,73 @@ export const CheckoutForm = observer(
       deliveryFee = selectedAddress?.delivery_price;
       total += deliveryFee;
     }
+
+    // Poster promotions for this kind of order: the gifts and the discount shown
+    // are sent with the order, and it is refused if one of them no longer applies.
+    const orderType: OrderType | undefined = isTakeawayShipmentMethod
+      ? "takeaway"
+      : isCourierShipmentMethod
+      ? "courier"
+      : undefined;
+    const promotionOptions = { time: kyivNow, orderType };
+    const promotionDiscount = getCartDiscount(
+      cart?.items,
+      posterPromotions,
+      promotionOptions
+    );
+    const promotionDiscountUAH = (promotionDiscount?.amount ?? 0) / 100;
+    // promotions do not combine: the gifts this discount takes the place of
+    const promotionConflict = getPromotionConflict(
+      cart?.items,
+      posterPromotions,
+      promotionOptions
+    );
+    const expectedPromotions = [
+      ...getCartGifts(cart?.items, posterPromotions, promotionOptions).map(
+        (gift) => gift.promotion.id
+      ),
+      ...(promotionDiscount ? [promotionDiscount.promotion.id] : []),
+    ];
+    useEffect(() => {
+      onOrderTypeChange?.(orderType);
+    }, [orderType]);
+
+    // Points can pay for the order (after the discount) but a courier order is
+    // always paid at least the area's minimum: with a minimum of 200 an order of
+    // 205 takes 5 points. Whole hryvnias, like the backend.
+    const minPaymentKop = isCourierShipmentMethod
+      ? Math.round((Number(selectedAddress?.min) || 0) * 100)
+      : 0;
+    const payableKop =
+      Math.round(cartTotal * 100) - (promotionDiscount?.amount ?? 0);
+    const bonusLimitUAH = Math.min(
+      usableBonusesUAH,
+      Math.max(0, Math.floor((payableKop - minPaymentKop) / 100))
+    );
+    bonusLimitRef.current = bonusLimitUAH;
+    const bonusesUsable = showBonuses && bonusLimitUAH > 0;
+
+    useEffect(() => {
+      if (bonusLimitUAH <= 0) {
+        setUseBonuses(false);
+        setBonusAmount("");
+        return;
+      }
+      // clamp a previously entered amount if the cap shrinks (e.g. cart changed)
+      setBonusAmount((prev) => {
+        if (prev === "") {
+          return prev;
+        }
+        return Math.min(+prev, bonusLimitUAH) + "";
+      });
+    }, [bonusLimitUAH]);
+
     const bonusDiscount =
-      showBonuses && useBonuses ? Number(bonusAmount) || 0 : 0;
-    const totalToPay = Math.max(0, total - bonusDiscount);
+      bonusesUsable && useBonuses ? Number(bonusAmount) || 0 : 0;
+    const totalToPay = Math.max(
+      0,
+      Math.round((total - promotionDiscountUAH - bonusDiscount) * 100) / 100
+    );
     const unavailableItems = Array.from(
       new Set(
         (cart?.items ?? [])
@@ -1646,7 +1713,20 @@ export const CheckoutForm = observer(
               unavailableProducts={unavailableProducts}
             />
           </div>
-          {showBonuses && (
+          {showBonuses && !bonusesUsable && minPaymentKop > 0 && (
+            <div
+              style={{
+                marginTop: 20,
+              }}
+            >
+              <S.Control>
+                {t("checkout.form.bonus_min_payment", {
+                  min: minPaymentKop / 100,
+                })}
+              </S.Control>
+            </div>
+          )}
+          {bonusesUsable && (
             <div
               style={{
                 marginTop: 20,
@@ -1665,7 +1745,7 @@ export const CheckoutForm = observer(
                     <span style={{ display: "flex", alignItems: "center" }}>
                       <span>
                         {t("checkout.form.use_bonus", {
-                          amount: usableBonusesUAH,
+                          amount: bonusLimitUAH,
                         })}
                       </span>
                       {renderBonusTooltip(bonusInfoIcon)}
@@ -1678,14 +1758,22 @@ export const CheckoutForm = observer(
                   <SkeletonWrap loading={loading}>
                     <BonusAmountInput
                       value={bonusAmount}
-                      max={usableBonusesUAH}
+                      max={bonusLimitUAH}
                       suffix={t("checkout.form.bonus_suffix")}
                       maxLabel={t("checkout.form.bonus_max")}
                       error={bonusError}
                       onChange={handleBonusAmountChange}
-                      onMax={() => setBonusAmount(usableBonusesUAH + "")}
+                      onMax={() => setBonusAmount(bonusLimitUAH + "")}
                     />
                   </SkeletonWrap>
+                  {isCourierShipmentMethod && minPaymentKop > 0 && (
+                    <div style={{ fontSize: 13, opacity: 0.8, marginTop: 8 }}>
+                      {t("checkout.bonus_min_payment_note", {
+                        max: bonusLimitUAH,
+                        min: formatUAH(minPaymentKop / 100),
+                      })}
+                    </div>
+                  )}
                 </S.Control>
               )}
             </div>
@@ -1883,6 +1971,29 @@ export const CheckoutForm = observer(
                       )}
                     </>
                   )}
+                  {promotionDiscount && (
+                    <FlexBox justifyContent="space-between">
+                      <span>
+                        {t("checkout.promotion_discount", {
+                          name: promotionDiscount.promotion.name.trim(),
+                          percent: promotionDiscount.percent,
+                        })}
+                      </span>
+                      <span>-{formatUAH(promotionDiscountUAH)} грн.</span>
+                    </FlexBox>
+                  )}
+                  {promotionConflict && (
+                    <div style={{ fontSize: 13, opacity: 0.8 }}>
+                      {t("checkout.promotion_conflict", {
+                        gift: promotionConflict.gifts
+                          .map((gift) => gift.gift.name)
+                          .join(", "),
+                        discount:
+                          promotionConflict.discount.promotion.name.trim(),
+                        percent: promotionConflict.discount.percent,
+                      })}
+                    </div>
+                  )}
                   {bonusDiscount > 0 && (
                     <FlexBox justifyContent="space-between">
                       <Trans i18nKey="checkout.bonus_discount" />
@@ -1898,7 +2009,9 @@ export const CheckoutForm = observer(
                   >
                     <Trans i18nKey={"checkout.to_pay"} />
                     {/* &nbsp; */}
-                    <span>{cart?.total ? `${totalToPay} грн.` : "🤪🤪🤪"}</span>
+                    <span>
+                      {cart?.total ? `${formatUAH(totalToPay)} грн.` : "🤪🤪🤪"}
+                    </span>
                   </S.Total>
                   {currentWaitTime > 0 && (
                     <S.Total
