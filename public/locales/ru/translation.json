@@ -78,7 +78,8 @@
     "checkout": "Оформить заказ"
   },
   "contactsModal": {
-    "contacts": "Контакты"
+    "contacts": "Контакты",
+    "workingHours": "График работы: с {{from}} до {{to}}"
   },
   "filtersModal": {
     "search_filters": "Фильтры поиска"

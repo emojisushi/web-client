@@ -7,7 +7,7 @@ import {
   ModalContent,
   ModalCloseButton,
 } from "~components";
-import { PhoneSvg, InstagramSvg, TelegramSvg } from "~components/svg";
+import { PhoneSvg, InstagramSvg, TelegramSvg, ClockSvg } from "~components/svg";
 import { useTranslation } from "react-i18next";
 import { InstagramLink } from "~layout/Footer/styled";
 import NiceModal from "@ebay/nice-modal-react";
@@ -68,6 +68,19 @@ export const ContactsModal = NiceModal.create(() => {
         <div>
           <S.Wrapper>
             {renderPhones()}
+            <S.WorkingHours>
+              <SvgIcon
+                style={{ marginRight: "11px" }}
+                width={"25px"}
+                color={"white"}
+              >
+                <ClockSvg />
+              </SvgIcon>
+              {t("contactsModal.workingHours", {
+                from: "10:00",
+                to: "21:45",
+              })}
+            </S.WorkingHours>
             <S.Socials>
               <FlexBox style={{ marginRight: "20px" }} alignItems={"center"}>
                 <SvgIcon

@@ -28,9 +28,15 @@ const Phone = styled.span`
   }
 `;
 
+const WorkingHours = styled.div`
+  display: flex;
+  margin-top: 20px;
+  align-items: center;
+`;
+
 const Socials = styled.div`
   display: flex;
   margin-top: 20px;
 `;
 
-export { Title, Wrapper, Phones, Phone, Socials };
+export { Title, Wrapper, Phones, Phone, WorkingHours, Socials };

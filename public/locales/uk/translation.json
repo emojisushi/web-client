@@ -84,7 +84,8 @@
     }
   },
   "contactsModal": {
-    "contacts": "Контакти"
+    "contacts": "Контакти",
+    "workingHours": "Графік роботи: з {{from}} до {{to}}"
   },
   "filtersModal": {
     "search_filters": "Фільтри пошуку"

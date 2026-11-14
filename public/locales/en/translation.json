@@ -84,7 +84,8 @@
     }
   },
   "contactsModal": {
-    "contacts": "Contacts"
+    "contacts": "Contacts",
+    "workingHours": "Working hours: {{from}} – {{to}}"
   },
   "filtersModal": {
     "search_filters": "Search filters"
