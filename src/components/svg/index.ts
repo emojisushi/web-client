@@ -21,6 +21,7 @@ export * from "./MagnifierSvg";
 export * from "./MapPinSvg";
 export * from "./MinusSvg";
 export * from "./PhoneSvg";
+export * from "./ClockSvg";
 export * from "./PlusSvg";
 export * from "./SortOrderSvg";
 export * from "./SpinnerSvg";
