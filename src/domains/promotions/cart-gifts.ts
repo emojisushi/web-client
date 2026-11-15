@@ -134,9 +134,9 @@ export const getCartGiftHints = (
 
 /**
  * The discount promotion for this order, if any: none when the order gets a gift,
- * since promotions do not combine and the gift comes first. Products «без скидок»
- * in Poster are left out, as on its bill. Display only — the backend works it out
- * again and that is what Poster gets.
+ * since promotions do not combine and the gift comes first. It covers the whole
+ * cart, «без скидок» products in Poster included. Display only — the backend
+ * works it out again and that is what Poster gets.
  */
 export const getCartDiscount = (
   items: CartItem[] = [],
@@ -175,17 +175,12 @@ const qualifyingDiscount = (
     const lineSum = (item: CartItem) =>
       (getNewProductPrice(item.product, item.variant)?.price ?? 0) *
       item.quantity;
-    // Poster's "order sum from" condition, on the whole order
+    // the whole cart: Poster's "order sum from" condition and the discount itself
     const orderSum = items.reduce((sum, item) => sum + lineSum(item), 0);
     if (orderSum < (promotion.min_sum ?? 0)) {
       continue;
     }
-    const discountable = items
-      .filter(
-        (item) => !promotion.nodiscount_product_ids.includes(item.product.id)
-      )
-      .reduce((sum, item) => sum + lineSum(item), 0);
-    const amount = Math.round((discountable * promotion.percent) / 100);
+    const amount = Math.round((orderSum * promotion.percent) / 100);
     if (amount > 0) {
       return { promotion, percent: promotion.percent, amount };
     }
