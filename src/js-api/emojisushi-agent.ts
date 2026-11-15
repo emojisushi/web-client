@@ -305,6 +305,8 @@ export function createEmojisushiAgent(options: { service: string }) {
       // Poster promotions whose gifts were shown; the order is refused if one
       // no longer applies, e.g. its time window closed
       expected_promotions?: number[];
+      // call centre only: the discount instead of the gift when both apply
+      promotion_choice?: "gift" | "discount";
 
       cart: {
         items: {

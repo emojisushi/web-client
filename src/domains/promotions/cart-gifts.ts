@@ -29,6 +29,9 @@ export type CartDiscount = {
 
 export type OrderType = "takeaway" | "courier";
 
+// which promotion an order takes when both a gift and a discount apply
+export type PromotionPreference = "gift" | "discount";
+
 const qualifyingCount = (items: CartItem[], promotion: IPosterGiftPromotion) =>
   items.reduce(
     (acc, item) =>
@@ -45,7 +48,19 @@ type PromotionOptions = {
   time?: string;
   // the order's type, when known; without it only promotions for all orders apply
   orderType?: OrderType;
+  // "discount": the discount instead of the gifts when both apply (a call centre
+  // choice, checked by the backend); otherwise the gifts win
+  prefer?: PromotionPreference;
 };
+
+// the discount was chosen over the gifts and the cart gets it
+const discountChosen = (
+  items: CartItem[],
+  promotions: IPosterPromotion[],
+  options: PromotionOptions
+) =>
+  options.prefer === "discount" &&
+  !!qualifyingDiscount(items, promotions, options);
 
 // at the spot, for this kind of order, on one of its days, inside its time window
 const availableAt = (
@@ -75,11 +90,15 @@ export const getCartGifts = (
   items: CartItem[] = [],
   promotions: IPosterPromotion[] = [],
   options: PromotionOptions = {}
-): CartGift[] => qualifyingGifts(items, promotions, options);
+): CartGift[] =>
+  discountChosen(items, promotions, options)
+    ? []
+    : qualifyingGifts(items, promotions, options);
 
 /**
- * A discount the cart would get but loses to a gift, e.g. 10% off a takeaway
- * order that gets the 2+1 pizza instead. Null when there is no such clash.
+ * A gift and a discount the cart both qualifies for, e.g. the 2+1 pizza and 10%
+ * off a takeaway order; only one can apply. Null when there is no such clash.
+ * Ignores options.prefer: it tells whether there is a choice at all.
  */
 export const getPromotionConflict = (
   items: CartItem[] = [],
@@ -143,9 +162,10 @@ export const getCartDiscount = (
   promotions: IPosterPromotion[] = [],
   options: PromotionOptions = {}
 ): CartDiscount | null =>
-  qualifyingGifts(items, promotions, options).length > 0
-    ? null
-    : qualifyingDiscount(items, promotions, options);
+  discountChosen(items, promotions, options) ||
+  qualifyingGifts(items, promotions, options).length === 0
+    ? qualifyingDiscount(items, promotions, options)
+    : null;
 
 /**
  * The discount promotion running now for this kind of order, whatever is in the
