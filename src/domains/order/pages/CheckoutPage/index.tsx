@@ -19,7 +19,7 @@ import { checkoutFormQuery } from "~domains/order/order.query";
 import { catalogQuery } from "~domains/catalog/catalog.query";
 import { useClearCart } from "~domains/cart/hooks/use-clear-cart";
 import { addressOptionsQuery } from "~domains/order/addressOptions.query";
-import { OrderType } from "~domains/promotions/cart-gifts";
+import { OrderType, PromotionPreference } from "~domains/promotions/cart-gifts";
 
 const CheckoutPage = () => {
   const { t } = useTranslation();
@@ -32,6 +32,10 @@ const CheckoutPage = () => {
   const [unavailableProducts, setUnavailableProducts] = useState<number[]>([]);
   // takeaway / courier as chosen in the form, for promotions limited to one
   const [orderType, setOrderType] = useState<OrderType | undefined>();
+  // the call centre's gift-or-discount choice, so the cart shows what the form does
+  const [promotionPreference, setPromotionPreference] = useState<
+    PromotionPreference | undefined
+  >();
   const { data: user, isLoading: isUserLoading } = useUser();
   const { mutate: clearCart } = useClearCart();
 
@@ -105,6 +109,7 @@ const CheckoutPage = () => {
         unavailableProducts={unavailableProducts}
         setUnavailableProducts={setUnavailableProducts}
         onOrderTypeChange={setOrderType}
+        onPromotionPreferenceChange={setPromotionPreference}
       />
     );
   };
@@ -119,6 +124,7 @@ const CheckoutPage = () => {
         unavailableCategories={unavailableCategories}
         unavailableProducts={unavailableProducts}
         orderType={orderType}
+        promotionPreference={promotionPreference}
       />
     );
   };

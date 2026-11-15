@@ -76,6 +76,7 @@ import {
   getCartGifts,
   getPromotionConflict,
   OrderType,
+  PromotionPreference,
 } from "~domains/promotions/cart-gifts";
 import { useKyivTime } from "~domains/promotions/promotion-window";
 import {
@@ -106,6 +107,10 @@ type TCheckoutFormProps = {
   // takeaway / courier as chosen in the form, so the cart can show the gifts
   // of promotions that apply only to one of them
   onOrderTypeChange?: (orderType: OrderType | undefined) => void;
+  // the call centre's gift-or-discount choice, so the cart shows the same
+  onPromotionPreferenceChange?: (
+    preference: PromotionPreference | undefined
+  ) => void;
 };
 
 // todo: mark optional fields instead of marking required fields
@@ -249,6 +254,7 @@ export const CheckoutForm = observer(
     unavailableProducts,
     setUnavailableProducts,
     onOrderTypeChange,
+    onPromotionPreferenceChange,
   }: TCheckoutFormProps) => {
     const { t } = useTranslation();
     const navigate = useNavigate();
@@ -386,6 +392,9 @@ export const CheckoutForm = observer(
 
     const [useBonuses, setUseBonuses] = useState(false);
     const [bonusAmount, setBonusAmount] = useState("");
+    // call centre only: the gift or the discount when the cart gets both
+    const [promotionChoice, setPromotionChoice] =
+      useState<PromotionPreference>("gift");
     const [bonusError, setBonusError] = useState("");
 
     // The handlers read the full limit (bonusLimitUAH, worked out further down
@@ -714,6 +723,7 @@ export const CheckoutForm = observer(
               ? `${deliveryDate} ${deliveryHour}:${deliveryMinute}:00`
               : undefined,
           expected_promotions: expectedPromotions,
+          promotion_choice: promotionPreference,
           cart: {
             items: cart.items.map((item) => ({
               id: item.product.id + "",
@@ -1089,19 +1099,28 @@ export const CheckoutForm = observer(
       : isCourierShipmentMethod
       ? "courier"
       : undefined;
-    const promotionOptions = { time: kyivNow, orderType };
+    // promotions do not combine: a gift and a discount the cart both gets
+    const promotionConflict = getPromotionConflict(
+      cart?.items,
+      posterPromotions,
+      { time: kyivNow, orderType }
+    );
+    // The gift wins by default; a call centre operator may pick the discount
+    // instead (sent as promotion_choice, which the backend accepts only from them).
+    const canChoosePromotion = isCallCenterAdmin && !!promotionConflict;
+    const promotionPreference: PromotionPreference | undefined =
+      canChoosePromotion ? promotionChoice : undefined;
+    const promotionOptions = {
+      time: kyivNow,
+      orderType,
+      prefer: promotionPreference,
+    };
     const promotionDiscount = getCartDiscount(
       cart?.items,
       posterPromotions,
       promotionOptions
     );
     const promotionDiscountUAH = (promotionDiscount?.amount ?? 0) / 100;
-    // promotions do not combine: the gifts this discount takes the place of
-    const promotionConflict = getPromotionConflict(
-      cart?.items,
-      posterPromotions,
-      promotionOptions
-    );
     const expectedPromotions = [
       ...getCartGifts(cart?.items, posterPromotions, promotionOptions).map(
         (gift) => gift.promotion.id
@@ -1111,6 +1130,9 @@ export const CheckoutForm = observer(
     useEffect(() => {
       onOrderTypeChange?.(orderType);
     }, [orderType]);
+    useEffect(() => {
+      onPromotionPreferenceChange?.(promotionPreference);
+    }, [promotionPreference]);
 
     // Points can pay for the order (after the discount) but a courier order is
     // always paid at least the area's minimum: with a minimum of 200 an order of
@@ -1120,10 +1142,14 @@ export const CheckoutForm = observer(
       : 0;
     const payableKop =
       Math.round(cartTotal * 100) - (promotionDiscount?.amount ?? 0);
-    const bonusLimitUAH = Math.min(
-      usableBonusesUAH,
-      Math.max(0, Math.floor((payableKop - minPaymentKop) / 100))
-    );
+    // Points and a discount promotion do not combine (e.g. 10% off takeaway),
+    // as the backend enforces; a limit of 0 also clears any amount entered.
+    const bonusLimitUAH = promotionDiscount
+      ? 0
+      : Math.min(
+          usableBonusesUAH,
+          Math.max(0, Math.floor((payableKop - minPaymentKop) / 100))
+        );
     bonusLimitRef.current = bonusLimitUAH;
     const bonusesUsable = showBonuses && bonusLimitUAH > 0;
 
@@ -1734,19 +1760,36 @@ export const CheckoutForm = observer(
               unavailableProducts={unavailableProducts}
             />
           </div>
-          {showBonuses && !bonusesUsable && minPaymentKop > 0 && (
+          {showBonuses && promotionDiscount && (
             <div
               style={{
                 marginTop: 20,
               }}
             >
               <S.Control>
-                {t("checkout.form.bonus_min_payment", {
-                  min: minPaymentKop / 100,
+                {t("checkout.form.bonus_with_discount", {
+                  name: promotionDiscount.promotion.name.trim(),
+                  percent: promotionDiscount.percent,
                 })}
               </S.Control>
             </div>
           )}
+          {showBonuses &&
+            !bonusesUsable &&
+            !promotionDiscount &&
+            minPaymentKop > 0 && (
+              <div
+                style={{
+                  marginTop: 20,
+                }}
+              >
+                <S.Control>
+                  {t("checkout.form.bonus_min_payment", {
+                    min: minPaymentKop / 100,
+                  })}
+                </S.Control>
+              </div>
+            )}
           {bonusesUsable && (
             <div
               style={{
@@ -1992,6 +2035,42 @@ export const CheckoutForm = observer(
                       )}
                     </>
                   )}
+                  {canChoosePromotion && promotionConflict && (
+                    <div style={{ margin: "10px 0" }}>
+                      <div
+                        style={{ fontSize: 13, opacity: 0.8, marginBottom: 6 }}
+                      >
+                        {t("checkout.promotion_choice")}
+                      </div>
+                      <SegmentedControl
+                        name="promotion_choice"
+                        items={[
+                          {
+                            value: "gift",
+                            label: t("checkout.promotion_choice_gift", {
+                              gift: promotionConflict.gifts
+                                .map((gift) => gift.gift.name)
+                                .join(", "),
+                            }),
+                          },
+                          {
+                            value: "discount",
+                            label: t("checkout.promotion_choice_discount", {
+                              percent: promotionConflict.discount.percent,
+                            }),
+                          },
+                        ]}
+                        value={promotionChoice}
+                        onChange={(e) =>
+                          setPromotionChoice(
+                            e.currentTarget.value === "discount"
+                              ? "discount"
+                              : "gift"
+                          )
+                        }
+                      />
+                    </div>
+                  )}
                   {promotionDiscount && (
                     <FlexBox justifyContent="space-between">
                       <span>
@@ -2003,7 +2082,7 @@ export const CheckoutForm = observer(
                       <span>-{formatUAH(promotionDiscountUAH)} грн.</span>
                     </FlexBox>
                   )}
-                  {promotionConflict && (
+                  {promotionConflict && !canChoosePromotion && (
                     <div style={{ fontSize: 13, opacity: 0.8 }}>
                       {t("checkout.promotion_conflict", {
                         gift: promotionConflict.gifts
