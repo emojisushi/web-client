@@ -311,13 +311,14 @@ export type IPosterGiftPromotion = IPosterPromotionBase & {
   gift: IPosterPromotionGift;
 };
 
-// percent off the order, except nodiscount_product_ids («без скидок» in Poster)
+// percent off the whole order, «без скидок» products in Poster included
 export type IPosterDiscountPromotion = IPosterPromotionBase & {
   kind: "discount";
   percent: number;
   // the order sum (kopecks) it starts from, 0 for any order
   min_sum: number;
-  nodiscount_product_ids: number[];
+  // always empty now; the backend keeps it for older site builds
+  nodiscount_product_ids?: number[];
 };
 
 // A Poster promotion the backend applies to online orders.
