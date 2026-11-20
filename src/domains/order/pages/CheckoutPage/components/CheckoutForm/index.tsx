@@ -107,7 +107,7 @@ type TCheckoutFormProps = {
   // takeaway / courier as chosen in the form, so the cart can show the gifts
   // of promotions that apply only to one of them
   onOrderTypeChange?: (orderType: OrderType | undefined) => void;
-  // the call centre's gift-or-discount choice, so the cart shows the same
+  // the gift-or-discount choice, so the cart shows the same
   onPromotionPreferenceChange?: (
     preference: PromotionPreference | undefined
   ) => void;
@@ -392,7 +392,7 @@ export const CheckoutForm = observer(
 
     const [useBonuses, setUseBonuses] = useState(false);
     const [bonusAmount, setBonusAmount] = useState("");
-    // call centre only: the gift or the discount when the cart gets both
+    // the gift or the discount, when the cart gets both
     const [promotionChoice, setPromotionChoice] =
       useState<PromotionPreference>("gift");
     const [bonusError, setBonusError] = useState("");
@@ -1105,9 +1105,9 @@ export const CheckoutForm = observer(
       posterPromotions,
       { time: kyivNow, orderType }
     );
-    // The gift wins by default; a call centre operator may pick the discount
-    // instead (sent as promotion_choice, which the backend accepts only from them).
-    const canChoosePromotion = isCallCenterAdmin && !!promotionConflict;
+    // When both apply the client picks one (sent as promotion_choice); the gift
+    // is preselected, as it is what the backend gives without a choice.
+    const canChoosePromotion = !!promotionConflict;
     const promotionPreference: PromotionPreference | undefined =
       canChoosePromotion ? promotionChoice : undefined;
     const promotionOptions = {
@@ -1121,12 +1121,21 @@ export const CheckoutForm = observer(
       promotionOptions
     );
     const promotionDiscountUAH = (promotionDiscount?.amount ?? 0) / 100;
+    const promotionGifts = getCartGifts(
+      cart?.items,
+      posterPromotions,
+      promotionOptions
+    );
     const expectedPromotions = [
-      ...getCartGifts(cart?.items, posterPromotions, promotionOptions).map(
-        (gift) => gift.promotion.id
-      ),
+      ...promotionGifts.map((gift) => gift.promotion.id),
       ...(promotionDiscount ? [promotionDiscount.promotion.id] : []),
     ];
+    // the promotion this order gets (a gift or a discount, never both)
+    const appliedPromotionName = (
+      promotionDiscount?.promotion.name ??
+      promotionGifts[0]?.promotion.name ??
+      ""
+    ).trim();
     useEffect(() => {
       onOrderTypeChange?.(orderType);
     }, [orderType]);
@@ -1142,9 +1151,10 @@ export const CheckoutForm = observer(
       : 0;
     const payableKop =
       Math.round(cartTotal * 100) - (promotionDiscount?.amount ?? 0);
-    // Points and a discount promotion do not combine (e.g. 10% off takeaway),
-    // as the backend enforces; a limit of 0 also clears any amount entered.
-    const bonusLimitUAH = promotionDiscount
+    // Points do not combine with any promotion — a discount (10% off takeaway)
+    // or a gift (2+1 pizza) — as the backend enforces; a limit of 0 also clears
+    // any amount entered.
+    const bonusLimitUAH = appliedPromotionName
       ? 0
       : Math.min(
           usableBonusesUAH,
@@ -1760,23 +1770,22 @@ export const CheckoutForm = observer(
               unavailableProducts={unavailableProducts}
             />
           </div>
-          {showBonuses && promotionDiscount && (
+          {showBonuses && appliedPromotionName && (
             <div
               style={{
                 marginTop: 20,
               }}
             >
               <S.Control>
-                {t("checkout.form.bonus_with_discount", {
-                  name: promotionDiscount.promotion.name.trim(),
-                  percent: promotionDiscount.percent,
+                {t("checkout.form.bonus_with_promotion", {
+                  name: appliedPromotionName,
                 })}
               </S.Control>
             </div>
           )}
           {showBonuses &&
             !bonusesUsable &&
-            !promotionDiscount &&
+            !appliedPromotionName &&
             minPaymentKop > 0 && (
               <div
                 style={{
@@ -2081,18 +2090,6 @@ export const CheckoutForm = observer(
                       </span>
                       <span>-{formatUAH(promotionDiscountUAH)} грн.</span>
                     </FlexBox>
-                  )}
-                  {promotionConflict && !canChoosePromotion && (
-                    <div style={{ fontSize: 13, opacity: 0.8 }}>
-                      {t("checkout.promotion_conflict", {
-                        gift: promotionConflict.gifts
-                          .map((gift) => gift.gift.name)
-                          .join(", "),
-                        discount:
-                          promotionConflict.discount.promotion.name.trim(),
-                        percent: promotionConflict.discount.percent,
-                      })}
-                    </div>
                   )}
                   {bonusDiscount > 0 && (
                     <FlexBox justifyContent="space-between">

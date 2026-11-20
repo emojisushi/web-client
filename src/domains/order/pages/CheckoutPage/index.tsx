@@ -32,7 +32,7 @@ const CheckoutPage = () => {
   const [unavailableProducts, setUnavailableProducts] = useState<number[]>([]);
   // takeaway / courier as chosen in the form, for promotions limited to one
   const [orderType, setOrderType] = useState<OrderType | undefined>();
-  // the call centre's gift-or-discount choice, so the cart shows what the form does
+  // the gift-or-discount choice, so the cart shows what the form does
   const [promotionPreference, setPromotionPreference] = useState<
     PromotionPreference | undefined
   >();

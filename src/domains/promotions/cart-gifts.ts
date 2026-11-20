@@ -48,8 +48,8 @@ type PromotionOptions = {
   time?: string;
   // the order's type, when known; without it only promotions for all orders apply
   orderType?: OrderType;
-  // "discount": the discount instead of the gifts when both apply (a call centre
-  // choice, checked by the backend); otherwise the gifts win
+  // "discount": the discount instead of the gifts when both apply (the client's
+  // choice at checkout, sent as promotion_choice); otherwise the gifts win
   prefer?: PromotionPreference;
 };
 
