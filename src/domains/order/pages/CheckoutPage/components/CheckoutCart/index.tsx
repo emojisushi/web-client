@@ -24,7 +24,7 @@ type CheckoutCartProps = {
   unavailableProducts?: number[];
   // takeaway / courier as chosen in the checkout form
   orderType?: OrderType;
-  // the call centre's gift-or-discount choice in the form: no gift if "discount"
+  // the gift-or-discount choice in the form: no gift if "discount"
   promotionPreference?: PromotionPreference;
 };
 
